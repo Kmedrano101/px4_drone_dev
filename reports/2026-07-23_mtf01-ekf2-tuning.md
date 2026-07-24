@@ -2,7 +2,7 @@
 
 **Fecha:** 2026-07-23
 **Autor / origen:** RPi companion
-**Estado:** 🔄 en progreso (raíz: interferencia mag → mag-free, persiste tras recalibrar)
+**Estado:** 🔄 mag descartado (`EKF2_MAG_TYPE=None`); **flow SANO** (quality 78, no es el umbral); el drift al levantar = **dead-reckoning de IMU en suelo, no el flow**. Pendiente: **test EN VUELO** (Altitude) para ver si el flow fusiona sin yaw; si no → **LiDAR 3D (EV)**. Análisis completo en §3.6.
 
 **Contexto:** PX4 v1.17.0 (main, commit `82e3322e0cf0afc9ad640f37a0a8b639077b3fa4`,
 firmware custom HKUST_NXT_DUAL, recién reflasheado con mods de board que
@@ -149,6 +149,57 @@ de despegar).
 **Conclusión de esta ronda:** mejoró la calidad del flujo (60→78) pero el
 comportamiento de fondo (pérdida de tracking al mover + drift no controlado +
 no-reset del offset) sigue igual. **No se intentó el despegue real.**
+
+## 3.6 Análisis y dirección (sesión de tuning con IA, 2026-07-24)
+
+Reanálisis cruzando §3.5 con lecturas nuevas del sensor crudo (sensor a ~40cm,
+quieto y levantado en vertical): `quality: 75-78`, `pixel_flow ≈ [0.002, 0]`.
+
+**❌ Hipótesis #1 (umbral de calidad) DESCARTADA.** Los datos la refutan:
+- `quality: 75-78` = **buena** (buena luz/textura), muy por encima de cualquier umbral razonable.
+- `pixel_flow ≈ 0` en un levantamiento **vertical** = **correcto** (no hay movimiento horizontal que reportar).
+- → El flow está **sano**. **No tocar `EKF2_OF_QMIN`** — no es el problema.
+
+**✅ Causa raíz del "metros de X al levantar" = dead-reckoning de IMU, NO el flow.**
+El optical flow **solo se fusiona EN VUELO** (`cs_in_air`). Con el dron en tierra o
+sostenido a mano no está ni en reposo (→ sin `fake_pos`) ni en aire (→ sin fusión
+de flow), así que el EKF integra **solo la IMU** → el sesgo del acelerómetro deriva
+metros. El flow bueno (~0) está presente pero **no se usa en el suelo**.
+→ **Levantar a mano NO es una prueba válida del flow; siempre derivará por IMU.**
+
+**Sobre el "offset no se resetea" (§3.5) — confirmado y coherente.** El error
+acumulado en dead-reckoning no se corrige solo porque en el suelo no hay aiding
+que lo corrija. Mitigaciones:
+- Inmediata: **reboot del FC justo antes de armar** (parte de `x=y=0`).
+- De fondo: se corrige solo cuando el flow fusione **en vuelo**.
+- Salvaguarda en el nodo: rechazar despegue si hubo `xy_reset_counter` reciente
+  o `|x|,|y|` sospechosos (buena idea del reporte, mantener).
+
+**🧭 Magnetómetro — resuelto como "no usar":**
+- La interferencia mag era la causa de `heading_good_for_control: false` +
+  `cs_mag_field_disturbed: true` (el EKF rechazaba el mag → `cs_mag: false`).
+- Reubicada la brújula lejos de los ESC: offset `1.5G → 0.45G`, **pero el entorno
+  del lab sigue en ~1.2G** (2.5x el terrestre) → se marca `disturbed` igual.
+- **Decisión:** `EKF2_MAG_TYPE=5 (None)` + `SYS_HAS_MAG=0` (GPS/compass desconectado).
+  Coherente con el endgame (el LiDAR 3D dará el yaw).
+- Tras quitarlo: `cs_mag_field_disturbed: false` ✅ pero **`cs_yaw_align: false`**
+  persiste (sin mag/GPS/EV no hay referencia de yaw absoluta estando quieto).
+
+**🔑 La incógnita a resolver EN VUELO:** ¿el flow fusiona en el aire sin fuente de yaw?
+`cs_opt_flow` y `cs_yaw_align` solo pueden activarse volando (`cs_in_air`). Test decisivo:
+1. **Altitude mode** (solo necesita `z_valid`/LiDAR — no depende del flow ni del yaw) → despegar a ~1m.
+2. Monitorear `estimator_status_flags` en el aire:
+   - `cs_opt_flow: true` + `xy_valid` sostenido → **flow-only indoor viable**.
+   - No alinea yaw → se necesita el **yaw del LiDAR 3D (EV)**.
+
+**🎯 Dirección estratégica (confirmada):** la navegación final es **3D LiDAR
+(Livox) + FAST-LIO** → odometría 6DOF (pos + yaw) por External Vision
+(`EKF2_EV_CTRL`), que da yaw y posición sin depender del mag ni del flow-relativo.
+El flow + LiDAR-1D es el escalón intermedio para hold básico.
+
+**Próximo paso:** vuelo de banco→**Altitude mode** (props, con cuidado) para
+responder la incógnita del yaw en vuelo. **No** seguir juzgando el flow por
+levantamientos a mano.
 
 ## 4. Qué NO se tocó todavía
 

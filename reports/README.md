@@ -45,4 +45,4 @@ estructura consistente (contexto, síntoma, lecturas, hipótesis, qué no se toc
 
 | Fecha | Reporte | Estado |
 |---|---|---|
-| 2026-07-23 | [MTF-01 EKF2 tuning (flow no valida indoor)](2026-07-23_mtf01-ekf2-tuning.md) | 🔄 en progreso (raíz: interferencia mag → mag-free) |
+| 2026-07-23 | [MTF-01 EKF2 tuning (flow no valida indoor)](2026-07-23_mtf01-ekf2-tuning.md) | 🔄 flow sano; drift = dead-reckoning en suelo; mag descartado → falta test EN VUELO (Altitude) |
