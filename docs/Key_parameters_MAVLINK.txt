@@ -1,0 +1,3 @@
+EKF2_HGT_REF: Reference source of height data by the EKF
+	outdoor: GPS
+	indoor: 0

@@ -1,0 +1,60 @@
+diff --git a/boards/hkust/nxt-dual/default.px4board b/boards/hkust/nxt-dual/default.px4board
+index 368ed08d6e..017cda6fe1 100644
+--- a/boards/hkust/nxt-dual/default.px4board
++++ b/boards/hkust/nxt-dual/default.px4board
+@@ -2,6 +2,7 @@ CONFIG_BOARD_TOOLCHAIN="arm-none-eabi"
+ CONFIG_BOARD_ARCHITECTURE="cortex-m7"
+ CONFIG_BOARD_SERIAL_GPS1="/dev/ttyS0"
+ CONFIG_BOARD_SERIAL_GPS2="/dev/ttyS2"
++CONFIG_BOARD_SERIAL_GPS3="/dev/ttyS5"
+ CONFIG_BOARD_SERIAL_TEL1="/dev/ttyS1"
+ CONFIG_BOARD_SERIAL_TEL2="/dev/ttyS3"
+ CONFIG_BOARD_SERIAL_TEL3="/dev/ttyS6"
+@@ -21,7 +22,10 @@ CONFIG_DRIVERS_OSD_MSP_OSD=y
+ CONFIG_DRIVERS_IMU_BOSCH_BMI088=y
+ CONFIG_DRIVERS_IRLOCK=y
+ CONFIG_COMMON_LIGHT=y
+-CONFIG_COMMON_MAGNETOMETER=y
++CONFIG_DRIVERS_MAGNETOMETER_QMC5883P=y
++CONFIG_DRIVERS_MAGNETOMETER_QMC5883L=y
++CONFIG_DRIVERS_MAGNETOMETER_ISENTEK_IST8310=y
++CONFIG_DRIVERS_MAGNETOMETER_HMC5883=y
+ CONFIG_DRIVERS_PWM_OUT=y
+ CONFIG_DRIVERS_RC_INPUT=y
+ CONFIG_COMMON_TELEMETRY=y
+diff --git a/boards/hkust/nxt-dual/init/rc.board_sensors b/boards/hkust/nxt-dual/init/rc.board_sensors
+index 3091824e8b..4b1b586ce0 100644
+--- a/boards/hkust/nxt-dual/init/rc.board_sensors
++++ b/boards/hkust/nxt-dual/init/rc.board_sensors
+@@ -14,3 +14,6 @@ bmi088 -s -b 4 -G -R 2 start
+ 
+ # internal baro
+ spl06 -X -a 0x77 start
++
++# external compass on GPS1 I2C bus (QMC5883P @ 0x2C)
++qmc5883p -X start
+diff --git a/boards/hkust/nxt-dual/nuttx-config/nsh/defconfig b/boards/hkust/nxt-dual/nuttx-config/nsh/defconfig
+index e1e35f96de..9ab38e22c5 100644
+--- a/boards/hkust/nxt-dual/nuttx-config/nsh/defconfig
++++ b/boards/hkust/nxt-dual/nuttx-config/nsh/defconfig
+@@ -5,6 +5,7 @@
+ # You can then do "make savedefconfig" to generate a new defconfig file that includes your
+ # modifications.
+ #
++# CONFIG_DEV_CONSOLE is not set
+ # CONFIG_DISABLE_ENVIRON is not set
+ # CONFIG_DISABLE_PSEUDOFS_OPERATIONS is not set
+ # CONFIG_DISABLE_PTHREAD is not set
+@@ -258,9 +259,9 @@ CONFIG_USART2_TXBUFSIZE=3000
+ CONFIG_USART3_BAUD=57600
+ CONFIG_USART3_RXBUFSIZE=180
+ CONFIG_USART3_TXBUFSIZE=1500
+-CONFIG_USART6_BAUD=57600
+-CONFIG_USART6_RXBUFSIZE=180
+-CONFIG_USART6_SERIAL_CONSOLE=y
++CONFIG_USART6_BAUD=115200
++CONFIG_USART6_RXBUFSIZE=600
++CONFIG_USART6_TXBUFSIZE=1500
+ CONFIG_USBDEV=y
+ CONFIG_USBDEV_BUSPOWERED=y
+ CONFIG_USBDEV_MAXPOWER=500
