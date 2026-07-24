@@ -1,6 +1,9 @@
 # Reporte: MTF-01 (flujo óptico + rango) no valida para hold de posición indoor
 
 **Fecha:** 2026-07-23
+**Autor / origen:** RPi companion
+**Estado:** 🔄 en progreso (raíz: interferencia mag → mag-free, persiste tras recalibrar)
+
 **Contexto:** PX4 v1.17.0 (main, commit `82e3322e0cf0afc9ad640f37a0a8b639077b3fa4`,
 firmware custom HKUST_NXT_DUAL, recién reflasheado con mods de board que
 reubicaron el sensor MTF-01 a TEL4/UART8). Companion: Raspberry Pi 4, ROS 2
@@ -73,11 +76,11 @@ Puntos clave de esta lectura:
   sensor (puede ser esperado si se usa el giro del FC en su lugar, pero
   vale confirmarlo).
 
-## 3. Hipótesis a investigar (para el `drone_tuning` con IA)
+## 3. Hipótesis a investigar
 
 1. **Umbral de calidad de flujo óptico demasiado exigente para las
    condiciones reales.** Revisar `EKF2_OF_QMIN` (o el parámetro equivalente
-   en esta versión/fork de PX4) contra la calidad real observada (~60,
+   en esta versión/fork de PX4) contra la calidad real observada (~60-78,
    posiblemente más baja bajo movimiento). Considerar bajar el umbral con
    cautela, o mejorar las condiciones (más textura en la superficie, más luz,
    altura de operación dentro del rango óptimo del sensor).
@@ -87,10 +90,10 @@ Puntos clave de esta lectura:
    seleccionan qué rangefinder alimenta `dist_bottom` (puede que el sistema
    esté (mal) usando otro rangefinder o ninguno, y lo que se ve en
    `vehicle_local_position.dist_bottom` sea ruido/una fuente distinta).
-3. **`heading_good_for_control` nunca en `true`.** No investigado a fondo
-   todavía — podría depender de un magnetómetro sano/calibrado o de suficiente
-   movimiento horizontal ya fusionado; revisar requisitos exactos de este
-   flag en la versión de PX4 usada.
+3. **`heading_good_for_control` nunca en `true`.** Persiste incluso tras
+   desactivar el magnetómetro (ver §3.5) — revisar requisitos exactos de este
+   flag en la versión de PX4 usada, y confirmar que `EKF2_MAG_TYPE` realmente
+   quedó en "None" (no solo desconectado físicamente).
 4. **Sensibilidad a movimiento rápido.** El flujo óptico se pierde con
    movimientos de mano relativamente bruscos — esperable hasta cierto punto
    en estos sensores, pero la magnitud del drift resultante (decenas de
@@ -98,6 +101,54 @@ Puntos clave de esta lectura:
    no tiene una buena estrategia de recuperación/rechazo de esas muestras
    corruptas (revisar si hay un timeout/gate de reingreso a dead-reckoning
    configurado de forma muy permisiva).
+5. **El offset de posición no se resetea al salir de dead-reckoning** (ver
+   §3.5) — riesgo de seguridad real: el nodo de despegue solo mira los
+   booleanos `*_valid`, no la magnitud del error acumulado. Investigar si
+   existe un parámetro que fuerce un reset del EKF al recuperar el aiding
+   (algo como reiniciar el origen local en vez de arrastrar el error), y/o
+   agregar un chequeo adicional en `takeoff_position_hold_indoor` que
+   rechace despegar si hubo un `xy_reset_counter`/drift reciente sospechoso.
+
+**Recomendaciones prácticas para la próxima sesión de tuning:**
+- Reiniciar el FC justo antes de cualquier intento nuevo, para partir de
+  `x=y=0` sin arrastre.
+- Si es posible, probar con el dron en un soporte/trípode fijo en vez de
+  sostenido a mano, para eliminar el temblor como variable — ayuda a
+  distinguir "el sensor no engancha con movimiento suave real" de "se pierde
+  por vibración/temblor de mano".
+- Revisar por qué `distance_available` del MTF-01 nunca es `True` — puede
+  ser la pieza más fácil de arreglar y probablemente ayude a que
+  `dist_bottom_valid` finalmente pase a `true`.
+
+## 3.5 Segunda ronda (tras calibrar sensores y desactivar el magnetómetro para indoor)
+
+Se recalibraron los sensores y se desactivó el magnetómetro para las pruebas
+indoor. Se repitió el monitoreo en vivo de `vehicle_local_position_v1`:
+
+| Momento | dead_reckoning | xy_valid | dist_bottom_valid | x / y (m) | Notas |
+|---|---|---|---|---|---|
+| Dron quieto, ~10cm, tras recalibrar | false | true | false | ~0.01, -0.007 | Buen arranque, estable |
+| Subido con cuidado a altura normal | **true** | **false** | false | -0.48 / 0.44 | Pierde tracking al moverlo, igual que antes pero con menos drift que la primera ronda |
+| Mantenido quieto, esperando recuperar | true (no se recupera aún) | true | false | **-10.5 / 4.8** | `xy_valid` vuelve a `true` pero **con `dead_reckoning` todavía en `true`** — es decir, el flag de validez no garantiza que el flujo óptico esté realmente aportando |
+| Sigue quieto | true | false | false | **-34.2 / 11.3** | Empeora más |
+| Chequeo de `sensor_optical_flow` crudo en esta posición | — | — | — | — | `quality: 78` (subió de 60), `distance_available: False` sigue igual, `pixel_flow: [0.017, 0.0]` (no cero, dron no perfectamente inmóvil en mano) |
+| Momento posterior | **false** (recuperó) | true | false | **-55.1 / 16.4** (!) | Volvió a `dead_reckoning: false`, pero el offset acumulado **no se resetea solo** — sigue arrastrando el error de los ~30s en dead-reckoning |
+
+**Hallazgo crítico nuevo:** cuando el estimador sale de `dead_reckoning`, el
+offset de posición acumulado durante el episodio de dead-reckoning **no se
+corrige/resetea automáticamente** (al menos no en la ventana observada) —
+queda un error de decenas de metros en `x`/`y` mientras `xy_valid` puede
+volver a marcar `true`. **El nodo `takeoff_position_hold_indoor` solo chequea
+los booleanos de validez, no la magnitud del error acumulado** — con este
+comportamiento, el nodo podría considerar "todo OK" y despegar usando un
+origen de referencia completamente arruinado. Esto es un riesgo real
+adicional a resolver (ya sea a nivel EKF2/parámetros para forzar un reset
+limpio tras dead-reckoning, o agregando un chequeo adicional en el nodo antes
+de despegar).
+
+**Conclusión de esta ronda:** mejoró la calidad del flujo (60→78) pero el
+comportamiento de fondo (pérdida de tracking al mover + drift no controlado +
+no-reset del offset) sigue igual. **No se intentó el despegue real.**
 
 ## 4. Qué NO se tocó todavía
 
@@ -107,7 +158,7 @@ La recomendación fue **no intentar el despegue indoor** hasta resolver esto,
 dado que el estimador de posición no es confiable de forma sostenida bajo
 movimiento real (justo lo que se necesita durante un despegue/hold real).
 
-## 5. Contexto de referencia ya resuelto (no relacionado a este problema)
+## 5. Contexto ya resuelto (descartar)
 
 La comunicación RPi↔FC (uXRCE-DDS) fue diagnosticada y arreglada en la misma
 sesión — no es la causa de nada de lo de arriba, se menciona solo para
