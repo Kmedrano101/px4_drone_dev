@@ -70,8 +70,9 @@ python3 analyze_takeoff_fail.py <logs_folder>
 **Diagnostic reports** (companion / RPi) — see [`reports/`](reports/README.md)
 - [MTF-01 EKF2 tuning — indoor flow](reports/2026-07-23_mtf01-ekf2-tuning.md)
 
-**Firmware versions** — see [backups/firmware/INDEX.md](backups/firmware/INDEX.md)
-(binaries are git-ignored; reproducible from each version's `board_config.diff`).
+**Firmware versions** — see [backups/firmware/INDEX.md](backups/firmware/INDEX.md).
+Each version ships the flashable `.px4` (QGC → Custom firmware) plus its
+`board_config.diff` to rebuild; `.bin`/`.elf` are skipped.
 
 ## Contributing
 

@@ -1,5 +1,4 @@
-# Firmware binaries (large; reproducible from board_config.diff — share via Releases)
-*.px4
+# Firmware: keep the flashable .px4 in the repo; skip the redundant .bin/.elf
 *.bin
 *.elf
 
