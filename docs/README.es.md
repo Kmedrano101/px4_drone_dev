@@ -65,7 +65,9 @@ python3 analyze_takeoff_fail.py <carpeta_logs>
 - [Ruido de motores = saturación de yaw](DIAGNOSTICO_RUIDO_MOTORES_YAW.md)
 - [Offboard RPi ⇄ FC (uXRCE-DDS)](CONFIGURACION_OFFBOARD_RPI4.md)
 - [Integración MTF-01P flujo + LiDAR](INTEGRACION_MTF-01P_FLOW_LIDAR.md)
-- [Reporte de tuning EKF2 del MTF-01](mtf01_ekf2_tuning_report.md)
+
+**Reportes de diagnóstico** (companion / RPi) — ver [`reports/`](../reports/README.md)
+- [Tuning EKF2 del MTF-01 — flow indoor](../reports/2026-07-23_mtf01-ekf2-tuning.md)
 
 **Versiones de firmware** — ver [backups/firmware/INDEX.md](../backups/firmware/INDEX.md)
 (los binarios se ignoran en git; reproducibles desde el `board_config.diff` de cada versión).

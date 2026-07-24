@@ -66,7 +66,9 @@ python3 analyze_takeoff_fail.py <logs_folder>
 - [Motor-noise = yaw saturation](docs/DIAGNOSTICO_RUIDO_MOTORES_YAW.md) — "loud motors on arming" root cause
 - [Offboard RPi ⇄ FC (uXRCE-DDS)](docs/CONFIGURACION_OFFBOARD_RPI4.md) — companion link setup
 - [MTF-01P flow + LiDAR integration](docs/INTEGRACION_MTF-01P_FLOW_LIDAR.md) — sensor bring-up saga
-- [MTF-01 EKF2 tuning report](docs/mtf01_ekf2_tuning_report.md) — indoor position-hold tuning
+
+**Diagnostic reports** (companion / RPi) — see [`reports/`](reports/README.md)
+- [MTF-01 EKF2 tuning — indoor flow](reports/2026-07-23_mtf01-ekf2-tuning.md)
 
 **Firmware versions** — see [backups/firmware/INDEX.md](backups/firmware/INDEX.md)
 (binaries are git-ignored; reproducible from each version's `board_config.diff`).
