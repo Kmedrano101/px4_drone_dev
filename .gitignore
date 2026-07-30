@@ -12,6 +12,10 @@ __pycache__/
 .venv/
 venv/
 
+# Script analysis I/O (regenerable / large logs) — keep the READMEs
+scripts/output/
+scripts/input/*.ulg
+
 # OS
 .DS_Store
 Thumbs.db

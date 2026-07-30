@@ -46,17 +46,18 @@ pip install pyulog matplotlib numpy
 
 ## Uso
 
-Clasificar logs de armado / ruido de motores (idle vs saturación, por eje):
+Las herramientas de análisis viven en [`scripts/`](../scripts/README.md) y generan
+**plots visuales**. Suelta los `.ulg` en `scripts/input/` y ejecuta:
 
 ```bash
-python3 analyze_motor_noise.py <carpeta_logs>
+cd scripts
+cp <tu>.ulg input/
+python3 analyze_temperature.py   # temperatura del FC (baro + IMU) con umbrales
+python3 analyze_motor_noise.py   # salida de motores / saturación + torque
+python3 analyze_takeoff.py       # diagnóstico de despegue (altura/motores/EKF)
 ```
 
-Diagnosticar un takeoff fallido:
-
-```bash
-python3 analyze_takeoff_fail.py <carpeta_logs>
-```
+Los plots salen en `scripts/output/<log>/*.png`. Ver [`scripts/README.md`](../scripts/README.md).
 
 ## Recursos del proyecto
 

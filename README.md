@@ -47,17 +47,18 @@ pip install pyulog matplotlib numpy
 
 ## Usage
 
-Classify arming / motor-noise logs (idle vs saturation, per-axis):
+Log analysis tools live in [`scripts/`](scripts/README.md) and generate **visual
+plots**. Drop `.ulg` files in `scripts/input/` and run:
 
 ```bash
-python3 analyze_motor_noise.py <logs_folder>
+cd scripts
+cp <your>.ulg input/
+python3 analyze_temperature.py   # FC temperature (baro + IMU) with thresholds
+python3 analyze_motor_noise.py   # motor outputs / saturation + torque
+python3 analyze_takeoff.py       # takeoff diagnosis (altitude/motors/estimator)
 ```
 
-Diagnose a failed takeoff (mode, GPS, position validity, failsafe flags, motors):
-
-```bash
-python3 analyze_takeoff_fail.py <logs_folder>
-```
+Plots are written to `scripts/output/<log>/*.png`. See [`scripts/README.md`](scripts/README.md).
 
 ## Project Resources
 
