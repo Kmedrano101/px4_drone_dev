@@ -33,7 +33,7 @@ over ROS 2 / uXRCE-DDS.
 - ✅ MTF-01P optical-flow + LiDAR integrated over MAVLink (TEL4/UART8)
 - ✅ Offboard link RPi ⇄ FC via uXRCE-DDS (domain-id + px4_msgs aligned)
 - ✅ Firmware optimized (removed FW/VTOL modules → FLASH 98.5% → 92%)
-- 🔄 Indoor position hold (flow + LiDAR, mag-free heading)
+- 🔄 Indoor position hold — flow-only path blocked (no yaw without EV); **next: Livox + FAST-LIO → EV**
 - ⏳ Full indoor navigation with 3D LiDAR (Livox + FAST-LIO)
 
 ## Installation

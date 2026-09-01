@@ -201,6 +201,42 @@ El flow + LiDAR-1D es el escalón intermedio para hold básico.
 responder la incógnita del yaw en vuelo. **No** seguir juzgando el flow por
 levantamientos a mano.
 
+## 3.7 Vuelo real en Altitude mode — confirmación de Caso B (2026-08-12)
+
+Sesión de vuelo indoor con Altitude mode. Logs: `logs/2026-08-11/` (pruebas de suelo) y
+`logs/2026-08-12/` (vuelo real). Análisis con `scripts/analyze_takeoff.py` +
+extracción directa de flags EKF2 vía pyulog.
+
+**Log del vuelo real:** `10_39_34.ulg` (11.8s, modos: Altitude + Takeoff).
+
+| Flag EKF2 | Resultado en vuelo |
+|---|---|
+| `cs_in_air` | ✅ TRUE (65% del tiempo — sí voló) |
+| `cs_opt_flow` | ❌ false (0% — nunca fusionó en el aire) |
+| `cs_yaw_align` | ❌ false (0% — sin referencia de yaw) |
+| `cs_tilt_align` | ✅ TRUE (100%) |
+| `dist_bottom_valid` | ❌ 0% (LiDAR-1D sigue sin aportar) |
+| `dead_reckoning` | ⚠️ 91% del tiempo — voló en IMU pura |
+| Altitud máxima | ~0.39 m |
+| Drift XY (11.8s) | x=0.99 m, y=1.99 m |
+
+**Flow quality en este vuelo: media 128, min 119** — señal excelente. El problema no
+es la calidad de la señal.
+
+**`distance_available: False` en el 100% de los logs** (suelo y vuelo) — el canal
+LiDAR-1D del MTF-01 sigue sin entregar dato. Pendiente: revisar `EKF2_RNG_*` y
+selección del driver de rangefinder en el firmware.
+
+**✅ Caso B confirmado** (ver §3.6): `cs_yaw_align` nunca se activa en vuelo sin
+mag/GPS/EV. Sin yaw, el EKF no puede transformar los deltas de flujo óptico a
+coordenadas NED → `cs_opt_flow` nunca activa → flow inútil para XY sin fuente externa
+de yaw.
+
+**Conclusión final:** el path de flow óptico solo **no es viable** para indoor position
+hold. La dirección estratégica confirmada es **Livox 3D LiDAR + FAST-LIO → External
+Vision** (`EKF2_EV_CTRL`) para proveer yaw + posición 6DOF sin magnetómetro. El flow
+puede usarse como fuente complementaria una vez que EV provea el yaw.
+
 ## 4. Qué NO se tocó todavía
 
 No se modificó ningún parámetro de EKF2/sensor en el FC durante esta sesión

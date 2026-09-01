@@ -45,4 +45,5 @@ estructura consistente (contexto, síntoma, lecturas, hipótesis, qué no se toc
 
 | Fecha | Reporte | Estado |
 |---|---|---|
-| 2026-07-23 | [MTF-01 EKF2 tuning (flow no valida indoor)](2026-07-23_mtf01-ekf2-tuning.md) | 🔄 flow sano; drift = dead-reckoning en suelo; mag descartado → falta test EN VUELO (Altitude) |
+| 2026-07-23 | [MTF-01 EKF2 tuning (flow no valida indoor)](2026-07-23_mtf01-ekf2-tuning.md) | ✅ Caso B confirmado en vuelo (2026-08-12): flow no fusiona sin yaw → necesita Livox+FAST-LIO |
+| 2026-08-24 | [Motor M4 — tornillo haciendo contacto con bobina](2026-08-24_motor4-tornillo-bobina.md) | ✅ Resuelto — tornillo alejado, todos los motores OK |
