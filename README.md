@@ -23,7 +23,7 @@ over ROS 2 / uXRCE-DDS.
 ## Overview
 
 **Hardware**
-- **FC:** HKUST NxtPX4v2 (STM32H7) · PX4 v1.17.0 (custom board build)
+- **FC:** HKUST NxtPX4v2 (STM32H7) · FC#1 PX4 v1.17.0 (custom board build) · FC#2 PX4 v1.14.3 (vendor stock, 2nd drone)
 - **Companion:** Raspberry Pi 4 · Ubuntu 24.04 · ROS 2 Jazzy
 - **Sensors:** MicoAir MTF-01P (optical flow + 12 m LiDAR) · M100-5883 GPS/compass
 - **Airframe:** Quad-X · T-Motor F90 2806.5 · HQProp 7040 · 6S
@@ -33,7 +33,8 @@ over ROS 2 / uXRCE-DDS.
 - ✅ MTF-01P optical-flow + LiDAR integrated over MAVLink (TEL4/UART8)
 - ✅ Offboard link RPi ⇄ FC via uXRCE-DDS (domain-id + px4_msgs aligned)
 - ✅ Firmware optimized (removed FW/VTOL modules → FLASH 98.5% → 92%)
-- 🔄 Indoor position hold — flow-only path blocked (no yaw without EV); **next: Livox + FAST-LIO → EV**
+- ✅ 2nd drone (FC#2, vendor PX4 1.14.3) brought up — MTF-01P on TEL4 via SD `extras.txt`, 97 params migrated from FC#1
+- 🔄 Indoor position hold — flow-only path blocked (no yaw without EV) on **both** FCs; FC#2 has no compass at all; **next: Livox + FAST-LIO → EV**
 - ⏳ Full indoor navigation with 3D LiDAR (Livox + FAST-LIO)
 
 ## Installation
@@ -63,15 +64,23 @@ Plots are written to `scripts/output/<log>/*.png`. See [`scripts/README.md`](scr
 ## Project Resources
 
 **Documentation — engineering reports** (`docs/`)
+- [Platform: hardware, firmware & comms](docs/PLATAFORMA_HARDWARE.md) — full spec sheet + SUPER reference
 - [Flight bring-up report](docs/INFORME_VUELO_DRONE.md) — 4 problems solved, reference config, lessons
 - [Motor-noise = yaw saturation](docs/DIAGNOSTICO_RUIDO_MOTORES_YAW.md) — "loud motors on arming" root cause
 - [Offboard RPi ⇄ FC (uXRCE-DDS)](docs/CONFIGURACION_OFFBOARD_RPI4.md) — companion link setup
 - [MTF-01P flow + LiDAR integration](docs/INTEGRACION_MTF-01P_FLOW_LIDAR.md) — sensor bring-up saga
+- [Indoor parameter reference](docs/PARAMETROS_INDOOR.md) — every GPS-free indoor param, ranked by importance
+- [Direct MAVLink scripting](docs/CONEXION_MAVLINK_SCRIPTS.md) — talk to the FC over USB cable or radio without QGC
 
 **Diagnostic reports** (companion / RPi) — see [`reports/`](reports/README.md)
 - [MTF-01 EKF2 tuning — indoor flow](reports/2026-07-23_mtf01-ekf2-tuning.md)
+- [FC#2 vendor 1.14.3 — MTF-01P + param migration](reports/2026-09-04_fc2-vendor-1143-mtf01p-migracion.md)
 
 **Firmware versions** — see [backups/firmware/INDEX.md](backups/firmware/INDEX.md).
+
+**Reference platform** — this build replicates the [SUPER](https://github.com/hku-mars/SUPER) MAV
+platform from HKU MaRS Lab ([hardware BOM](https://github.com/hku-mars/SUPER-Hardware)) as a base
+for further work. Differences are tracked in [docs/PLATAFORMA_HARDWARE.md](docs/PLATAFORMA_HARDWARE.md) §7.
 Each version ships the flashable `.px4` (QGC → Custom firmware) plus its
 `board_config.diff` to rebuild; `.bin`/`.elf` are skipped.
 

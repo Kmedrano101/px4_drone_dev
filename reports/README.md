@@ -47,3 +47,4 @@ estructura consistente (contexto, síntoma, lecturas, hipótesis, qué no se toc
 |---|---|---|
 | 2026-07-23 | [MTF-01 EKF2 tuning (flow no valida indoor)](2026-07-23_mtf01-ekf2-tuning.md) | ✅ Caso B confirmado en vuelo (2026-08-12): flow no fusiona sin yaw → necesita Livox+FAST-LIO |
 | 2026-08-24 | [Motor M4 — tornillo haciendo contacto con bobina](2026-08-24_motor4-tornillo-bobina.md) | ✅ Resuelto — tornillo alejado, todos los motores OK |
+| 2026-09-04 | [FC#2 vendor 1.14.3 — MTF-01P integrado + migración de params](2026-09-04_fc2-vendor-1143-mtf01p-migracion.md) | ✅ Sensor OK y 97 params migrados · ⛔ **sin magnetómetro** → mismo bloqueo de yaw que 2026-07-23 |

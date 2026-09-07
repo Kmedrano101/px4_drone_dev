@@ -19,3 +19,15 @@ scripts/input/*.ulg
 # OS
 .DS_Store
 Thumbs.db
+
+# Logs pesados: NO commitear .ulg de más de ~10 MB.
+# Un log grande se queda en el historial para siempre e infla cada clon; GitHub además
+# avisa por encima de 50 MB y rechaza a los 100. Lo que hay que conservar es el ANÁLISIS
+# (en reports/ y docs/), no el fichero crudo. Comprobar antes de añadir:
+#     find logs -name '*.ulg' -size +10M
+# Añadir aquí abajo cada log excluido, con una línea de por qué.
+
+# 47 min con el dron desarmado en el árbol tras el incidente del 2026-09-04 (93 MB).
+# Analizado: temperatura hasta 89.5 °C, dos AUTO_TAKEOFF que nunca armaron y la
+# reconstrucción barométrica del accidente. Todo en reports/.
+logs/2026-09-04/11_49_19.ulg

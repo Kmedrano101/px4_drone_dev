@@ -64,6 +64,9 @@ Los plots salen en `scripts/output/<log>/*.png`. Ver [`scripts/README.md`](../sc
 **Documentación — informes de ingeniería** (`docs/`)
 - [Informe de puesta a punto y vuelo](INFORME_VUELO_DRONE.md)
 - [Ruido de motores = saturación de yaw](DIAGNOSTICO_RUIDO_MOTORES_YAW.md)
+- [Plataforma: hardware, firmware y comunicaciones](PLATAFORMA_HARDWARE.md) — ficha técnica + referencia SUPER
+- [Parámetros indoor](PARAMETROS_INDOOR.md) — todos los parámetros sin GPS, por orden de importancia
+- [Conexión MAVLink con scripts](CONEXION_MAVLINK_SCRIPTS.md) — hablar con el FC por cable o radio sin QGC
 - [Offboard RPi ⇄ FC (uXRCE-DDS)](CONFIGURACION_OFFBOARD_RPI4.md)
 - [Integración MTF-01P flujo + LiDAR](INTEGRACION_MTF-01P_FLOW_LIDAR.md)
 
