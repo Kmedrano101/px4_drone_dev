@@ -1,0 +1,133 @@
+#!/bin/sh
+#
+# @name Gazebo RJX F450 indoor (MTF-01P + LDROBOT D500)
+#
+# @type Quadrotor
+#
+
+. ${R}etc/init.d/rc.mc_defaults
+
+PX4_SIMULATOR=${PX4_SIMULATOR:=gz}
+PX4_GZ_WORLD=${PX4_GZ_WORLD:=indoor_zone}
+PX4_SIM_MODEL=${PX4_SIM_MODEL:=rjx_f450_indoor}
+
+# El origen del modelo esta en la placa inferior y el tren baja hasta z=-0.167,
+# asi que spawneando en z=0 las patas quedan ENTERRADAS bajo el suelo (no se ven).
+# Se levanta para que apoye sobre los pies.
+PX4_GZ_MODEL_POSE=${PX4_GZ_MODEL_POSE:="0,0,0.17,0,0,0"}
+
+param set-default SIM_GZ_EN 1
+
+# ---------------------------------------------------------------------------
+# Geometria RJX F450: 450 mm de diagonal -> rotores a +-0.159 m
+# El SDF esta en FLU y CA_ROTOR en FRD, por eso la Y va con el signo cambiado.
+#   SDF rotor_0 ( 0.159, -0.159) ccw  ->  CA_ROTOR0 (+0.159, +0.159) KM +
+#   SDF rotor_1 (-0.159,  0.159) ccw  ->  CA_ROTOR1 (-0.159, -0.159) KM +
+#   SDF rotor_2 ( 0.159,  0.159) cw   ->  CA_ROTOR2 (+0.159, -0.159) KM -
+#   SDF rotor_3 (-0.159, -0.159) cw   ->  CA_ROTOR3 (-0.159, +0.159) KM -
+# ---------------------------------------------------------------------------
+param set-default CA_AIRFRAME 0
+param set-default CA_ROTOR_COUNT 4
+
+param set-default CA_ROTOR0_PX 0.159
+param set-default CA_ROTOR0_PY 0.159
+param set-default CA_ROTOR0_KM 0.05
+
+param set-default CA_ROTOR1_PX -0.159
+param set-default CA_ROTOR1_PY -0.159
+param set-default CA_ROTOR1_KM 0.05
+
+param set-default CA_ROTOR2_PX 0.159
+param set-default CA_ROTOR2_PY -0.159
+param set-default CA_ROTOR2_KM -0.05
+
+param set-default CA_ROTOR3_PX -0.159
+param set-default CA_ROTOR3_PY 0.159
+param set-default CA_ROTOR3_KM -0.05
+
+param set-default SIM_GZ_EC_FUNC1 101
+param set-default SIM_GZ_EC_FUNC2 102
+param set-default SIM_GZ_EC_FUNC3 103
+param set-default SIM_GZ_EC_FUNC4 104
+
+param set-default SIM_GZ_EC_MIN1 150
+param set-default SIM_GZ_EC_MIN2 150
+param set-default SIM_GZ_EC_MIN3 150
+param set-default SIM_GZ_EC_MIN4 150
+
+param set-default SIM_GZ_EC_MAX1 1000
+param set-default SIM_GZ_EC_MAX2 1000
+param set-default SIM_GZ_EC_MAX3 1000
+param set-default SIM_GZ_EC_MAX4 1000
+
+# T-Motor F90 2806.5 1300KV + HQProp 7x4x3 en 6S.
+# motorConstant 1.8e-05 calibrado para que el hover caiga en 0.30, que es el
+# valor MEDIDO en vuelo real (media 0.284, p10-p90 0.270-0.295).
+#   empuje max: 4 x 1.8e-05 x 1000^2 = 72 N = 7.34 kg  (1835 g por motor)
+#   AUW modelada 1.2 kg -> relacion empuje/peso 6:1
+param set-default MPC_THR_HOVER 0.30
+
+# --- sensores del bridge de Gazebo ---
+param set-default SIM_GZ_EN_FLOW 1
+param set-default SIM_GZ_EN_LIDAR 1
+
+# --- sin GPS: navegacion indoor ---
+param set-default SYS_HAS_GPS 0
+param set-default SIM_GPS_USED 0
+param set-default EKF2_GPS_CTRL 0
+
+# --- fusion de flujo optico + laser ---
+# OJO: aqui NO se copian los valores del dron real. EKF2_RNG_CTRL=2 y
+# EKF2_HGT_REF=2 (que es lo que lleva el FC#2) ROMPEN la cadena del flujo:
+# con RNG_CTRL=2 el laser se consume como ALTURA (rng_hgt) y nunca alimenta la
+# estimacion de terreno (rng_terrain), que es justo lo que el flujo optico
+# necesita para escalar el desplazamiento. Resultado: cs_opt_flow nunca se
+# activa, dist_bottom_valid se queda en 0 y el dron no despega.
+# Y EKF2_OF_QMIN=30 descarta ademas casi todas las muestras (el default es 1).
+# El airframe de referencia de PX4 para flujo (4021_gz_x500_flow) no toca
+# ninguno de estos: solo apaga el GPS. Aqui se hace lo mismo.
+param set-default EKF2_OF_CTRL 1
+param set-default EKF2_RNG_CTRL 1
+param set-default EKF2_HGT_REF 1
+param set-default EKF2_OF_QMIN 1
+param set-default EKF2_RNG_A_HMAX 5
+param set-default EKF2_MIN_RNG 0.1
+
+# OJO: en simulacion el laser del MTF-01P es lineal hasta 12 m. El real NO:
+# medido el 2026-09-07 satura por encima de ~1.5 m (a 3 m lee 2.14, -29%) y
+# nunca reporta baja confianza. Para reproducir ese techo, en el SDF de
+# rjx_f450_indoor bajar <max> del sensor 'lidar' de 12.0 a ~2.5.
+
+# Offsets del MTF-01P respecto al CG, en FRD (el sensor va 55 mm adelante, por
+# delante de la bateria, y 18 mm por debajo de la placa inferior).
+param set-default EKF2_OF_POS_X 0.055
+param set-default EKF2_OF_POS_Y 0.0
+param set-default EKF2_OF_POS_Z 0.018
+param set-default EKF2_RNG_POS_X 0.055
+param set-default EKF2_RNG_POS_Y 0.0
+param set-default EKF2_RNG_POS_Z 0.020
+
+# --- limites indoor, los mismos que lleva el FC real ---
+param set-default MPC_XY_VEL_MAX 1.5
+param set-default MPC_XY_CRUISE 1.5
+param set-default MPC_Z_VEL_MAX_UP 1.0
+param set-default MPC_Z_VEL_MAX_DN 0.8
+param set-default MPC_MAN_TILT_MAX 20
+param set-default MPC_TILTMAX_AIR 25
+param set-default MPC_THR_MIN 0.05
+
+# Banco de simulacion: no hay radio de telemetria ni emisora.
+#   NAV_DLL_ACT=2 exige enlace con estacion de tierra. Los nodos de px4_drone
+#   hablan por uXRCE-DDS, NO por MAVLink, asi que PX4 no ve heartbeats de GCS y
+#   DENIEGA EL ARMADO. En hardware esto NO se toca.
+param set-default NAV_DLL_ACT 0
+#   Sin receptor RC en el simulador.
+param set-default COM_RC_IN_MODE 4
+
+# ---------------------------------------------------------------------------
+# NOTA sobre el magnetometro: en simulacion SI hay brujula, asi que el yaw
+# es perfecto y el drone vuela. El drone real NO tiene magnetometro, que es
+# justo lo que bloquea el hold de posicion indoor. Para reproducir ese fallo:
+#     param set SYS_HAS_MAG 0
+#     param set EKF2_MAG_TYPE 5
+# ---------------------------------------------------------------------------

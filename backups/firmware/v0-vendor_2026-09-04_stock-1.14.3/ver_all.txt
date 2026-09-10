@@ -1,0 +1,14 @@
+# Salida de `ver all` leida del FC via MAVLink shell — 2026-09-04
+HW arch: HKUST_NXT_DUAL
+PX4 git-hash: 4a0e65f2331b23b9c8352656e9ccb6edeaea5d6c
+PX4 version: 1.14.3 0 (17695488)
+PX4 git-branch: micoair743-v1.14.3
+OS: NuttX
+OS version: Release 11.0.0 (184549631)
+OS git-hash: de41e7feaeffaec3ce65327e9569e8fdb553ca3d
+Build datetime: Nov 19 2024 11:10:49
+Build uri: localhost
+Build variant: default
+Toolchain: GNU GCC, 10.2.1 20201103 (release)
+PX4GUID: 000600000000393037363333510f00280028
+MCU: STM32H7[4|5]xxx, rev. V

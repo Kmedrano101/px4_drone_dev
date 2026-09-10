@@ -1,0 +1,63 @@
+<?xml version="1.0"?>
+<sdf version="1.9">
+  <model name="indoor_clean_less_dense">
+    <static>true</static>
+    <link name="link">
+      <collision name="collision">
+        <geometry>
+          <mesh><uri>meshes/indoor_clean_less_dense_collision.stl</uri></mesh>
+        </geometry>
+      </collision>
+      <!-- Suelo con la baldosa de barro cocido del local real.
+           Se usa el .obj y no el .stl porque el STL no lleva coordenadas UV y sin
+           ellas no se puede pegar una textura. El .obj lo genera
+           scripts/gazebo/gen_floor_texture.py (proyeccion planar XY, 1 repeticion
+           de textura por metro).
+           Esto NO es decoracion: el flujo optico mide por correlacion de imagen y
+           sobre un suelo de color plano no tiene nada que correlacionar. -->
+      <visual name="visual_suelo">
+        <geometry>
+          <mesh><uri>meshes/indoor_clean_less_dense_suelo.obj</uri></mesh>
+        </geometry>
+        <material>
+          <ambient>0.42 0.30 0.24 1</ambient>
+          <diffuse>1.0 1.0 1.0 1</diffuse>
+          <specular>0.02 0.02 0.02 1</specular>
+          <pbr>
+            <metal>
+              <albedo_map>model://indoor_clean_less_dense/meshes/baldosa.png</albedo_map>
+              <metalness>0.0</metalness>
+              <roughness>0.9</roughness>
+            </metal>
+          </pbr>
+        </material>
+      </visual>
+      <visual name="visual_muros">
+        <geometry>
+          <mesh><uri>meshes/indoor_clean_less_dense_muros.obj</uri></mesh>
+        </geometry>
+        <material>
+          <ambient>0.55 0.32 0.22 1</ambient>
+          <diffuse>1.0 1.0 1.0 1</diffuse>
+          <specular>0.03 0.03 0.03 1</specular>
+          <pbr>
+            <metal>
+              <albedo_map>model://indoor_clean_less_dense/meshes/ladrillo.png</albedo_map>
+              <metalness>0.0</metalness>
+              <roughness>0.95</roughness>
+            </metal>
+          </pbr>
+        </material>
+      </visual>
+      <visual name="visual_columnas">
+        <geometry>
+          <mesh><uri>meshes/indoor_clean_less_dense_columnas.stl</uri></mesh>
+        </geometry>
+        <material>
+          <ambient>0.42 0.42 0.41 1</ambient>
+          <diffuse>0.70 0.70 0.68 1</diffuse>
+        </material>
+      </visual>
+    </link>
+  </model>
+</sdf>

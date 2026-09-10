@@ -1,0 +1,12 @@
+# Sondeo del bootloader PX4 (board en modo BL tras `reboot -b`) — 2026-09-04
+bootloader rev : 5
+board id       : 1013
+board rev      : 0
+flash size     : 1835008 bytes (1792 KiB)
+chip desc      : STM32H7[4|5]x,V
+
+USB app  : 1b8c:0036  "HKUST UAV NxtPX4"  (Altium Limited)
+USB BL   : 3162:004b  "Matek HKUST UAV NxtPX4"
+
+CHIP_VERIFY (0x24) / READ_MULTI (0x28) -> rechazados (son rev2-only).
+=> El bootloader PX4 no permite leer la flash de vuelta. Ver README.txt.
