@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  RJX F450 indoor = frame + sensores del drone real.
+
+  Sensores y de donde los lee PX4 (topics fijos en GZBridge.cpp):
+    MTF-01P flujo optico -> link flow_link,        sensor optical_flow   (linea 321)
+    MTF-01P laser 1D     -> link lidar_sensor_link, sensor lidar         (linea 268)
+    LDROBOT D500 2D      -> link link,              sensor lidar_2d_v2   (linea 256)
+
+  Hay que arrancar con SIM_GZ_EN_LIDAR y SIM_GZ_EN_FLOW activos; el airframe
+  4023_gz_rjx_f450_indoor ya lo hace.
+-->
+<sdf version='1.9'>
+  <model name='rjx_f450_indoor'>
+    <self_collide>false</self_collide>
+
+    <include merge='true'>
+      <uri>model://rjx_f450</uri>
+    </include>
+
+    <!-- MTF-01P mirando al suelo. Va DELANTE de la bateria (que ocupa x=-0.037..0.037
+         y z=-0.047..-0.013): si se pone sobre ella, el rayo del laser choca con la
+         propia bateria y lee siempre 0.02 m. -->
+    <include merge='true'>
+      <uri>model://optical_flow</uri>
+      <pose relative_to="base_link">0.055 0 -0.018 0 0 0</pose>
+    </include>
+    <joint name="optical_flow_joint" type="fixed">
+      <parent>base_link</parent>
+      <child>flow_link</child>
+      <pose relative_to="base_link">0.055 0 -0.018 0 1.5707 0</pose>
+    </joint>
+
+    <!-- LDROBOT D500 sobre la cubierta beige -->
+    <include merge='true'>
+      <uri>model://ldrobot_d500</uri>
+      <pose relative_to="base_link">0 0 0.0995 0 0 0</pose>
+    </include>
+    <joint name="ldrobot_d500_joint" type="fixed">
+      <parent>base_link</parent>
+      <child>link</child>
+    </joint>
+
+    <!-- Laser 1D del MTF-01P (12 m, el mismo alcance que el real) -->
+    <joint name="lidar_sensor_joint" type="fixed">
+      <parent>base_link</parent>
+      <child>lidar_sensor_link</child>
+    </joint>
+    <link name="lidar_sensor_link">
+      <pose relative_to="base_link">0.055 0 -0.020 0 1.5707 0</pose>
+      <inertial>
+        <mass>0.001</mass>
+        <inertia>
+          <ixx>0.00001</ixx><ixy>0.0</ixy><ixz>0.0</ixz>
+          <iyy>0.00001</iyy><iyz>0.0</iyz><izz>0.00001</izz>
+        </inertia>
+      </inertial>
+      <sensor name='lidar' type='gpu_lidar'>
+        <gz_frame_id>lidar_sensor_link</gz_frame_id>
+        <pose>0 0 0 3.14 0 0</pose>
+        <update_rate>50</update_rate>
+        <ray>
+          <scan>
+            <horizontal>
+              <samples>1</samples><resolution>1</resolution>
+              <min_angle>0</min_angle><max_angle>0</max_angle>
+            </horizontal>
+            <vertical>
+              <samples>1</samples><resolution>1</resolution>
+              <min_angle>0</min_angle><max_angle>0</max_angle>
+            </vertical>
+          </scan>
+          <range>
+            <min>0.02</min>
+            <max>12.0</max>
+            <resolution>0.01</resolution>
+          </range>
+          <noise>
+            <type>gaussian</type>
+            <mean>0.0</mean>
+            <stddev>0.008</stddev>
+          </noise>
+        </ray>
+        <always_on>1</always_on>
+        <visualize>true</visualize>
+      </sensor>
+    </link>
+  </model>
+</sdf>

@@ -412,4 +412,5 @@ velocidad objetivo, aligerar la resolución del mapa, o cambiar de ordenador a b
 - [`CONEXION_MAVLINK_SCRIPTS.md`](CONEXION_MAVLINK_SCRIPTS.md) — hablar con el FC por cable o radio
 - [`INTEGRACION_MTF-01P_FLOW_LIDAR.md`](INTEGRACION_MTF-01P_FLOW_LIDAR.md) — integración del sensor
 - [`CONFIGURACION_OFFBOARD_RPI4.md`](CONFIGURACION_OFFBOARD_RPI4.md) — enlace offboard (FC#1, 1.17)
+- [`SIMULACION_GAZEBO_INDOOR.md`](SIMULACION_GAZEBO_INDOOR.md) — recreación del dron y del local en Gazebo
 - [`backups/firmware/INDEX.md`](../backups/firmware/INDEX.md) — versiones de firmware

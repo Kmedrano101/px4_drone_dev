@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  LDROBOT D500 - LiDAR 2D 360 grados, 12 m.
+  El plano de barrido queda a z = 0.024 sobre la base del modelo.
+
+  OJO con los nombres: GZBridge.cpp:256 se suscribe a un topic FIJO
+    .../link/link/sensor/lidar_2d_v2/scan
+  asi que el link tiene que llamarse "link" y el sensor "lidar_2d_v2".
+  No son nombres descriptivos, son los que exige PX4.
+-->
+<sdf version="1.9">
+  <model name="ldrobot_d500">
+    <link name="link">
+      <inertial>
+        <pose>0 0 0.018 0 0 0</pose>
+        <mass>0.049</mass>
+        <inertia>
+          <ixx>1.05e-05</ixx><ixy>0</ixy><ixz>0</ixz>
+          <iyy>1.05e-05</iyy><iyz>0</iyz><izz>1.30e-05</izz>
+        </inertia>
+      </inertial>
+
+      <collision name="d500_collision">
+        <pose>0 0 0.018 0 0 0</pose>
+        <geometry><box><size>0.0385 0.0385 0.036</size></box></geometry>
+      </collision>
+
+      <!-- base fija: carcasa negra -->
+      <visual name="d500_base">
+        <pose>0 0 0.006 0 0 0</pose>
+        <geometry><box><size>0.0385 0.0385 0.012</size></box></geometry>
+        <material>
+          <ambient>0.10 0.10 0.11 1</ambient>
+          <diffuse>0.10 0.10 0.11 1</diffuse>
+          <specular>0.10 0.10 0.10 1</specular>
+        </material>
+      </visual>
+      <!-- tambor giratorio granate (el que se ve en la foto) -->
+      <visual name="d500_drum">
+        <pose>0 0 0.024 0 0 0</pose>
+        <geometry><cylinder><radius>0.0175</radius><length>0.024</length></cylinder></geometry>
+        <material>
+          <ambient>0.28 0.05 0.07 1</ambient>
+          <diffuse>0.36 0.06 0.09 1</diffuse>
+          <specular>0.35 0.20 0.20 1</specular>
+        </material>
+      </visual>
+      <visual name="d500_cap">
+        <pose>0 0 0.0375 0 0 0</pose>
+        <geometry><cylinder><radius>0.0165</radius><length>0.003</length></cylinder></geometry>
+        <material>
+          <ambient>0.09 0.09 0.10 1</ambient>
+          <diffuse>0.09 0.09 0.10 1</diffuse>
+        </material>
+      </visual>
+
+      <sensor name="lidar_2d_v2" type="gpu_lidar">
+        <gz_frame_id>link</gz_frame_id>
+        <pose>0 0 0.024 0 0 0</pose>
+        <always_on>1</always_on>
+        <update_rate>10</update_rate>
+        <visualize>false</visualize>
+        <ray>
+          <scan>
+            <horizontal>
+              <samples>450</samples>
+              <resolution>1</resolution>
+              <min_angle>-3.141593</min_angle>
+              <max_angle>3.141593</max_angle>
+            </horizontal>
+            <vertical>
+              <samples>1</samples>
+              <resolution>1</resolution>
+              <min_angle>0</min_angle>
+              <max_angle>0</max_angle>
+            </vertical>
+          </scan>
+          <range>
+            <min>0.03</min>
+            <max>12.0</max>
+            <resolution>0.01</resolution>
+          </range>
+          <noise>
+            <type>gaussian</type>
+            <mean>0.0</mean>
+            <stddev>0.012</stddev>
+          </noise>
+        </ray>
+      </sensor>
+    </link>
+  </model>
+</sdf>

@@ -1,0 +1,8 @@
+newmtl baldosa
+Ka 0.4 0.3 0.25
+Kd 0.76 0.54 0.42
+Ks 0.02 0.02 0.02
+Ns 8
+d 1
+illum 2
+map_Kd baldosa.png

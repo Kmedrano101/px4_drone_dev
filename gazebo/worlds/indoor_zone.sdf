@@ -1,0 +1,112 @@
+<?xml version="1.0"?>
+<!--
+  Mundo de pruebas de navegacion generado desde la nube LiDAR.
+
+  PUERTAS  (estado actual)
+    puerta_entrada: CERRADA
+    puerta_salida: CERRADA
+
+    Cada puerta se abre o se cierra con su bloque <include> de
+    abajo: comentado = vano libre, activo = tapado.
+
+    En caliente, sin reiniciar, se puede quitar una hoja desde la
+    GUI (boton derecho sobre el modelo -> Remove) o con:
+      gz service -s /world/indoor_zone/remove \
+        --reqtype gz.msgs.Entity --reptype gz.msgs.Boolean \
+        --timeout 3000 --req 'name: "puerta_salida" type: MODEL'
+
+  No se incluye ground_plane: el edificio trae su propia losa a
+  z=0 y las dos coincidirian provocando z-fighting.
+-->
+<sdf version="1.9">
+  <world name="indoor_zone">
+
+    <physics name="1ms" type="ignored">
+      <max_step_size>0.001</max_step_size>
+      <real_time_factor>1.0</real_time_factor>
+    </physics>
+
+    <gravity>0 0 -9.8</gravity>
+    <magnetic_field>6e-06 2.3e-05 -4.2e-05</magnetic_field>
+    <atmosphere type="adiabatic"/>
+
+    <!-- Origen geografico. Hace falta aunque se vuele sin GPS: el chequeo de
+         intensidad magnetica de PX4 (COM_ARM_MAG_STR) compara el campo medido con el
+         esperado por WMM en esta posicion. Sin esto gz asume lat/lon 0,0, no cuadra
+         con el <magnetic_field> de arriba y el armado se rechaza con
+         "Preflight Fail: Strong magnetic interference".
+         Mismos valores que el default.sdf de PX4. -->
+    <spherical_coordinates>
+      <surface_model>EARTH_WGS84</surface_model>
+      <world_frame_orientation>ENU</world_frame_orientation>
+      <latitude_deg>47.397971057728974</latitude_deg>
+      <longitude_deg>8.546163739800146</longitude_deg>
+      <elevation>0</elevation>
+    </spherical_coordinates>
+
+
+    <!-- SIN <plugin> A PROPOSITO.
+         Gazebo usa el server.config (aqui, el de PX4: GZ_SIM_SERVER_CONFIG_PATH ->
+         src/modules/simulation/gz_bridge/server.config) SOLO si el mundo no declara
+         plugins propios. En cuanto declaras uno, gz ignora ese fichero ENTERO y te
+         quedas sin Imu, Magnetometer, NavSat, AirPressure... y sin el
+         libOpticalFlowSystem.so que PX4 compila para el flujo optico.
+         Sintomas: "Preflight Fail: Accel Sensor 0 missing" y sensor_optical_flow
+         "never published", sin ningun error que lo explique.
+         El default.sdf de PX4 tampoco declara plugins, por el mismo motivo.
+         Si algun dia hace falta uno propio, hay que replicar TODA la lista de
+         server.config ademas del que quieras anadir. -->
+
+    <scene>
+      <ambient>0.55 0.55 0.58 1</ambient>
+      <background>0.82 0.85 0.88 1</background>
+      <grid>false</grid>
+    </scene>
+
+    <light type="directional" name="sun">
+      <cast_shadows>true</cast_shadows>
+      <pose>0 0 12 0 0 0</pose>
+      <diffuse>0.9 0.9 0.88 1</diffuse>
+      <specular>0.25 0.25 0.25 1</specular>
+      <direction>-0.4 0.3 -0.9</direction>
+    </light>
+
+    <!-- Sin techo, el interior se queda oscuro solo con la
+         direccional; esta puntual hace de relleno. -->
+    <light type="point" name="relleno">
+      <pose>0 0 4 0 0 0</pose>
+      <diffuse>0.45 0.45 0.45 1</diffuse>
+      <specular>0.05 0.05 0.05 1</specular>
+      <attenuation>
+        <range>40</range>
+        <constant>0.6</constant>
+        <linear>0.02</linear>
+        <quadratic>0.002</quadratic>
+      </attenuation>
+      <cast_shadows>false</cast_shadows>
+    </light>
+
+    <include>
+      <uri>model://indoor_clean_less_dense</uri>
+      <name>indoor_zone</name>
+      <pose>0 0 0 0 0 0</pose>
+    </include>
+
+    
+    <include>
+      <uri>model://puerta_entrada</uri>
+      <name>puerta_entrada</name>
+      <pose>0 0 0 0 0 0</pose>
+    </include>
+    
+
+    
+    <include>
+      <uri>model://puerta_salida</uri>
+      <name>puerta_salida</name>
+      <pose>0 0 0 0 0 0</pose>
+    </include>
+    
+
+  </world>
+</sdf>

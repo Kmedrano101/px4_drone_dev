@@ -34,6 +34,7 @@ over ROS 2 / uXRCE-DDS.
 - ✅ Offboard link RPi ⇄ FC via uXRCE-DDS (domain-id + px4_msgs aligned)
 - ✅ Firmware optimized (removed FW/VTOL modules → FLASH 98.5% → 92%)
 - ✅ 2nd drone (FC#2, vendor PX4 1.14.3) brought up — MTF-01P on TEL4 via SD `extras.txt`, 97 params migrated from FC#1
+- ✅ Simulación Gazebo del dron real (RJX F450 + MTF-01P + D500) en la zona indoor escaneada
 - 🔄 Indoor position hold — flow-only path blocked (no yaw without EV) on **both** FCs; FC#2 has no compass at all; **next: Livox + FAST-LIO → EV**
 - ⏳ Full indoor navigation with 3D LiDAR (Livox + FAST-LIO)
 
