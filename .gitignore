@@ -31,3 +31,7 @@ Thumbs.db
 # Analizado: temperatura hasta 89.5 °C, dos AUTO_TAKEOFF que nunca armaron y la
 # reconstrucción barométrica del accidente. Todo en reports/.
 logs/2026-09-04/11_49_19.ulg
+
+# Vuelos offboard del 2026-09-10/11 (por encima de 10 MB). Analizados en reports/2026-09-11_*.
+logs/log100v2.ulg
+logs/sess168/log100.ulg
