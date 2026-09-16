@@ -73,6 +73,7 @@ Plots are written to `scripts/output/<log>/*.png`. See [`scripts/README.md`](scr
 - [Indoor parameter reference](docs/PARAMETROS_INDOOR.md) — every GPS-free indoor param, ranked by importance
 - [Direct MAVLink scripting](docs/CONEXION_MAVLINK_SCRIPTS.md) — talk to the FC over USB cable or radio without QGC
 - [Working method](docs/METODOLOGIA_TRABAJO.md) — how analysis, reports, memory and FC changes are handled
+- [2D-LiDAR EV test plan](docs/2026-09-16_test_lidar2d_ev_offboard.md) — external vision from a 2D scanner, 1D LiDAR for altitude
 
 **Diagnostic reports** (companion / RPi) — see [`reports/`](reports/README.md)
 - [MTF-01 EKF2 tuning — indoor flow](reports/2026-07-23_mtf01-ekf2-tuning.md)

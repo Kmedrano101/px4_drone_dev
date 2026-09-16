@@ -68,6 +68,7 @@ Los plots salen en `scripts/output/<log>/*.png`. Ver [`scripts/README.md`](../sc
 - [Parámetros indoor](PARAMETROS_INDOOR.md) — todos los parámetros sin GPS, por orden de importancia
 - [Conexión MAVLink con scripts](CONEXION_MAVLINK_SCRIPTS.md) — hablar con el FC por cable o radio sin QGC
 - [Metodología de trabajo](METODOLOGIA_TRABAJO.md) — cómo se analiza, dónde queda cada hallazgo y reglas al tocar el FC
+- [Plan de test LiDAR 2D + EV](2026-09-16_test_lidar2d_ev_offboard.md) — odometría externa con LiDAR 2D y altura con LiDAR 1D
 - [Offboard RPi ⇄ FC (uXRCE-DDS)](CONFIGURACION_OFFBOARD_RPI4.md)
 - [Integración MTF-01P flujo + LiDAR](INTEGRACION_MTF-01P_FLOW_LIDAR.md)
 
