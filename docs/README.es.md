@@ -67,6 +67,7 @@ Los plots salen en `scripts/output/<log>/*.png`. Ver [`scripts/README.md`](../sc
 - [Plataforma: hardware, firmware y comunicaciones](PLATAFORMA_HARDWARE.md) — ficha técnica + referencia SUPER
 - [Parámetros indoor](PARAMETROS_INDOOR.md) — todos los parámetros sin GPS, por orden de importancia
 - [Conexión MAVLink con scripts](CONEXION_MAVLINK_SCRIPTS.md) — hablar con el FC por cable o radio sin QGC
+- [Metodología de trabajo](METODOLOGIA_TRABAJO.md) — cómo se analiza, dónde queda cada hallazgo y reglas al tocar el FC
 - [Offboard RPi ⇄ FC (uXRCE-DDS)](CONFIGURACION_OFFBOARD_RPI4.md)
 - [Integración MTF-01P flujo + LiDAR](INTEGRACION_MTF-01P_FLOW_LIDAR.md)
 

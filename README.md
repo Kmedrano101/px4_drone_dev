@@ -72,6 +72,7 @@ Plots are written to `scripts/output/<log>/*.png`. See [`scripts/README.md`](scr
 - [MTF-01P flow + LiDAR integration](docs/INTEGRACION_MTF-01P_FLOW_LIDAR.md) — sensor bring-up saga
 - [Indoor parameter reference](docs/PARAMETROS_INDOOR.md) — every GPS-free indoor param, ranked by importance
 - [Direct MAVLink scripting](docs/CONEXION_MAVLINK_SCRIPTS.md) — talk to the FC over USB cable or radio without QGC
+- [Working method](docs/METODOLOGIA_TRABAJO.md) — how analysis, reports, memory and FC changes are handled
 
 **Diagnostic reports** (companion / RPi) — see [`reports/`](reports/README.md)
 - [MTF-01 EKF2 tuning — indoor flow](reports/2026-07-23_mtf01-ekf2-tuning.md)
