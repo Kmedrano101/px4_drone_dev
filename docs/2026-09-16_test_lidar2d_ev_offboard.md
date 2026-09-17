@@ -125,7 +125,7 @@ INIT → ESPERANDO_EV → PREARM → ARM → TAKEOFF → HOLD → LAND → DISAR
 | # | Prueba | Criterio de éxito |
 |---|---|---|
 | 1 | SLAM en tierra: llevar el dron a mano, dar una vuelta y volver al inicio | ✅ **Validado (2026-09-17)**: error de cierre pequeño y sin saltos. Requiere `minimum_travel_distance: 0.0` al no haber odometría de ruedas (ver [reporte](../reports/2026-09-17_slam-manual-ld19-congelado.md)) |
-| 2 | EV al EKF, desarmado | `xy_valid`, `!dead_reckoning`, `eph` bajo y **`heading_good_for_control` true** |
+| 2 | EV al EKF, desarmado | ✅ **Validado (2026-09-17)**: EKF2 fusiona EV en `POSE_FRAME_NED` (20 Hz). Medido: `eph = 0.046 m`, `xy_valid=True`, `z_valid=True`, `v_xy_valid=True`, `heading_good_for_control=True` (sin mag), `dead_reckoning=False`. |
 | 3 | Hover en Altitude, con piloto | el EV coincide con lo que se ve |
 | 4 | Offboard en hold, sin desplazarse | mantiene posición a ≤1.2 m |
 | 5 | Desplazamientos cortos a 0.5 m/s | sin oscilación |
