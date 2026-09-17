@@ -48,7 +48,15 @@ Límites de velocidad para este escenario: `MPC_XY_VEL_MAX` y `MPC_VEL_MANUAL` 0
 
 Los errores más habituales están aquí. Campos según `msg/VehicleOdometry.msg` de la 1.14.3:
 
-- **`pose_frame = POSE_FRAME_FRD` (2)**, no NED. El `.msg` lo define como *"FRD world-fixed frame, arbitrary heading reference"*: origen y rumbo arbitrarios, que es el caso. Poner NED afirmaría alineación con el norte verdadero, imposible sin brújula.
+- 🔴 **`pose_frame = POSE_FRAME_NED` (1), NO FRD.** *(Corregido el 2026-09-17; la recomendación
+  inicial de usar FRD era errónea.)* Semánticamente FRD encaja —origen y rumbo arbitrarios—
+  pero en `ev_yaw_control.cpp` la rama FRD hace **`_control_status.flags.yaw_align = false`**
+  a propósito, mientras la rama NED lo pone en `true`. Sin magnetómetro,
+  `heading_good_for_control` **es** `yaw_align`, así que **con FRD nunca será true** y el yaw
+  queda inservible para control aunque se esté fusionando. Verificado igual en **v1.15.0**
+  (línea 166): actualizar el firmware no lo cambia.
+  Declarar NED significa que "el norte" del EKF es el eje X del mapa del SLAM. Sin GPS ni
+  brújula nada lo contradice y todo es relativo de todos modos: es lo habitual en SLAM indoor.
 - **Conversión ROS → PX4**: el SLAM trabaja en ENU/FLU y PX4 en NED/FRD. Hay que convertir posición **y** cuaternión.
 - **`q`**: rotación del cuerpo FRD al marco de referencia. Con un 2D solo hay yaw → roll y pitch a cero. PX4 usa solo la componente de yaw.
 - **Lo desconocido va a `NaN`**, nunca a cero. Un `0.0` en `position[2]` significa "estoy en el origen" y se fusionaría.
