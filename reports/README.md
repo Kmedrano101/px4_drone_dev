@@ -52,3 +52,5 @@ estructura consistente (contexto, síntoma, lecturas, hipótesis, qué no se toc
 | 2026-09-11 | [Vuelo offboard 1 — flujo cae en vuelo, failsafe, re-entrada en OFFBOARD](2026-09-11_offboard-vuelo1-flujo-failsafe.md) | 🔄 Flujo inútil >0.5 m en vuelo → failsafe a ALTCTL · ⚠️ PX4 volvió solo a OFFBOARD; lo paró el kill |
 | 2026-09-11 | [Vuelo offboard 2 — escape vertical a ~25 m por el LiDAR](2026-09-11_offboard-vuelo2-runaway-rango.md) | ⛔ Casi accidente: `HGT_REF=2` + setpoint +2 m → el LiDAR baja al perder el suelo, el EKF cree descender y sube a ~25 m. Cambios obligatorios |
 | 2026-09-11 | [Estimador y sensores en los vuelos offboard](2026-09-11_estimador-sensores-offboard.md) | ⚠️ Saltos de altura = cambios de instancia EKF (acelerómetro vertical malo en EKF0 el 43%); LiDAR sin retorno el 58% en el aire; sin magnetómetro |
+| 2026-09-17 | [Validación SLAM 2D manual y mapa congelado](2026-09-17_slam-manual-ld19-congelado.md) | ✅ **Resuelto** — `minimum_travel_distance: 0.0` permite a `slam_toolbox` procesar scans sin odometría de ruedas; mapa y pose en vivo validados |
+
