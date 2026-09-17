@@ -33,7 +33,7 @@ Verificados contra el tag `v1.14.3` del fuente.
 |---|---|---|
 | `EKF2_EV_CTRL` | **9** | bit 0 posición horizontal + bit 3 yaw. **Un LiDAR 2D no da altura**: el bit 1 queda apagado. El bit 2 (velocidad 3D) solo si el SLAM publica velocidad fiable |
 | `EKF2_EV_DELAY` | **medir** | por defecto 0 ms; un SLAM 2D en una Pi 4 puede ir 50-200 ms retrasado. Si no se declara, el dron oscila |
-| `EKF2_EV_POS_X/Y/Z` | medir | posición del LiDAR respecto al centro del FC. Va **arriba**, así que la Z no es cero y crea brazo de palanca al inclinarse |
+| `EKF2_EV_POS_X/Y/Z` | **0 / 0 / −0.114** | medido: el plano de barrido está 11.4 cm **encima** del FC. Ojo al signo, ver §4.1 |
 | `EKF2_EVP_NOISE` / `EKF2_EVP_GATE` | 0.1 m / 5 | punto de partida |
 | `EKF2_OF_CTRL` | **0** | el flujo solo metería ruido a oscuras |
 | `EKF2_HGT_REF` | **0** (barómetro) | **no** usar rango como referencia: provocó el escape vertical a 25 m del vuelo 2. Tampoco Vision (3): el 2D no da altura |
@@ -57,6 +57,28 @@ Los errores más habituales están aquí. Campos según `msg/VehicleOdometry.msg
 
 ## 4. Montaje del LiDAR 2D
 
+### 4.1 Offsets medidos y el cambio de signo
+
+| Elemento | TF de ROS (FLU, Z **arriba**) | Parámetro de PX4 (FRD, Z **abajo**) |
+|---|---|---|
+| **LiDAR 2D**, plano de barrido | `base_link → laser` = (0, 0, **+0.114**) | `EKF2_EV_POS_X=0`, `Y=0`, **`Z=−0.114`** |
+| **Láser 1D** MTF-01P | (0.055, 0, **−0.020**) | `EKF2_RNG_POS_X=0.055`, `Y=0`, **`Z=+0.020`** |
+| **Flujo óptico** MTF-01P | (0.055, 0, **−0.018**) | `EKF2_OF_POS_X=0.055`, `Y=0`, **`Z=+0.018`** |
+
+⚠️ **El signo de Z se invierte entre ROS y PX4.** El LiDAR está *encima*, así que lleva
+**+0.114 en el TF y −0.114 en el parámetro**. Equivocarse no da ningún aviso: el EKF
+corrige el brazo de palanca al revés. A 12° de inclinación, 11.4 cm desplazan el sensor
+**2.4 cm** en horizontal.
+
+Los 11.4 cm son **al plano de medición**, no a la base de la carcasa. En el modelo de
+simulación el módulo se monta a 0.0995 y el sensor va 0.024 más arriba dentro de él, así
+que el plano queda a 0.1235: **el modelo está ~1 cm por encima de la realidad**. Para
+cuadrarlo, el `<pose>` del D500 en `rjx_f450_indoor/model.sdf` debería ser **0.090**.
+
+Los 5.5 cm hacia adelante del MTF-01P salen del modelo de simulación, pendientes de
+confirmar con cinta en el dron real.
+
+
 - **Enmascarar los sectores** donde se ve a sí mismo: hélices, brazos y patas. Si no, el scan matching se engancha a ellos.
 - **El plano de escaneo se inclina con el dron**: a 12°, una pared a 5 m se desplaza un metro. De ahí el límite bajo de inclinación.
 - **Masa alta**: sube el centro de gravedad; reequilibrar.
@@ -72,7 +94,11 @@ INIT → ESPERANDO_EV → PREARM → ARM → TAKEOFF → HOLD → LAND → DISAR
 ```
 
 **Precondiciones antes de armar** (ninguna existía en los nodos anteriores):
-- `estimator_status_flags.cs_ev_pos` y `cs_ev_yaw` en true — no basta con "yo publico".
+- ⚠️ **No usar `estimator_status_flags`**: la 1.14.3 **no lo publica**. Su lista de topics
+  se compila en el firmware (`dds_topics.yaml` → `dds_topics.h`) y esta versión publica 14,
+  sin incluirlo; `main` publica 28 y sí lo trae, **por eso en el SITL funciona y en el dron
+  no**. Hay que usar señales equivalentes de `vehicle_local_position`:
+  `xy_valid`, `!dead_reckoning` y un umbral de `eph`.
 - `vehicle_local_position.xy_valid`, `z_valid` y `heading_good_for_control`. Este último **por fin debería ser true** al fusionarse el yaw del EV.
 - Odometría del SLAM con menos de 200 ms de antigüedad.
 
@@ -91,7 +117,7 @@ INIT → ESPERANDO_EV → PREARM → ARM → TAKEOFF → HOLD → LAND → DISAR
 | # | Prueba | Criterio de éxito |
 |---|---|---|
 | 1 | SLAM en tierra: llevar el dron a mano, dar una vuelta y volver al inicio | error de cierre pequeño y sin saltos |
-| 2 | EV al EKF, desarmado | `cs_ev_pos` y `cs_ev_yaw` true; la posición sigue a la realidad |
+| 2 | EV al EKF, desarmado | `xy_valid`, `!dead_reckoning`, `eph` bajo y **`heading_good_for_control` true** |
 | 3 | Hover en Altitude, con piloto | el EV coincide con lo que se ve |
 | 4 | Offboard en hold, sin desplazarse | mantiene posición a ≤1.2 m |
 | 5 | Desplazamientos cortos a 0.5 m/s | sin oscilación |
@@ -109,6 +135,7 @@ INIT → ESPERANDO_EV → PREARM → ARM → TAKEOFF → HOLD → LAND → DISAR
 
 ## 8. Pendiente de definir
 
-- Modelo del **LiDAR 2D** y su driver ROS 2.
+- ~~Modelo del LiDAR 2D y su driver ROS 2~~ → **LDROBOT LD19/D500**, driver `ldlidar`,
+  `/scan` a 10 Hz, 450 muestras, 12 m.
 - Paquete de **SLAM / odometría** (scan matching continuo, no pose con cierre de bucle).
 - Modelo del **LiDAR 1D** hacia abajo: ¿el del MTF-01P o uno dedicado?
