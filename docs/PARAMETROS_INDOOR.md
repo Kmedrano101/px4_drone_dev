@@ -21,8 +21,8 @@ vuelo: lo rompe.
 | Param | Actual | Opciones | Qué hace y por qué importa |
 |---|---|---|---|
 | `EKF2_OF_CTRL` | **1** ✅ | 0 off · 1 on | Activa la fusión de flujo óptico. **Es la única fuente de posición horizontal que tienes.** Sin esto no hay Position mode |
-| `EKF2_RNG_CTRL` | **2** ⏳→**1** | 0 off · 1 condicional · 2 siempre | Fusión del LiDAR como altura. En condicional solo entra por debajo de `EKF2_RNG_A_HMAX`. **A 1 porque el sensor solo es fiable hasta ~1.5 m** (§ medición) |
-| `EKF2_HGT_REF` | **2** ⏳→**0** | 0 barómetro · 1 GPS · 2 rango · 3 visión | **Referencia de altura del EKF.** Fue la causa del accidente: con el LiDAR como referencia y el sensor saturando a 2.4 m, un despegue a 5 m no tiene punto de equilibrio y el dron sube sin parar. **Requiere reboot** |
+| `EKF2_RNG_CTRL` | **1** ✅ | 0 off · 1 condicional · 2 siempre | Fusión del LiDAR como altura. En condicional solo entra por debajo de `EKF2_RNG_A_HMAX`. **A 1 porque el sensor solo es fiable hasta ~1.5 m** (§ medición). ⚠ **No subir a 2**: fusionaría el rango también por encima de la saturación, que es el mecanismo del escape vertical del vuelo 2 |
+| `EKF2_HGT_REF` | **0** ✅ | 0 barómetro · 1 GPS · 2 rango · 3 visión | **Referencia de altura del EKF.** Fue la causa del accidente: con el LiDAR como referencia y el sensor saturando a 2.4 m, un despegue a 5 m no tiene punto de equilibrio y el dron sube sin parar. **Requiere reboot** |
 | `EKF2_GPS_CTRL` | **0** ✅ | bitmask: b0 lat/lon · b1 alt · b2 vel 3D · b3 heading | GPS desactivado por completo. Coherente con volar solo en interior |
 | `EKF2_MAG_TYPE` | **5** ✅ | 0 auto · 1 heading · 2 3-ejes · 3 VTOL · 4 MC · 5 ninguno | Sin brújula. **Requiere reboot.** Consecuencia: `heading_good_for_control=false` y el yaw pasa a control por velocidad — pero el flujo **sí** fusiona sin yaw |
 | `SYS_HAS_GPS` | **0** ✅ | 0 no · 1 sí | Declara que no hay GPS. Si está en 1 con `EKF2_GPS_CTRL=0`, el preflight cuenta con un GPS que el EKF ignora. **Requiere reboot** |
@@ -41,8 +41,8 @@ Con los valores por defecto vuela; estos deciden **cuánto se fía** el EKF de c
 |---|---|---|---|
 | `EKF2_OF_QMIN` | **30** | 0–255 | Calidad mínima del flujo **en vuelo**. Por debajo, la muestra se descarta. El MTF-01P da 90-100 sobre suelo con textura y **cae a 6-10 en altura**: ahí el EKF se queda sin posición |
 | `EKF2_OF_QMIN_GND` | **0** | 0–255 | Lo mismo **en tierra**. En 0 acepta cualquier calidad con el dron apoyado |
-| `EKF2_MIN_RNG` | **0.10 m** | ≥0.01 | Lectura esperada del LiDAR en el suelo. El MTF-01P declara `min_distance` 0.02 |
-| `EKF2_RNG_A_HMAX` | **12.0** ⏳→**1.5** | 1.0–10.0 | Altura máxima para el modo condicional del rango. **12 está fuera del rango documentado** y es 5× el techo real del sensor |
+| `EKF2_MIN_RNG` | **0.17 m** ✅ | ≥0.01 | Lectura esperada del LiDAR con el dron **apoyado en las patas**. Medido 2026-09-17: 0.16–0.17 m, varianza 0. Es el suelo del HAGL (`terrain_estimator.cpp:78`) y de la medida de rango (`range_height_control.cpp:101`): con el 0.10 anterior el EKF creía estar 7 cm por debajo del suelo real al despegar |
+| `EKF2_RNG_A_HMAX` | **1.5** ✅ | 1.0–10.0 | Altura máxima para el modo condicional del rango (el 12.0 anterior estaba fuera del rango documentado y era 5× el techo real). Ojo a la histéresis: **engancha por debajo de 0.7× = 1.05 m** y se mantiene hasta 1.5 m (`range_height_control.cpp:220`) |
 | `EKF2_RNG_A_VMAX` | **1.0 m/s** | 0.1–2 | Velocidad horizontal máxima para el modo condicional |
 | `EKF2_RNG_NOISE` | **0.10 m** | ≥0.01 | Ruido asumido del rango |
 | `EKF2_RNG_SFE` | **0.05 m/m** | 0–0.2 | Ruido proporcional a la distancia. ⚠️ **Medido: 29% de error a 3 m**, muy por encima del 5% asumido |
@@ -50,8 +50,8 @@ Con los valores por defecto vuela; estos deciden **cuánto se fía** el EKF de c
 | `EKF2_OF_DELAY` / `EKF2_RNG_DELAY` | 20 / 5 ms | 0–300 | Retardo de cada medida respecto a la IMU. **Requieren reboot** |
 | `EKF2_OF_N_MIN` / `N_MAX` | 0.15 / 0.5 rad/s | ≥0.05 | Ruido del flujo con calidad máxima / mínima |
 | `EKF2_TERR_NOISE` / `TERR_GRAD` | 5.0 / 0.5 | — | Ruido de proceso y pendiente del terreno |
-| `EKF2_OF_POS_X/Y/Z` | **0 / 0 / 0** ⏳ | m | Posición del **flujo** respecto al centro de gravedad (X adelante, Y derecha, Z abajo). **Sin medir.** Un offset no declarado mete velocidad falsa al girar |
-| `EKF2_RNG_POS_X/Y/Z` | **0 / 0 / 0** ⏳ | m | Igual para el **LiDAR** |
+| `EKF2_OF_POS_X/Y/Z` | **0.055 / 0 / 0.018** ✅ | m | Posición del **flujo** respecto al centro de gravedad (X adelante, Y derecha, Z abajo). Medido 2026-09-17. Un offset no declarado mete velocidad falsa al girar |
+| `EKF2_RNG_POS_X/Y/Z` | **0.055 / 0 / 0.020** ✅ | m | Igual para el **LiDAR** |
 
 ---
 
@@ -144,11 +144,20 @@ Radio de telemetría: `MAV_0_CONFIG=101` (TEL1), `SER_TEL1_BAUD=57600`, `MAV_0_R
 
 | Param | De | A | Motivo |
 |---|---|---|---|
-| `EKF2_HGT_REF` | 2 | **0** | El LiDAR no puede ser la referencia de altura |
-| `EKF2_RNG_CTRL` | 2 | **1** | Que el rango entre solo donde es exacto |
-| `EKF2_RNG_A_HMAX` | 12.0 | **1.5** | Techo real medido del sensor |
-| `EKF2_OF_POS_*`, `EKF2_RNG_POS_*` | 0 | medir | Offset del sensor respecto al CdG |
 | `COM_FLTMODE1` | 7 (Offboard) | **2 (Position)** | Position no está en ningún slot; Offboard sin flujo de datos da failsafe |
+| `EKF2_EV_DELAY` | 0 ms | medir | Latencia del SLAM 2D. Sin medir no se puede fusionar EV con garantías |
+
+### Aplicado el 2026-09-17 (por USB, `set_params.py`, verificado y guardado)
+
+`EKF2_HGT_REF` 2→**0** · `EKF2_RNG_CTRL` 2→**1** · `EKF2_RNG_A_HMAX` 12.0→**1.5** ·
+`EKF2_MIN_RNG` 0.10→**0.17** · `EKF2_RNG_POS_X/Z` **0.055 / 0.020** · `EKF2_OF_POS_X/Z` **0.055 / 0.018** ·
+`EKF2_EV_POS_Z` **−0.114** · `COM_RC_OVERRIDE` 1→**3** · `COM_RCL_EXCEPT` 4→**0**.
+
+FC reiniciado después (`EKF2_HGT_REF` es `@reboot_required`) y valores releídos: persisten todos.
+Estado del estimador en tierra tras el reinicio: `filter_fault_flags 0`, `innovation_check_flags 0`,
+`dist_bottom 0.170` (antes quedaba clavado en 0.100 por el `MIN_RNG` viejo), `xy_valid true`,
+`solution_status_flags 302` — el único bit en cero que importa es el **0 (`attitude`)**, por
+`yaw_align=false`: es el bloqueo de yaw EV, no un problema de esta tabla.
 
 ## La limitación que no se arregla con parámetros
 
