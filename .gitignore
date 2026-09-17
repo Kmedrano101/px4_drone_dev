@@ -4,6 +4,7 @@
 
 # Local Claude Code settings
 .claude/
+memory
 
 # Python
 __pycache__/
