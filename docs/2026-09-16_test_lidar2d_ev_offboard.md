@@ -143,6 +143,18 @@ Validado sin volar:
 Limitaciones: **no rodea** el obstáculo, y solo ve lo que corta el **plano** del LiDAR. Detalle y
 cómo repetir la validación en `px4_drone/tools/obstacle_guard/README.md`.
 
+### 5.2 HOLD y ATERRIZAR desde la webui (2026-09-18)
+
+En las pruebas con despegue, el STOP de antes **mataba todo**: nodo, SLAM, puente EV y agente DDS. En
+vuelo eso deja al FC en failsafe de Offboard. Ahora hay dos botones que avisan al nodo con una señal,
+sin cortar nada:
+- **HOLD:** frena 1 s y mantiene la posición donde quedó. Siguen activas la parada por obstáculo, la
+  salud del SLAM y la detección de control perdido. Si no llega otra orden, aterriza a los 120 s.
+- **ATERRIZAR:** LAND, solo si el nodo aún tiene el control.
+- **Antes de armar:** cualquiera de los dos cancela la prueba sin armar.
+
+"MATAR procesos" sigue existiendo, pero en pruebas de vuelo pide confirmación.
+
 ## 6. Secuencia de pruebas
 
 | # | Prueba | Criterio de éxito |
