@@ -165,6 +165,52 @@ del muestreo, no un fallo del sensor.
 
 ---
 
+## 6bis. Evaluar flujo óptico + LiDAR 1D contra una verdad de terreno
+
+`flow_range_eval.py` pide al FC `DISTANCE_SENSOR`, `OPTICAL_FLOW_RAD` y `ATTITUDE` a **~45-50 Hz**
+(la consola nsh de `monitor_sensors.py` da 0.5 muestras/s) y los compara con alturas y distancias
+medidas con cinta. **Solo lee**: no arma ni cambia parámetros, y aborta si el FC está armado.
+
+**Desde la webui de la Pi** (tarjeta *Evaluar flujo óptico + LiDAR 1D (a mano)*): cable USB-C
+del FC a la Pi. El script corre con `~/.venvs/mav` (pymavlink 2.4.49) y deja los resultados en
+`tools/webui/logs/sensor_eval/`. **Desde este PC**, con el FC por USB:
+
+```bash
+~/.venvs/mav/bin/python flow_range_eval.py --gt-height 1.00 --gt-distance 1.0 --duration 25
+```
+
+Procedimiento, con el dron desarmado en la mano y el sensor hacia el suelo:
+1. `--gt-height`: altura de la **lente** del sensor al suelo, medida con cinta.
+2. Fase QUIETO (`--still`, 6 s): inmóvil → sesgo y ruido del LiDAR, deriva y ruido del flujo.
+3. Fase MOVER: llevarlo **hacia el morro** `--gt-distance` metros a lo largo de una cinta, nivelado y a la misma
+   altura; quieto al llegar. Con `--gt-distance 0` todo es fase quieto.
+4. Repetir a 0.5 / 1.0 / 1.5 / 2.0 m. Cada corrida se suma a `sensor_eval_history.csv` y, con dos
+   alturas o más, el script ajusta la curva del LiDAR (`lectura = k·real + b`).
+
+Cómo leerlo:
+- **Error de escala del flujo** calculado con la altura del LiDAR y con la altura real. Si solo falla
+  con la del LiDAR, el problema es el LiDAR; si falla con las dos, es el flujo.
+- **Dirección** del recorrido en ejes del cuerpo: debe salir ~0°. Si sale ~±90° o 180°, está mal
+  `SENS_FLOW_ROT`.
+- La convención de signos es la del EKF2 1.14.3 (`optflow_fusion.cpp:66-67`):
+  `vx = −flujo_y·h`, `vy = +flujo_x·h`, con el flujo compensado restando el gyro.
+- **La 1.14.3 no tiene `SENS_FLOW_SCALE`.** Lo ajustable es `SENS_FLOW_ROT`, `EKF2_OF_QMIN`,
+  `EKF2_OF_N_MIN/N_MAX` y, para el rango, `EKF2_RNG_NOISE`, `EKF2_RNG_SFE`, `EKF2_MIN_RNG` y
+  `EKF2_RNG_A_HMAX`.
+
+Línea base (2026-09-18, apoyado en las patas, verdad 0.17 m): LiDAR 0.171 m (+0.8%, ruido 4 mm),
+flujo con calidad 108 y 3 mm de deriva en 8 s.
+
+## 6ter. Bajar logs de la SD por USB
+
+```bash
+~/.venvs/mav/bin/python logs.py            # lista: id, fecha, tamaño
+~/.venvs/mav/bin/python logs.py get 158 ../../logs/2026-09-18/log158.ulg
+```
+
+~0.5 MB/s por USB. Con `SDLOG_MODE=2` el **último log de la lista es el de la sesión en curso**, sigue
+creciendo y no se puede bajar entero. Los logs sin hora sincronizada salen con fecha 2000-01-01.
+
 ## 7. Problemas comunes
 
 | Síntoma | Causa | Solución |
