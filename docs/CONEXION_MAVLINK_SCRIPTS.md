@@ -172,7 +172,7 @@ del muestreo, no un fallo del sensor.
 medidas con cinta. **Solo lee**: no arma ni cambia parámetros, y aborta si el FC está armado.
 
 **Desde la webui de la Pi** (tarjeta *Evaluar flujo óptico + LiDAR 1D (a mano)*): cable USB-C
-del FC a la Pi. El script corre con `~/.venvs/mav` (pymavlink 2.4.49) y deja los resultados en
+del FC a la Pi. El script corre con `~/.venvs/mav` (pymavlink 2.4.49 + pyserial 3.5, que pymavlink no instala solo) y deja los resultados en
 `tools/webui/logs/sensor_eval/`. **Desde este PC**, con el FC por USB:
 
 ```bash
