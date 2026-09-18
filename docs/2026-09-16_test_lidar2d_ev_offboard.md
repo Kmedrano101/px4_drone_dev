@@ -120,6 +120,29 @@ INIT → ESPERANDO_EV → PREARM → ARM → TAKEOFF → HOLD → LAND → DISAR
 
 **Setpoints**: altura **absoluta y limitada a ≤1.2 m**, nunca relativa a la z estimada, que puede venir desplazada.
 
+### 5.1 Parada por obstáculo (añadida el 2026-09-18)
+
+`takeoff_position_hold_ev`, que ejecuta tanto el despegue/hold como el patrón en cruz, vigila `/scan`
+en 360° con `obstacle_stop_distance_m` (**1.0 m** por defecto, también en la webui):
+- **no arma** con nada más cerca de esa distancia;
+- **en vuelo frena y aterriza** cuando un obstáculo se acerca tanto que hay que empezar a frenar
+  para quedar a esa distancia (`X + v·0.35 s + v²/(2·2 m/s²)`, con `v` medida en los barridos);
+- **sin `/scan`** más de 0.5 s: frena y aterriza.
+
+Usa **solo los barridos crudos**, no el SLAM ni la posición del EKF: en el log 158 el SLAM dijo
+"quieto" mientras el dron recorría ~3 m, y solo `/scan` vio el obstáculo. El frenado es velocidad
+horizontal 0 con la posición horizontal en NaN, que en 1.14.3 no influye (`PositionControl.cpp`).
+No depende, por tanto, de la pose del EV.
+
+Validado sin volar:
+- **Con el rosbag del accidente:** ninguna parada falsa en despegue ni hover, y parada a t = 3.16 s
+  (obstáculo a 1.65 m, acercándose a 1.27 m/s). El piloto intervino a los 3.54 s.
+- **El nodo entero contra un FC falso:** no arma con un obstáculo a 0.6 m; frena a 1.56 m ante una
+  pared a 1.2 m/s y aterriza; frena al cortarse `/scan`.
+
+Limitaciones: **no rodea** el obstáculo, y solo ve lo que corta el **plano** del LiDAR. Detalle y
+cómo repetir la validación en `px4_drone/tools/obstacle_guard/README.md`.
+
 ## 6. Secuencia de pruebas
 
 | # | Prueba | Criterio de éxito |
@@ -128,8 +151,8 @@ INIT → ESPERANDO_EV → PREARM → ARM → TAKEOFF → HOLD → LAND → DISAR
 | 2 | EV al EKF, desarmado | ✅ **Validado (2026-09-17)**: EKF2 fusiona EV en `POSE_FRAME_NED` (20 Hz). Medido: `eph = 0.046 m`, `xy_valid=True`, `z_valid=True`, `v_xy_valid=True`, `heading_good_for_control=True` (sin mag), `dead_reckoning=False`. |
 | 2b | Armado en tierra Offboard (hold 5 s en origen, sin despegue) | ✅ **Validado (2026-09-17)**: entrada en Offboard, armado por software, 5 s en idle y auto-desarme. SLAM 2D y EKF2 100% estables ante vibración motora ($eph = 0.045\text{ m}$, deriva $<1\text{ mm}$). Ver [reporte](../reports/2026-09-17_prueba2b-armado-tierra-offboard-validado.md). |
 | 3 | Hover en Altitude, con piloto | el EV coincide con lo que se ve |
-| 4 | Offboard en hold, sin desplazarse (`takeoff_position_hold_ev`) | mantiene posición a ≤1.2 m |
-| 5 | Patrón cruz 4 direcciones con SLAM 2D (`cross_pattern_ev`) | recorre 1.0 m (adelante, atrás, izquierda, derecha) volviendo al centro en cada tramo con SLAM 2D y aterriza suave |
+| 4 | Offboard en hold, sin desplazarse (`takeoff_position_hold_ev`) | mantiene posición a ≤1.2 m. 🔄 **Log 158, intento A:** altura alcanzada y aterrizaje suave, con deriva horizontal de ±0.3–0.4 m |
+| 5 | Patrón cruz 4 direcciones con SLAM 2D (`cross_pattern_ev`) | recorre 1.0 m (adelante, atrás, izquierda, derecha) volviendo al centro en cada tramo con SLAM 2D y aterriza suave. ❌ **2026-09-17:** en el primer tramo el SLAM perdió el tracking y el dron se escapó ~3 m ([reporte](../reports/2026-09-18_takeoff-ev-log158-caida-stabilized.md)). No repetir hasta corregir el puente EV; ahora con parada por obstáculo (§5.1) |
 
 **Antes de nada, en el sitio:** medir la calidad del flujo y el alcance del LiDAR 1D con [`scripts/mavlink/monitor_sensors.py`](../scripts/mavlink/monitor_sensors.py). A oscuras el 1D debería llegar más lejos que en exterior, donde no pasó de 1.71 m.
 
@@ -139,7 +162,8 @@ INIT → ESPERANDO_EV → PREARM → ARM → TAKEOFF → HOLD → LAND → DISAR
 |---|---|
 | Cómputo de la Pi 4 (SUPER usa un NUC) | medir el tiempo de ciclo del SLAM antes de volar |
 | Escape vertical por el LiDAR 1D | `EKF2_HGT_REF=0`; techo de altura en el nodo |
-| Columnas y paredes, sin evitación de obstáculos | vuelo lento, protectores de hélice |
+| Columnas y paredes | parada por obstáculo con `/scan` crudo (§5.1), vuelo lento, protectores de hélice. No rodea: solo frena y aterriza |
+| SLAM que pierde el tracking y el EKF se lo cree (log 158) | pendiente: pasar la covarianza del SLAM al EKF y publicar solo poses nuevas; mientras, §5.1 corta el vuelo antes del golpe |
 | Estado del EKF arrastrado entre vuelos | reiniciar el FC entre pruebas |
 
 ## 8. Pendiente de definir
