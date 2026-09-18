@@ -163,7 +163,8 @@ cómo repetir la validación en `px4_drone/tools/obstacle_guard/README.md`.
 | Cómputo de la Pi 4 (SUPER usa un NUC) | medir el tiempo de ciclo del SLAM antes de volar |
 | Escape vertical por el LiDAR 1D | `EKF2_HGT_REF=0`; techo de altura en el nodo |
 | Columnas y paredes | parada por obstáculo con `/scan` crudo (§5.1), vuelo lento, protectores de hélice. No rodea: solo frena y aterriza |
-| SLAM que pierde el tracking y el EKF se lo cree (log 158) | pendiente: pasar la covarianza del SLAM al EKF y publicar solo poses nuevas; mientras, §5.1 corta el vuelo antes del golpe |
+| SLAM que pierde el tracking y el EKF se lo cree (log 158) | ✅ 2026-09-18 (`px4_drone` `ed05f52`): el puente sigue a 20 Hz (EKF2 deja el EV si pasan >200 ms, `EV_MAX_INTERVAL`), pero con **varianza = la del SLAM + (antigüedad × 1.5 m/s)²**, así que entre poses manda el flujo; z/roll/pitch van finitos porque EKF2 solo usa las varianzas si las tres lo son. El nodo **no despega y aterriza si la σ del SLAM > 0.3 m** o `/pose` falta 2.5 s (hover 0.06–0.10 m, perdido 0.41–0.48 m en el bag). §5.1 queda como segunda barrera |
+| ¿La Pi 4 se queda corta? | cada prueba de la webui guarda la carga (CPU por núcleo, temperatura, throttling, RAM, procesos, `/scan` vs `/pose`) en `logs/<run>_sysmon.csv` con resumen al final del log (`px4_drone/tools/sysmon/`) |
 | Estado del EKF arrastrado entre vuelos | reiniciar el FC entre pruebas |
 
 ## 8. Pendiente de definir
