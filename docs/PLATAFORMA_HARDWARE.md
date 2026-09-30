@@ -315,7 +315,7 @@ falla o se borra el fichero, ni el sensor ni el enlace offboard arrancan.
 |---|---|
 | Emisora | **Jumper T-Pro V2** |
 | Módulo TX | **Jumper AION Nano 2.4GHz TX** — ELRS **3.6.2**, dominio **LBT** (actualizado el 2026-09-30; venía con 3.3.1 (e051b8) ISM2G4) |
-| Receptores | **RadioMaster RP4TD-M** True Diversity 2.4GHz — ELRS 3.6.0 (ff41f6) **CE_LBT**: enlaza ✅ · **SpeedyBee** — ⏳ pendiente de pasar a LBT · ⏳ cuál va montado en este dron |
+| Receptores | **RadioMaster RP4TD-M** True Diversity 2.4GHz — ELRS 3.6.0 (ff41f6) **CE_LBT**: enlaza ✅ · **SpeedyBee Nano 2.4GHz RX** — ELRS **3.6.2 (0b0cce) CE_LBT** ✅ (actualizado 2026-09-30) |
 | Model Match | **Off** (ver abajo) |
 | **Binding phrase** | **`kevin`** |
 | Protocolo | **CRSF** (`RC_INPUT_PROTO=6`) — el que usa ELRS |
