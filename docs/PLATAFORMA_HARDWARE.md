@@ -314,8 +314,9 @@ falla o se borra el fichero, ni el sensor ni el enlace offboard arrancan.
 | | |
 |---|---|
 | Emisora | **Jumper T-Pro V2** |
-| Módulo TX | **ExpressLRS** ⏳ modelo y versión de firmware por confirmar |
-| Receptor | **ExpressLRS** ⏳ modelo y versión de firmware por confirmar |
+| Módulo TX | **Jumper AION Nano 2.4GHz TX** — ELRS **3.6.2**, dominio **LBT** (actualizado el 2026-09-30; venía con 3.3.1 (e051b8) ISM2G4) |
+| Receptores | **RadioMaster RP4TD-M** True Diversity 2.4GHz — ELRS 3.6.0 (ff41f6) **CE_LBT**: enlaza ✅ · **SpeedyBee** — ⏳ pendiente de pasar a LBT · ⏳ cuál va montado en este dron |
+| Model Match | **Off** (ver abajo) |
 | **Binding phrase** | **`kevin`** |
 | Protocolo | **CRSF** (`RC_INPUT_PROTO=6`) — el que usa ELRS |
 | Canales | 16 (`RC_CHAN_CNT=16`) |
@@ -328,8 +329,45 @@ La **binding phrase** no vive en el FC: es una semilla que se compila en el firm
 del receptor (o se fija desde el menú ELRS de la emisora y el portal wifi del receptor). No aparece en
 ningún volcado de parámetros ni en los logs, así que si se pierde solo se recupera leyéndola de la
 emisora o reflasheando TX y RX con una nueva. Hay que anotarla porque **sin ella no se puede vincular
-un receptor de repuesto**, que es justo lo que hace falta el día que se rompa uno en campo. TX y RX
-tienen que llevar además la **misma versión de ELRS**.
+un receptor de repuesto**, que es justo lo que hace falta el día que se rompa uno en campo.
+
+#### Compatibilidad TX ⇄ RX
+
+Para enlazar, TX y RX tienen que coincidir en tres cosas (la marca da igual):
+
+1. **Versión principal** de ELRS: 3.x con 3.x. La versión menor no importa (3.3.1 enlaza con 3.6.0).
+2. **Dominio regulatorio**: LBT con LBT, o ISM2G4 con ISM2G4. **No enlazan entre dominios**, aunque la
+   binding phrase sea la misma. Es lo que pasaba con el AION Nano en ISM2G4 y el RP4TD-M en CE_LBT.
+3. **Binding phrase** (o UID).
+
+Se ha elegido **LBT**, que es lo que exige el marcado CE en 2.4 GHz en la UE. El módulo TX ya está en LBT,
+así que **cualquier receptor en ISM2G4 deja de enlazar hasta reflashearlo a LBT**.
+⏳ **Pendiente:** pasar a LBT los receptores SpeedyBee. Cada receptor se reflashea por su propio wifi:
+encenderlo sin TX, esperar ~60 s a la red `ExpressLRS RX` y subir el `.bin` en http://10.0.0.1. El `.bin`
+se genera con el ExpressLRS Configurator o el
+[Web Flasher](https://expresslrs.github.io/web-flasher/) (versión 3.6.x, dominio LBT, la binding phrase).
+
+Tras actualizar el módulo TX hay que actualizar también el script `elrsV3.lua` de la emisora
+(`/SCRIPTS/TOOLS/` en la SD) a la misma versión.
+
+#### Model Match y modelos de EdgeTX
+
+Con Model Match en **On**, el receptor guarda el *Receiver number* del modelo de EdgeTX activo
+(*Model → Setup → External RF → Receiver number*). Solo acepta control de un modelo con ese número. Si no
+coincide, el enlace se establece pero **los canales no se mueven** (el receptor se queda en failsafe) y
+el Lua muestra un aviso.
+
+Tras actualizar el TX a 3.6.2 apareció ese aviso y el receptor no respondía. Se resolvió poniendo
+**Model Match en Off**: con eso el receptor acepta control desde **cualquier modelo** de la emisora que
+comparta la binding phrase. No afecta al enlace, al alcance ni a la latencia. El único riesgo es volar
+con otro modelo seleccionado por error, con otras mezclas, otro orden de canales u otro failsafe.
+
+Si se vuelven a tener varios modelos con la misma frase, conviene reactivarlo:
+
+1. Dar a cada modelo de EdgeTX un *Receiver number* distinto.
+2. Con el receptor **encendido y enlazado**, poner Model Match en **On** desde el Lua: el receptor aprende
+   en ese momento el número del modelo activo.
+3. Repetirlo para cada aeronave desde su propio modelo.
 
 ⚠️ Este repositorio es **público**: con esta frase cualquiera con un módulo ELRS puede vincularse al
 dron. Si eso deja de ser aceptable, hay que cambiarla en TX y RX y sacarla de aquí (borrarla del
