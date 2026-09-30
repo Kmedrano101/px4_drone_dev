@@ -314,14 +314,26 @@ falla o se borra el fichero, ni el sensor ni el enlace offboard arrancan.
 | | |
 |---|---|
 | Emisora | **Jumper T-Pro V2** |
-| Módulo TX | **ExpressLRS** ⏳ modelo y enlace por confirmar |
-| Receptor | **ExpressLRS** ⏳ modelo y enlace por confirmar |
+| Módulo TX | **ExpressLRS** ⏳ modelo y versión de firmware por confirmar |
+| Receptor | **ExpressLRS** ⏳ modelo y versión de firmware por confirmar |
+| **Binding phrase** | **`kevin`** |
 | Protocolo | **CRSF** (`RC_INPUT_PROTO=6`) — el que usa ELRS |
 | Canales | 16 (`RC_CHAN_CNT=16`) |
 | Puerto en el FC | `RC` / UART5 (`/dev/ttyS4`), código 300 |
 
 El conector `RC` de la placa expone **Rx5, Tx5, 5V, GND** — CRSF necesita las dos líneas (es
 bidireccional, a diferencia de SBUS), así que hay que cablear Tx **y** Rx.
+
+La **binding phrase** no vive en el FC: es una semilla que se compila en el firmware del módulo TX y
+del receptor (o se fija desde el menú ELRS de la emisora y el portal wifi del receptor). No aparece en
+ningún volcado de parámetros ni en los logs, así que si se pierde solo se recupera leyéndola de la
+emisora o reflasheando TX y RX con una nueva. Hay que anotarla porque **sin ella no se puede vincular
+un receptor de repuesto**, que es justo lo que hace falta el día que se rompa uno en campo. TX y RX
+tienen que llevar además la **misma versión de ELRS**.
+
+⚠️ Este repositorio es **público**: con esta frase cualquiera con un módulo ELRS puede vincularse al
+dron. Si eso deja de ser aceptable, hay que cambiarla en TX y RX y sacarla de aquí (borrarla del
+fichero no basta: queda en el historial de git).
 
 ⚠️ Delta respecto a SUPER, que en su BOM usa Radiolink AT9S + R12DSM sobre **SBUS**.
 
