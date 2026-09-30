@@ -47,9 +47,12 @@ Regla de fondo: **si es un hallazgo real, no puede quedarse solo en la conversac
 ## 4. Logs
 
 - Los `.ulg` se analizan con `pyulog` (venv en `/home/kmedrano/src/Asistente/.venv`).
-- **No se commitean logs de más de ~10 MB.** Se quedan en el `.gitignore` con una línea
-  explicando por qué; lo que se conserva es el **análisis**, no el fichero crudo.
-  Comprobación: `find logs -name '*.ulg' -size +10M`.
+- **No se commitea ningún log de más de 5 MB** (regla del 2026-09-30; antes eran 10). Vale para
+  `.ulg`, rosbags (`.mcap`/`.db3`) y cualquier otro dato crudo. Se quedan en el `.gitignore` con una
+  línea explicando por qué; lo que se conserva es el **análisis**, no el fichero crudo.
+  Comprobación antes de añadir: `find logs -type f -size +5M`.
+- En `.gitignore`, **el comentario va en su propia línea**. En la misma línea que el patrón pasa a
+  formar parte de él y no excluye nada: así se coló un log de 14 MB el 2026-09-30.
 - Al comparar dos volcados de parámetros, **el conteo distinto no significa pérdida**: PX4
   solo enumera los parámetros en uso, así que apagar un módulo hace desaparecer los suyos.
 

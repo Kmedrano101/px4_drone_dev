@@ -21,20 +21,26 @@ scripts/input/*.ulg
 .DS_Store
 Thumbs.db
 
-# Logs pesados: NO commitear .ulg de más de ~10 MB.
+# Logs pesados: NO commitear NINGÚN log de más de 5 MB (regla del 2026-09-30; antes eran 10).
+# Vale para .ulg, rosbags (.mcap/.db3) y cualquier otro fichero de datos crudo.
 # Un log grande se queda en el historial para siempre e infla cada clon; GitHub además
 # avisa por encima de 50 MB y rechaza a los 100. Lo que hay que conservar es el ANÁLISIS
 # (en reports/ y docs/), no el fichero crudo. Comprobar antes de añadir:
-#     find logs -name '*.ulg' -size +10M
-# Añadir aquí abajo cada log excluido, con una línea de por qué.
+#     find logs -type f -size +5M
+# Añadir aquí abajo cada log excluido, con una línea de por qué (el comentario SIEMPRE en su
+# propia línea: en la misma, .gitignore lo toma como parte del patrón y no excluye nada).
 
 # 47 min con el dron desarmado en el árbol tras el incidente del 2026-09-04 (93 MB).
 # Analizado: temperatura hasta 89.5 °C, dos AUTO_TAKEOFF que nunca armaron y la
 # reconstrucción barométrica del accidente. Todo en reports/.
 logs/2026-09-04/11_49_19.ulg
 
-# Vuelos offboard del 2026-09-10/11 (por encima de 10 MB). Analizados en reports/2026-09-11_*.
+# Vuelos offboard del 2026-09-10/11. Analizados en reports/2026-09-11_*.
 logs/log100v2.ulg
 logs/sess168/log100.ulg
-# 14 MB; analisis en reports/2026-09-18_takeoff-ev-log158-caida-stabilized.md
+# 14 MB; análisis en reports/2026-09-18_takeoff-ev-log158-caida-stabilized.md
 logs/2026-09-18/log158.ulg
+
+# Rosbag del vuelo del patrón en cruz (8 MB). El análisis está en ese mismo reporte, y los
+# barridos exportados para reproducir la parada por obstáculo pesan poco: px4_drone/tools/obstacle_guard/.
+logs/2026-09-18/cross_pattern_1789649199_bag/
