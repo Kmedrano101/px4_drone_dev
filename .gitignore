@@ -36,4 +36,5 @@ logs/2026-09-04/11_49_19.ulg
 # Vuelos offboard del 2026-09-10/11 (por encima de 10 MB). Analizados en reports/2026-09-11_*.
 logs/log100v2.ulg
 logs/sess168/log100.ulg
-logs/2026-09-18/log158.ulg  # 14 MB; analisis en reports/2026-09-18_takeoff-ev-log158-caida-stabilized.md
+# 14 MB; analisis en reports/2026-09-18_takeoff-ev-log158-caida-stabilized.md
+logs/2026-09-18/log158.ulg
