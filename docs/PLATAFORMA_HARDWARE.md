@@ -178,7 +178,25 @@ Al mapear TEL4 el sensor apareció — sin haber movido el cable.
 | Barómetro | **SPL06** | I2C bus 1, `0x77` | ✅ |
 | Magnetómetro | **ninguno** | — | ❌ ver §5 |
 | GPS / brújula | M100-5883 | GPS1 | solo en FC#1; **no montado en FC#2** |
+| **GPS RTK** | **u-blox ZED-F9P-02B-01** | GPS1 / UART (libre) | 🔵 disponible, **sin montar**; ver nota |
 | LiDAR 3D | Livox MID360 | — | ⏳ pendiente (driver ya en el workspace) |
+
+### GPS RTK u-blox ZED-F9P-02B-01
+
+Receptor **multibanda L1/L2 con RTK** (precisión centimétrica con correcciones RTCM, de una base
+propia o de una red NTRIP). Disponible pero **no montado en el FC#2**, que está configurado solo para
+interior (`SYS_HAS_GPS=0`, `EKF2_GPS_CTRL=0`).
+
+Para qué sirve en este proyecto, aunque el objetivo sea indoor:
+- **Verdad de terreno en exterior** para medir la deriva del SLAM y del flujo óptico, que es justo lo
+  que hoy no se puede cuantificar sin cinta métrica.
+- **Pruebas en el exterior del parking** antes de entrar, y vuelos mixtos exterior → interior.
+
+Al montarlo hay que recordar los límites de este firmware (§5): el 1.14.3 de fábrica **solo declara
+GPS1 y TEL1**, así que el receptor va en `GPS1` (`/dev/ttyS0`) y los códigos de puerto 102/103/104 no
+mapean a nada. Y si se activa el GPS hay que revisar `SYS_HAS_GPS`, `EKF2_GPS_CTRL` y `EKF2_HGT_REF`:
+con `EKF2_HGT_REF=1` la altura pasaría a venir del GPS, que es lo contrario de la configuración
+indoor actual (ver [`PARAMETROS_INDOOR.md`](PARAMETROS_INDOOR.md)).
 
 ### MTF-01P — límite real medido
 
