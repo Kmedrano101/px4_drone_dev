@@ -32,7 +32,11 @@ por ROS 2 / uXRCE-DDS.
 - ✅ MTF-01P flujo óptico + LiDAR integrado por MAVLink (TEL4/UART8)
 - ✅ Enlace offboard RPi ⇄ FC por uXRCE-DDS (domain-id + px4_msgs alineados)
 - ✅ Firmware optimizado (quitados módulos FW/VTOL → FLASH 98.5% → 92%)
-- 🔄 Hold de posición indoor (flujo + LiDAR, heading sin mag)
+- ✅ Heading y posición sin magnetómetro por **SLAM 2D (LD19) → visión externa**, fusión EV validada y armado en tierra en Offboard
+- ✅ Parada por obstáculo en 360° con el LiDAR 2D, varianza honesta del EV y monitor de carga de la Pi
+- 🔄 **MPC del ciclo completo** (acados, jerk acotado) compilado en la Pi — 4.4–9.3 ms de solver, sin prueba de vuelo aún
+- 🔄 Hold de altura limitado por la **saturación del LiDAR 1D** sobre hormigón oscuro: zona útil ≤1 m
+- ⏳ Comparación en vuelo PID vs MPC (takeoff – hold 30 s – land a 0.8 m)
 - ⏳ Navegación indoor completa con LiDAR 3D (Livox + FAST-LIO)
 
 ## Instalación
@@ -69,6 +73,8 @@ Los plots salen en `scripts/output/<log>/*.png`. Ver [`scripts/README.md`](../sc
 - [Conexión MAVLink con scripts](CONEXION_MAVLINK_SCRIPTS.md) — hablar con el FC por cable o radio sin QGC
 - [Metodología de trabajo](METODOLOGIA_TRABAJO.md) — cómo se analiza, dónde queda cada hallazgo y reglas al tocar el FC
 - [Plan de test LiDAR 2D + EV](2026-09-16_test_lidar2d_ev_offboard.md) — odometría externa con LiDAR 2D y altura con LiDAR 1D
+- [MPC del ciclo completo](MPC_CICLO_COMPLETO.md) — el control predictivo que corre en la Pi: modelo, por qué aceleración y no posición, coste de cómputo y deuda abierta
+- [Protocolo PID vs MPC](2026-10-16_protocolo_pid_vs_mpc.md) — cómo se vuela y qué se mide para que la comparación de controladores signifique algo
 - [Gaps de investigación para publicar](2026-10-01_gaps_publicacion.md) — literatura reciente frente a lo que ya hay medido; hacia dónde enfocar el próximo paper
 - [Offboard RPi ⇄ FC (uXRCE-DDS)](CONFIGURACION_OFFBOARD_RPI4.md)
 - [Integración MTF-01P flujo + LiDAR](INTEGRACION_MTF-01P_FLOW_LIDAR.md)

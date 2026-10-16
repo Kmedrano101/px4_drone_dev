@@ -35,7 +35,11 @@ over ROS 2 / uXRCE-DDS.
 - ✅ Firmware optimized (removed FW/VTOL modules → FLASH 98.5% → 92%)
 - ✅ 2nd drone (FC#2, vendor PX4 1.14.3) brought up — MTF-01P on TEL4 via SD `extras.txt`, 97 params migrated from FC#1
 - ✅ Simulación Gazebo del dron real (RJX F450 + MTF-01P + D500) en la zona indoor escaneada
-- 🔄 Indoor position hold — flow-only path blocked (no yaw without EV) on **both** FCs; FC#2 has no compass at all; **next: Livox + FAST-LIO → EV**
+- ✅ Heading and position without a compass via **2D SLAM (LD19) → external vision**: EV fusion validated, ground arming in Offboard
+- ✅ 360° obstacle stop from the raw 2D scan, honest EV variance, and onboard-computer load logged with every test
+- 🔄 **Whole-cycle MPC** (acados, bounded jerk) built on the Pi — 4.4–9.3 ms solver, no flight test yet
+- 🔄 Altitude hold capped by **1D LiDAR saturation** over dark concrete: usable band ≤1 m
+- ⏳ In-flight PID vs MPC comparison (takeoff – 30 s hold – land at 0.8 m)
 - ⏳ Full indoor navigation with 3D LiDAR (Livox + FAST-LIO)
 
 ## Installation
