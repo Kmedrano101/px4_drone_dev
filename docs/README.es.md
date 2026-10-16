@@ -73,6 +73,8 @@ Los plots salen en `scripts/output/<log>/*.png`. Ver [`scripts/README.md`](../sc
 - [Conexión MAVLink con scripts](CONEXION_MAVLINK_SCRIPTS.md) — hablar con el FC por cable o radio sin QGC
 - [Metodología de trabajo](METODOLOGIA_TRABAJO.md) — cómo se analiza, dónde queda cada hallazgo y reglas al tocar el FC
 - [Plan de test LiDAR 2D + EV](2026-09-16_test_lidar2d_ev_offboard.md) — odometría externa con LiDAR 2D y altura con LiDAR 1D
+- [Lo que está verificado en el fuente de PX4 1.14.3](PX4_1143_FUENTE_VERIFICADO.md) — hechos leídos en el código del tag que corre el FC, con archivo y línea: control, offboard, EV, altura y lo que el firmware de fábrica no expone
+- [El software de la Raspberry Pi](SOFTWARE_ROS2_PX4_DRONE.md) — qué nodo corre, qué protege cada guarda y el incidente que la pagó
 - [MPC del ciclo completo](MPC_CICLO_COMPLETO.md) — el control predictivo que corre en la Pi: modelo, por qué aceleración y no posición, coste de cómputo y deuda abierta
 - [Protocolo PID vs MPC](2026-10-16_protocolo_pid_vs_mpc.md) — cómo se vuela y qué se mide para que la comparación de controladores signifique algo
 - [Gaps de investigación para publicar](2026-10-01_gaps_publicacion.md) — literatura reciente frente a lo que ya hay medido; hacia dónde enfocar el próximo paper

@@ -25,6 +25,30 @@ El usuario debe estar en el grupo `dialout` para abrir los puertos serie.
 
 ---
 
+## 0bis. Copia en la Raspberry Pi: `~/mavlink_tools/`
+
+El FC está conectado **por USB a la Pi**, no al desktop, así que las pruebas en
+el parking se hacen desde allí. Las herramientas están copiadas en
+`~/mavlink_tools/` (`fc.py`, `shell.py`, `logs.py`, `dump_params.py`,
+`set_params.py`, `monitor_sensors.py`), con el mismo venv `~/.venvs/mav`:
+
+```bash
+ssh kevin@192.168.1.221
+cd ~/mavlink_tools
+FC_DEV=/dev/ttyACM0 ~/.venvs/mav/bin/python dump_params.py /tmp/params.params
+```
+
+Son la única vía para el flujo óptico y el rango: el firmware de fábrica
+**no los exporta por DDS** (ver
+[`PX4_1143_FUENTE_VERIFICADO.md`](PX4_1143_FUENTE_VERIFICADO.md) §5).
+
+⚠️ **Nunca `pkill -f <patrón>` en la Pi:** el patrón coincide con la propia
+sesión SSH y la mata. Pasó tres veces. Usar `pkill -x <comm>`.
+
+⚠️ El SSH de esta Pi **se cae a ratos** (`No route to host`). Para algo que tarde,
+lanzarlo con `nohup setsid` y dejar el resultado en un archivo, en vez de esperar
+con la sesión abierta.
+
 ## 1. Identificar el puerto
 
 ```bash
