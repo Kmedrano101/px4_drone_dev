@@ -147,13 +147,20 @@ Dos trampas ya pisadas, documentadas para no repetirlas:
    *"takeoff_hold_land_mpc.launch.py was not found in the share directory"*.
    Corregido en `px4_drone@1303427`. La webui, además, ya no ofrece una tarjeta
    cuyo launch o ejecutable no esté instalado (`px4_drone@7bd4f1f`).
-2. **Los nombres que genera acados v0.6.0 no son los que espera CMake.** v0.6.0
-   genera nombres de OCP con hash y una carpeta distinta. En la Pi se arregló
-   fijando `ocp.name = "px4_cycle_mpc"` y la exportación a `c_generated_code`, y
-   añadiendo `env-hooks/acados.dsv.in` (registrado en CMake) para meter las
-   bibliotecas transitivas de acados en `LD_LIBRARY_PATH` al cargar el workspace.
-   ⚠️ **Estos dos cambios viven solo en la copia de trabajo de la Pi, sin commit.**
-   Ver §9.
+2. **Los nombres que genera acados v0.6.0 no son los que espera CMake.** El
+   desktop tiene v0.5.3 y la Pi v0.6.0, y no dejan el solver en el mismo sitio:
+   v0.6.0 deriva el nombre del OCP de un hash y exporta a su propia carpeta, así
+   que CMake buscaba `acados_solver_px4_cycle_mpc.h` donde no se había escrito
+   nada y **dejaba el nodo fuera de la compilación en silencio**. Se fija
+   `ocp.name = "px4_cycle_mpc"` y la exportación a `c_generated_code`, que es lo
+   que incluye el wrapper C++ y lo que CMake comprueba (en v0.6 el atributo se
+   movió a `code_gen_options`, así que se escribe el que exista).
+   Y se instala `env-hooks/acados.dsv.in`, registrado con
+   `ament_environment_hooks`: acados enlaza sus propias bibliotecas transitivas y
+   solo se encuentran si `ACADOS_DIR/lib` está en `LD_LIBRARY_PATH` al cargar el
+   workspace. Sin el hook el nodo compila y luego **no carga**.
+   Commiteado en `px4_drone@9f1b9a3` (2026-10-16), después de dos días viviendo
+   solo en la copia de trabajo de la Pi.
 
 Tarda ~6 min con `-j1` en la Pi.
 
@@ -163,9 +170,9 @@ Tarda ~6 min con `-j1` en la Pi.
   casos numéricos (status 0), `ldd` resuelto, ROS 2 enumera el ejecutable.
 - ✅ Comunicación FC → Pi recuperada tras arrancar el cliente DDS desde QGC.
 - ⛔ **Sin prueba de vuelo.** El dron no se ha armado con el MPC.
-- ⛔ **Deuda de código:** los dos arreglos de acados v0.6.0 de la Pi **no están
-  en el repo**. Si se reinstala la Pi o alguien clona en limpio, el MPC no
-  compila. Hay que traerlos y commitearlos.
+- ✅ **Deuda de código cerrada** (2026-10-16): los dos arreglos de acados v0.6.0
+  ya están commiteados en la Pi (`9f1b9a3`); un clon en limpio vuelve a compilar
+  el MPC. Pendiente de `git push` desde la Pi.
 - ⚠️ El cliente DDS del FC se arrancó a mano desde QGC; **no se ha comprobado que
   persista tras reiniciar el FC**.
 
