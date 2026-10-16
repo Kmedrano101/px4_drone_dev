@@ -166,8 +166,9 @@ Tarda ~6 min con `-j1` en la Pi.
 
 ## 9. Estado y deuda abierta
 
-- ✅ Compilado e instalado en la Pi (2026-10-14). Solver verificado con cuatro
-  casos numéricos (status 0), `ldd` resuelto, ROS 2 enumera el ejecutable.
+- ✅ Compilado e instalado en la Pi (2026-10-14; **recompilado el 2026-10-16**
+  con los arreglos de acados ya en el repo, `FIN_RC=0`). Solver verificado con
+  cuatro casos numéricos (status 0), `ldd` resuelto, ROS 2 enumera el ejecutable.
 - ✅ Comunicación FC → Pi recuperada tras arrancar el cliente DDS desde QGC.
 - ⛔ **Sin prueba de vuelo.** El dron no se ha armado con el MPC.
 - ✅ **Deuda de código cerrada** (2026-10-16): los dos arreglos de acados v0.6.0

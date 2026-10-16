@@ -53,7 +53,7 @@ IMU+baro derivando. La altura sigue siendo barómetro + LiDAR 1D en su zona buen
 | 2 | `EKF2_RNG_A_HMAX` 1.5 → **1.0** en el FC | ✅ 2026-10-16, verificado en un volcado completo (908/908) |
 | 3 | Techo de altura de los nodos `kMaxHeightM` 1.2 → **1.0** | ✅ `px4_drone@54ade05`; las tres tarjetas de vuelo de la webui pasan a 0.8 m por defecto y 1.0 m de máximo |
 | 4 | Traer al repo los dos arreglos de acados v0.6.0 que viven solo en la Pi | ✅ `px4_drone@9f1b9a3` (2026-10-16), sin push todavía |
-| 5 | `git pull` + `./scripts/mpc/build_on_this_machine.sh` en la Pi (~6 min) | ⏳ **obligatorio ahora**: el techo de 1.0 m es una constante de compilación |
+| 5 | `git pull` + `./scripts/mpc/build_on_this_machine.sh` en la Pi | ✅ 2026-10-16, `FIN_RC=0` sin errores; los dos binarios recompilados **después** del cambio de cabecera (`takeoff_position_hold_ev` 11:09, `takeoff_hold_land_mpc` 12:51), y la webui reiniciada |
 | 6 | Cliente DDS del FC arrancando **solo**, sin tener que lanzarlo desde QGC | ⏳ |
 | 7 | `EKF2_EV_CTRL = 9` en el FC | ✅ |
 | 8 | Baro: SPL06 a 79 °C con motores parados (IMUs a 64–66 °C). Vigilar, no bloquea | ⚠️ |

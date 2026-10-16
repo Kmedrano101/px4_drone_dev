@@ -111,6 +111,17 @@ generado y **deja el nodo MPC fuera en silencio**. Detalle en
 Las constantes de seguridad (el techo de 1.0 m, por ejemplo) son `constexpr`:
 **cambiarlas exige recompilar**, no basta con tocar el launch.
 
+⚠️ El workspace usa **`--symlink-install`**, así que lo que hay en
+`install/px4_drone/lib/px4_drone/` son **enlaces simbólicos** a `build/`, creados
+una sola vez. Su fecha es la del enlace, no la del binario: para saber si algo se
+recompiló hay que mirar el destino (`stat -L`, o directamente `build/`). Mirar la
+fecha del enlace hace creer que el binario es de hace un mes.
+
+⚠️ La webui es un servicio systemd (`px4-webui`): las plantillas se releen en
+cada petición, pero **`app.py` solo se lee al arrancar**. Tras cambiar las
+tarjetas hay que reiniciar el servicio o los valores por defecto siguen siendo
+los viejos aunque la página parezca nueva.
+
 ## 6. Herramientas MAVLink en la Pi
 
 En `~/mavlink_tools/`, con `pymavlink` en el venv `~/.venvs/mav`. Hacen falta
