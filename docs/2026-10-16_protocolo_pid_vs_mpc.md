@@ -107,6 +107,13 @@ sola no se distingue una mejora de la variabilidad entre vuelos.
 Offboard por **ch6/ch8** del RC (los sticks no sacan de Offboard:
 `COM_RC_OVERRIDE`). HOLD y ATERRIZAR disponibles en la webui.
 
+**El switch del RC manda.** El nodo no fuerza OFFBOARD: espera a que el switch
+del piloto esté ahí, y desde `px4_drone@f5e1ab2` lo revisa **cada ciclo hasta que
+sale el ARM** (antes solo una vez, y en los hasta 13 s siguientes el dron armaba
+aunque el piloto hubiese movido el switch). Si el switch se mueve en vuelo, el
+nodo deja de publicar y no le pisa el control. Detalle en
+[`SOFTWARE_ROS2_PX4_DRONE.md`](SOFTWARE_ROS2_PX4_DRONE.md) §3.
+
 ## 5. Protección anticolisión con el LiDAR 2D — verificado el 2026-10-16
 
 Se revisó el código en la Pi, no la documentación. Resultado: **la protección

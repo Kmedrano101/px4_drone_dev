@@ -60,10 +60,28 @@ que el MPC no tiene.
 | **Techo de altura** | el nodo **se niega a arrancar** por encima de 1.0 m | El LiDAR 1D satura: por encima no hay referencia de altura |
 | **Rechazo del suelo** | descarta los rayos que medirían el suelo con el dron inclinado | Falsos positivos del guard al inclinarse |
 | **`/scan` inservible** | sin `/scan`, con más de 0.5 s de antigüedad o con <10 % de rayos válidos: no arma, y en vuelo para | *Sin LiDAR no se puede garantizar la distancia* |
+| **Entrada solo por RC** | el nodo **nunca fuerza OFFBOARD**: espera a que el switch del piloto esté en OFFBOARD (`nav_state_user_intention`) y lo revisa **cada ciclo hasta que sale el ARM**; si no, aborta sin armar | El modo lo decide el piloto, no el companion |
+| **Salida simétrica en vuelo** | cada ciclo comprueba `nav_state`, failsafe y armado; si el control ya no es nuestro, **deja de publicar** y no toca `NAV_LAND` ni `ARM` | Vuelo 2 (2026-09-11): un LAND de la Pi **pisó al piloto** |
 | **Escape por RC** | ch6/ch8 | Los sticks **no** sacan de Offboard (`COM_RC_OVERRIDE`) |
 
 ⚠️ La parada por obstáculo **se puede desactivar** poniendo 0 en la webui. Antes
 de cada prueba hay que leer en el log `Parada por obstaculo ACTIVA`.
+
+### La puerta del switch del RC, en detalle
+
+Es la guarda más crítica, así que conviene tenerla clara:
+
+| Momento | Qué se exige |
+|---|---|
+| Antes de pedir OFFBOARD | `nav_state_user_intention == OFFBOARD`, o sea el switch del piloto ya puesto. Timeout de **10 s** y aborta sin tocar OFFBOARD ni ARM |
+| Entre esa confirmación y el ARM | **Se vuelve a comprobar cada ciclo** (`px4_drone@f5e1ab2`). Antes solo se miraba una vez, y en los **hasta 13 s** que pasan —10 esperando la confirmación del FC más 3 de `kArmDelayCycles`— el piloto podía mover el switch y el dron armaba igual, porque `offboard_confirmed_` es un pestillo que no se suelta |
+| Después de enviar el ARM | Lo cubre el chequeo de vuelo desde `kTakeoff`: deja de publicar sin quitarle el control al piloto |
+| En vuelo, cada ciclo | `nav_state` sigue en OFFBOARD, sin failsafe y armado |
+
+Que `nav_state_user_intention` **funciona en el 1.14.3 de fábrica** no es una
+suposición: lo demuestra la prueba de armado en tierra del 2026-09-17, que pasó
+esta puerta. Si el firmware no rellenara el campo, el nodo abortaría siempre a
+los 10 s.
 
 ⚠️ El rechazo del suelo saca la altura del plano del láser de
 `dist_bottom + 0.134 m`, o sea **del LiDAR 1D que satura**. Subestimar la altura
