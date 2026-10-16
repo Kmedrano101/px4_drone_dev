@@ -108,6 +108,11 @@ al lanzar una prueba en medio de una compilación.
 - **HOLD y ATERRIZAR**: `SIGUSR1`/`SIGUSR2` **al ejecutable del nodo**, nunca al
   envoltorio `ros2 launch`. Mandarla a `timeout` dejó una vez **el nodo volando
   solo**: la señal mató al envoltorio y el nodo siguió publicando setpoints.
+- **Limpiar** (panel de logs): limpia **solo la pantalla**. No trunca nada: la
+  página recuerda por qué línea iba y pide el log desde ahí, así que el archivo
+  de la prueba queda entero — es el registro y es lo que se analiza después del
+  vuelo. Al empezar otra prueba se vuelve a mostrar todo, porque el log es otro
+  archivo.
 - **sysmon**: con cada prueba deja `<run>_sysmon.csv` (CPU por núcleo,
   temperatura, throttling, RAM, procesos y tasas de `/scan` y `/pose`) y un
   resumen al final del log. Una prueba sin esto no se puede defender: no se sabe
