@@ -42,7 +42,7 @@ Con los valores por defecto vuela; estos deciden **cuánto se fía** el EKF de c
 | `EKF2_OF_QMIN` | **30** | 0–255 | Calidad mínima del flujo **en vuelo**. Por debajo, la muestra se descarta. El MTF-01P da 90-100 sobre suelo con textura y **cae a 6-10 en altura**: ahí el EKF se queda sin posición |
 | `EKF2_OF_QMIN_GND` | **0** | 0–255 | Lo mismo **en tierra**. En 0 acepta cualquier calidad con el dron apoyado |
 | `EKF2_MIN_RNG` | **0.17 m** ✅ | ≥0.01 | Lectura esperada del LiDAR con el dron **apoyado en las patas**. Medido 2026-09-17: 0.16–0.17 m, varianza 0. Es el suelo del HAGL (`terrain_estimator.cpp:78`) y de la medida de rango (`range_height_control.cpp:101`): con el 0.10 anterior el EKF creía estar 7 cm por debajo del suelo real al despegar |
-| `EKF2_RNG_A_HMAX` | **1.5** ⚠️ → bajar a **1.0** | 1.0–10.0 | Altura máxima para el modo condicional del rango (el 12.0 anterior estaba fuera del rango documentado y era 5× el techo real). Ojo a la histéresis: **engancha por debajo de 0.7× = 1.05 m** y se mantiene hasta 1.5 m (`range_height_control.cpp:220`). ⚠️ **Pendiente de aplicar: 1.5 → 1.0.** A 1.5 m el sensor miente un 17 % y el EKF se lo cree. Con 1.0 la ayuda engancha por debajo de 0.70 m y se mantiene hasta 1.0 m, que es la zona honesta del sensor |
+| `EKF2_RNG_A_HMAX` | **1.0** ✅ | 1.0–10.0 | Altura máxima para el modo condicional del rango (el 12.0 anterior estaba fuera del rango documentado y era 5× el techo real). Ojo a la histéresis: **engancha por debajo de 0.7× = 1.05 m** y se mantiene hasta `HMAX` (`range_height_control.cpp:220`). **Aplicado 1.5 → 1.0 el 2026-10-16** (verificado en el FC): a 1.5 m el sensor mentía un 17 % y el EKF se lo creía. Con 1.0 la ayuda engancha por debajo de **0.70 m** y se mantiene hasta 1.0 m, que es la zona honesta del sensor |
 | `EKF2_RNG_A_VMAX` | **1.0 m/s** | 0.1–2 | Velocidad horizontal máxima para el modo condicional |
 | `EKF2_RNG_NOISE` | **0.10 m** | ≥0.01 | Ruido asumido del rango |
 | `EKF2_RNG_SFE` | **0.05 m/m** | 0–0.2 | Ruido proporcional a la distancia. ⚠️ **Medido: 24 % de error a 2 m y 29 % a 3 m**, muy por encima del 5 % asumido. No es ruido aleatorio sino un sesgo por saturación, así que subir este parámetro no lo arregla: hay que volar por debajo de 1 m |
@@ -146,6 +146,13 @@ Radio de telemetría: `MAV_0_CONFIG=101` (TEL1), `SER_TEL1_BAUD=57600`, `MAV_0_R
 |---|---|---|---|
 | `COM_FLTMODE1` | 7 (Offboard) | **2 (Position)** | Position no está en ningún slot; Offboard sin flujo de datos da failsafe |
 | `EKF2_EV_DELAY` | 0 ms | medir | Latencia del SLAM 2D. Sin medir no se puede fusionar EV con garantías |
+
+### Aplicado el 2026-10-16 (verificado con un volcado completo, 908/908 params)
+
+`EKF2_RNG_A_HMAX` 1.5→**1.0**, para que la ayuda de rango del EKF solo entre donde el
+sensor es honesto ([reporte de la saturación](../reports/2026-10-16_lidar1d-saturacion-reflectividad.md)).
+En el mismo paso, el techo de altura de los nodos bajó de 1.2 a 1.0 m en el código
+(`px4_drone@54ade05`) para que firmware y software digan lo mismo.
 
 ### Aplicado el 2026-09-17 (por USB, `set_params.py`, verificado y guardado)
 
