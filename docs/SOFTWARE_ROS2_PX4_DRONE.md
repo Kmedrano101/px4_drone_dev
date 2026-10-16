@@ -76,6 +76,17 @@ Lanza cada prueba con su rosbag, su log y su monitor de carga, y **no ofrece una
 tarjeta cuyo launch o ejecutable no esté instalado** — eso nació de un error real
 al lanzar una prueba en medio de una compilación.
 
+- **Cada prueba es un panel desplegable** (`<details>` nativo) y solo hay **uno
+  abierto a la vez**: nueve tarjetas abiertas no caben en un móvil con una mano,
+  y bajar hasta la de abajo pasaba el dedo por encima del *Lanzar* de un despegue
+  real. La cabecera del panel ya dice lo que hace falta saber sin abrirlo: el
+  nombre, el distintivo **VUELO REAL** si esa prueba arma, y **no disponible** si
+  falta su ejecutable. Recuerda cuál estaba abierto (`localStorage`), y la prueba
+  en marcha se marca en amarillo y se abre una vez, al empezar.
+- Las dos tarjetas de la comparación se llaman **"Ciclo completo con PID"** y
+  **"Ciclo completo con MPC"**, con los mismos valores por defecto, para no
+  confundir corridas ([protocolo](2026-10-16_protocolo_pid_vs_mpc.md) §4).
+
 - **HOLD y ATERRIZAR**: `SIGUSR1`/`SIGUSR2` **al ejecutable del nodo**, nunca al
   envoltorio `ros2 launch`. Mandarla a `timeout` dejó una vez **el nodo volando
   solo**: la señal mató al envoltorio y el nodo siguió publicando setpoints.
