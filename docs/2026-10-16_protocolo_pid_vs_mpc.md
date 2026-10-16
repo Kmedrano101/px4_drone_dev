@@ -71,12 +71,34 @@ obstacle_stop_distance_m = 1.0
 mpc_descent_agl_m        = 0.25    (solo MPC; luego entrega a NAV_LAND)
 ```
 
-Orden de las corridas:
+Las dos corridas se lanzan desde la **webui de la Pi (puerto 5000)**, que es la
+que deja rosbag, log y `sysmon.csv` con cada prueba. Lanzarlas a mano por
+`ros2 launch` vuela igual pero **no recoge nada**, así que no sirve para comparar.
 
-1. **Corrida A — PID** (`takeoff_position_hold_ev`): es la línea base. Si falla,
-   no se vuela el MPC: el problema no sería del controlador.
-2. **Corrida B — MPC** (`takeoff_hold_land_mpc`), mismo perfil, mismo sitio,
-   misma batería si da (o anotar el voltaje de inicio de cada una).
+| | Corrida A — **PID** (línea base) | Corrida B — **MPC** |
+|---|---|---|
+| Tarjeta de la webui | **Ciclo completo con PID (takeoff-hold-land)** | **Ciclo completo con MPC (takeoff-hold-land)** |
+| `launch_file` | `takeoff_position_hold_ev.launch.py` | `takeoff_hold_land_mpc.launch.py` |
+| Ejecutable (el que recibe HOLD/ATERRIZAR) | `takeoff_position_hold_ev` | `takeoff_hold_land_mpc` |
+| Controlador | cascada P/PID de PX4, setpoints de **posición** | MPC en la Pi, setpoints de **aceleración** |
+
+**Primero la A.** Es la línea base: si falla, no se vuela el MPC, porque el
+problema no estaría en el controlador. Luego la B, mismo perfil, mismo sitio, y
+misma batería si da (o anotar el voltaje de inicio de cada una).
+
+Las dos tarjetas comparten ya los mismos valores por defecto —0.8 m de altura,
+30 s de hold, parada por obstáculo a 1.0 m— precisamente para que lanzarlas "con
+lo que viene puesto" produzca dos corridas comparables (`px4_drone@66d78be`; antes
+una tenía 5 s de hold y la otra 10 s). Lo único que debe cambiar entre A y B es
+el controlador.
+
+Equivalente por consola, si alguna vez hace falta sin la webui:
+
+```bash
+ros2 launch px4_drone takeoff_position_hold_ev.launch.py \
+  confirm_takeoff:=true takeoff_height_m:=0.8 hold_seconds:=30 \
+  obstacle_stop_distance_m:=1.0
+```
 
 Repetir cada corrida **3 veces** si el tiempo y la batería lo permiten: con una
 sola no se distingue una mejora de la variabilidad entre vuelos.
