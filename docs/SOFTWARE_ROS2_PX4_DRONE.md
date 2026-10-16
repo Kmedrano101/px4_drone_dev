@@ -135,6 +135,28 @@ una sola vez. Su fecha es la del enlace, no la del binario: para saber si algo s
 recompiló hay que mirar el destino (`stat -L`, o directamente `build/`). Mirar la
 fecha del enlace hace creer que el binario es de hace un mes.
 
+### Comprobar que una prueba arrancará, sin volar
+
+El error *"`<launch>` was not found in the share directory"* salía al lanzar
+durante una compilación: `install/.../share/px4_drone/launch/` se queda vacío
+mientras colcon trabaja. La webui ya no ofrece una tarjeta en ese estado, pero
+después de compilar conviene comprobarlo en un **entorno limpio**, igual que
+quedaría tras reiniciar la Pi, con los mismos tres `source` que usa la webui:
+
+```bash
+env -i HOME=/home/kevin bash -c '
+  source /opt/ros/jazzy/setup.bash
+  source /home/kevin/evarobot_ws/install/setup.bash
+  source /home/kevin/drone_ws/install/setup.bash
+  ros2 launch px4_drone takeoff_hold_land_mpc.launch.py --show-args
+  ldd /home/kevin/drone_ws/install/px4_drone/lib/px4_drone/takeoff_hold_land_mpc | grep "not found"
+'
+```
+
+`--show-args` resuelve el launch y **no vuela nada**: si imprime los argumentos,
+el launch está instalado. El `ldd` debe dar cero líneas: confirma que
+`acados/lib` entra por el hook de entorno. Verificado así el 2026-10-16.
+
 ⚠️ La webui es un servicio systemd (`px4-webui`): las plantillas se releen en
 cada petición, pero **`app.py` solo se lee al arrancar**. Tras cambiar las
 tarjetas hay que reiniciar el servicio o los valores por defecto siguen siendo
