@@ -167,7 +167,52 @@ cada petición, pero **`app.py` solo se lee al arrancar**. Tras cambiar las
 tarjetas hay que reiniciar el servicio o los valores por defecto siguen siendo
 los viejos aunque la página parezca nueva.
 
-## 6. Herramientas MAVLink en la Pi
+## 6. Ver el LiDAR 2D de la Pi en RViz (desktop)
+
+El desktop y los procesos ROS lanzados por la webui de la Pi deben usar exactamente:
+
+```bash
+ROS_DOMAIN_ID=10
+RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+```
+
+CycloneDDS queda restringido a la LAN cableada: `eno2` en el desktop (`192.168.1.109`) y
+`eth0` en la Pi (`192.168.1.221`). Esto evita que CycloneDDS elija un puente Docker o la
+Wi-Fi de la Pi.
+
+En el desktop, lanzar solo RViz con:
+
+```bash
+./scripts/run_rviz_lidar_desktop.sh
+```
+
+El script carga `ros2/cyclonedds-desktop.xml` y `ros2/slam_test.rviz`. La configuración
+muestra `/scan`, `/tf` y `/map`, con `map` como *Fixed Frame*. RViz no publica setpoints ni
+arma el vehículo.
+
+La Pi debe tener `config/cyclonedds-pi.xml` y la webui debe exportar las mismas tres variables
+para cada `ros2 launch`, `ros2 bag record` y `sysmon`. Tras actualizar `app.py`, reiniciar solo
+la webui en la Pi:
+
+```bash
+sudo systemctl restart px4-webui
+```
+
+Con un nodo de sensores activo en la Pi, comprobar desde el desktop antes de abrir RViz:
+
+```bash
+source /opt/ros/jazzy/setup.bash
+export ROS_DOMAIN_ID=10
+export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+export CYCLONEDDS_URI="file://$PWD/ros2/cyclonedds-desktop.xml"
+ros2 topic hz /scan
+```
+
+Debe mostrar aproximadamente 10 Hz. Si no descubre `/scan`, verificar que ambos equipos están
+en la red `192.168.1.0/24`, que no hay nodos todavía activos con dominio 0 y que el firewall
+no bloquea el multicast DDS.
+
+## 7. Herramientas MAVLink en la Pi
 
 En `~/mavlink_tools/`, con `pymavlink` en el venv `~/.venvs/mav`. Hacen falta
 porque el firmware de fábrica **no exporta flujo ni rango por DDS**, y porque el
@@ -188,7 +233,7 @@ FC_DEV=/dev/ttyACM0 ~/.venvs/mav/bin/python ~/mavlink_tools/dump_params.py out.p
 ⚠️ **Nunca `pkill -f <patrón>`** en la Pi: coincide con la propia sesión SSH y la
 mata (pasó tres veces). Usar `pkill -x <comm>`.
 
-## 7. Reglas de datos
+## 8. Reglas de datos
 
 - **Ningún log de más de 5 MB al repo** — `.ulg`, rosbags y cualquier dato crudo.
 - Los comentarios de `.gitignore`, siempre en su propia línea.
