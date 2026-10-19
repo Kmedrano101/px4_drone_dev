@@ -44,3 +44,7 @@ logs/2026-09-18/log158.ulg
 # Rosbag del vuelo del patrón en cruz (8 MB). El análisis está en ese mismo reporte, y los
 # barridos exportados para reproducir la parada por obstáculo pesan poco: px4_drone/tools/obstacle_guard/.
 logs/2026-09-18/cross_pattern_1789649199_bag/
+
+# Rosbags, logs de nodo y sysmon de las pruebas PID/MPC de la RPi (64 MB).
+# Analizados en reports/2026-10-19_pid-mpc-pruebas-guardas-rpi.md.
+logs/2026-10-16/rpi_pid_mpc/
