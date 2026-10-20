@@ -282,6 +282,30 @@ afecta a todo lo demás: `THR_MDL_FAC = 0`. **Hay que medirlo en banco** antes d
 como parámetro por eso. Un hover a 0.8 m con el CTBR enganchado y `thrust_norm` en el bag
 contra `dist_bottom` es la medida.
 
+#### Lo que encontró la segunda lectura (2026-10-20)
+
+Revisar el nodo como revisor y no como autor sacó **cuatro fallos**, todos en el mismo sitio:
+la frontera entre "publicamos" y "ya no deberíamos publicar". Corregidos antes de ningún vuelo:
+
+1. **El lazo rápido no comprobaba la fase.** Cuando el hold termina la base manda `NAV_LAND`, y
+   cuando el piloto toma el mando `controlLostDuringFlight()` deja el estado en `kFinished` y
+   la base calla — pero el temporizador de 50 Hz **seguía inyectando `vehicle_rates_setpoint`
+   en uORB**, que el controlador de tasas obedece en cualquier modo (#26712). Es la clase de
+   accidente del vuelo 2 del 11-09. Ahora `lazoRapido()` comprueba `inHoldPhase()` antes que
+   cualquier dato.
+2. **`soltar()` publicaba posición y heartbeat aunque el control ya no fuera nuestro.** Ahora,
+   si `offboardArmed()` es falso, no publica nada: la entrega es dejar de hablar.
+3. **Al enganchar, el heartbeat `body_rate` tardaba hasta un ciclo de 20 Hz**, y durante esos
+   50 ms el controlador de actitud de PX4 y el nodo publicaban a la vez en el mismo topic. Ahora
+   sale en el acto, como hace `enterObstacleStop` con el frenado.
+4. **Un desenganche por causa se re-enganchaba al ciclo siguiente** en cuanto la condición se
+   relajaba: a tirones sobre una inclinación marginal. Ahora es definitivo para ese ciclo
+   (`no_reenganchar_`); el resto del hold lo vuela PX4.
+
+La regla que sale de esto, y que vale para cualquier nodo futuro: **todo lazo que publique algo
+que PX4 obedece fuera de Offboard tiene que comprobar la fase y `offboardArmed()` en cada
+tick, no solo al arrancar.** La base expone ambos como lecturas puras, sin efectos.
+
 #### Dos avisos de seguridad que no son negociables
 
 - [Los setpoints por uXRCE-DDS no están filtrados por el modo de
