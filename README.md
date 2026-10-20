@@ -81,6 +81,7 @@ Plots are written to `scripts/output/<log>/*.png`. See [`scripts/README.md`](scr
 - [2D-LiDAR EV test plan](docs/2026-09-16_test_lidar2d_ev_offboard.md) — external vision from a 2D scanner, 1D LiDAR for altitude
 - [Research gaps for publication](docs/2026-10-01_gaps_publicacion.md) — literature review vs what the group already has; where the next paper should go
 - [Smooth-and-repeatable tuning plan](docs/2026-10-19_plan_tuning_takeoff_hold_land.md) — the order of layers (mechanics → estimation → rates → thrust → outer loop), what to measure per phase, candidate targets
+- [FC parameters for smooth flight](docs/2026-10-20_parametros_vuelo_suave_produccion.md) — what the FC holds today (903-param dump), what PX4 does to our setpoints during takeoff, and what to change in order of effect
 - [Companion for a MID-360S](docs/2026-10-19_companion_mid360s_slam.md) — what would replace the Pi for 3D LiDAR SLAM: evidence found, alternatives, acceptance test before buying
 
 **Diagnostic reports** (companion / RPi) — see [`reports/`](reports/README.md)
