@@ -37,7 +37,7 @@ over ROS 2 / uXRCE-DDS.
 - ✅ Simulación Gazebo del dron real (RJX F450 + MTF-01P + D500) en la zona indoor escaneada
 - ✅ Heading and position without a compass via **2D SLAM (LD19) → external vision**: EV fusion validated, ground arming in Offboard
 - ✅ 360° obstacle stop from the raw 2D scan, honest EV variance, and onboard-computer load logged with every test
-- 🔄 **Whole-cycle MPC** (acados, bounded jerk) built on the Pi — 4.4–9.3 ms solver; guarded 0.8 m takeoff/land exercised, full PID-vs-MPC hold comparison pending
+- 🔄 **Three MPC variants** built on the Pi: kinematic (4.4–9.3 ms), **MPC+** with a disturbance state (same binary, offset-free), and a **CTBR NMPC** with attitude in the model (2.7 ms mean, 5.9 ms max; engages only during the hold) — none flown yet
 - 🔄 Altitude hold capped by **1D LiDAR saturation** over dark concrete: usable band ≤1 m
 - ✅ **False obstacles on takeoff** solved: the 2D LiDAR's burst while the props spin (none with props stopped) is separated by the obstacle's **real width** — dust 0.03–0.09 m, a 40 cm pillar 0.40 m, a real obstacle 1.18–1.83 m
 - ⏳ In-flight PID vs MPC comparison (takeoff – 30 s hold – land at 0.8 m)

@@ -213,6 +213,12 @@ el patrón en cruz, vuelo cerca de obstáculos).
 comparación sirve al ajuste del dron. Ver el [plan de tuning por capas y fases](2026-10-19_plan_tuning_takeoff_hold_land.md)
 para prerrequisitos, medidas y objetivos candidatos.
 
+**Actualización 2026-10-20:** la variante **C** tiene ahora tres formas, todas instaladas en la
+Pi: **C0** MPC cinemático (como estaba), **C1** MPC+ con estado de perturbación y compensación
+de retardo (mismo binario, `mpc_dist_gain=0.5`), y **C2** MPC moderno CTBR (tasas + empuje,
+engancha solo en el hold). Ver [MPC del ciclo completo §9](MPC_CICLO_COMPLETO.md#9-las-tres-variantes-de-mpc-2026-10-20).
+Orden de vuelo propuesto: A → C0 → C1 (son el mismo riesgo) → calibrar el empuje → C2.
+
 **Estado: pendiente de implementar/verificar las referencias y ejecutar las pruebas.**
 La comparación debe distinguir cuánto aporta suavizar la trayectoria y cuánto
 aporta cambiar el controlador exterior. No se presupone una ventaja del MPC.

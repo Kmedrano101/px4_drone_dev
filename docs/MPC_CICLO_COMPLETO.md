@@ -164,13 +164,146 @@ Dos trampas ya pisadas, documentadas para no repetirlas:
 
 Tarda ~6 min con `-j1` en la Pi.
 
-## 9. Estado y deuda abierta
+## 9. Las tres variantes de MPC (2026-10-20)
+
+A raíz de la revisión del estado del arte, el ciclo tiene ahora **tres** controladores
+predictivos además del PID, y es importante entender que no son tres versiones de lo mismo:
+
+| Tarjeta de la webui | Ejecutable | Modelo | Salida al FC | Qué cierra PX4 |
+|---|---|---|---|---|
+| **MPC** | `takeoff_hold_land_mpc` | triple integrador, `v'=a` | aceleración | actitud + tasas |
+| **MPC+** | **el mismo** `takeoff_hold_land_mpc` | triple integrador **con perturbación**, `v'=a+d` | aceleración | actitud + tasas |
+| **MPC moderno (CTBR)** | `takeoff_hold_land_ctbr` | **dinámica con actitud** (cuaternión), `[p,v,q]` | **tasas + empuje** | **solo tasas** |
+
+### 9.1 MPC+: el estado de perturbación que faltaba
+
+Un triple integrador **no tiene dónde meter un error constante**: ante un sesgo de empuje
+(`THR_MDL_FAC=0` deja el mapeo lineal y una hélice es cuadrática), una masa o batería
+distintas, o la deriva del barómetro, el lazo se asienta en un equilibrio vecino al de la
+referencia. Eso es sesgo permanente en el hold — una de las métricas del protocolo.
+
+Es la construcción estándar de MPC *offset-free* ([revisión de MPC para
+MAV](https://arxiv.org/pdf/2011.11104)): el modelo pasa a `v' = a + d`, con `d` como
+**parámetro** de acados (no como estado), así que el QP no crece y el solver no se encarece.
+Un observador en el nodo integra la diferencia entre la aceleración que el dron consiguió
+(`vehicle_local_position.ax/ay/az`) y la que el modelo predecía (`a_prev + d`).
+
+Dos detalles que no son de adorno:
+
+- **Solo adapta por encima de `mpc_dist_min_agl_m`** (0.35 m). En tierra, con la máquina de
+  despegue de PX4 por debajo de `rampup`, el FC **descarta nuestro setpoint** y mete 100 m/s²
+  hacia abajo ([parámetros](2026-10-20_parametros_vuelo_suave_produccion.md) §2): el residuo
+  medido ahí no es nuestra perturbación, y el observador se iría a su tope.
+- **Con `d = 0` el modelo es idéntico al anterior**, y el banco de pruebas lo demuestra: los
+  cuatro casos de siempre devuelven exactamente los mismos números. Un solo solver y una sola
+  compilación sirven para las dos variantes; la tarjeta MPC+ es el mismo binario con
+  `mpc_dist_gain = 0.5`.
+
+Con 0.8 m/s² de perturbación hacia abajo en la referencia, el solver manda −0.20 m/s² con jerk
+−4.0: compensa, limitado por el jerk, que es lo correcto.
+
+También lleva **compensación de retardo** (`mpc_delay_comp_s`): propaga el estado medido hacia
+delante con el mismo modelo antes de usarlo como condición inicial. Sale **apagada** a propósito:
+compensar un retardo equivocado es peor que no compensar. El nodo registra la edad del estado
+que usa (`edad_lp_ms` en `mpc_status`) para elegir el valor con datos.
+
+### 9.2 MPC moderno: empuje + velocidades angulares (CTBR)
+
+Es lo que publica la literatura ágil ([HPA-MPC](https://arxiv.org/pdf/2411.11982),
+[Dual-Channel Adaptive NMPC](https://arxiv.org/pdf/2507.15261)): el modelo incluye la
+actitud y la salida es lo que PX4 necesita para su lazo de tasas.
+
+```
+x = [p(3), v(3), q(4)]     u = [T, wx, wy, wz]
+p' = v
+v' = R(q)·[0,0,−T] + [0,0,g]     (NED; el empuje va por −z del cuerpo)
+q' = ½ q ⊗ [0, w]
+```
+
+`T` es empuje **específico** (m/s²), así que no hace falta la masa. Restricciones duras sobre
+el control: `T ∈ [0.5g, 1.6g]` (un multirrotor no tira hacia abajo) y tasas acotadas para
+interior. Coste lineal sobre el cuaternión, con el signo canónico `qw ≥ 0`: vale cerca de
+nivelado, que es el vuelo interior; para vuelo agresivo haría falta error de cuaternión.
+
+**Cabe en la Pi 4, y es más rápido que el cinemático.** Medido con N=20 × 0.05 s (horizonte
+1 s), 250 resoluciones sin carga de SLAM:
+
+| | |
+|---|---|
+| Solver | media **2.67 ms**, p95 3.32 ms, máx **5.87 ms** |
+| A 50 Hz (20 ms) | **cabe**: 29 % en el peor caso |
+| A 100 Hz (10 ms) | justo: 59 % |
+| A 150 Hz (6.7 ms) | no: 88 % |
+
+Las soluciones son físicamente correctas: en la referencia `T = 9.81 = g` con tasas nulas; 20 cm
+por debajo, 11.84; desde el suelo satura en 15.69 = 1.6 g; con 30 cm de error horizontal mete
+ωy = +1.34 rad/s para inclinarse. ⚠️ Sin carga de SLAM, DDS ni grabación: el lazo real hay que
+medirlo en vuelo.
+
+**Tu firmware de fábrica ya lo soporta**, verificado en el fuente del tag:
+`OffboardControlMode.body_rate` existe, `control_mode.cpp:144` deja **solo**
+`flag_control_rates_enabled`, y `/fmu/in/vehicle_rates_setpoint` está como suscripción en
+`dds_topics.yaml`. No hay que recompilar PX4.
+
+#### Lo que cambia de verdad, y por qué solo controla el hold
+
+`control_mode.cpp:169-175`: con solo `body_rate`, `flag_multicopter_position_control_enabled`
+es **falso** → **`mc_pos_control` no se ejecuta**. Desaparecen de golpe:
+
+- la máquina de despegue (spoolup, rampa, la sustitución del setpoint en tierra),
+- el límite de inclinación `MPC_TILTMAX_*`,
+- el estimador de empuje de hover,
+- cualquier interacción del controlador de posición con el detector de aterrizaje.
+
+**El empuje que publicamos va del mezclador a los motores sin nada en medio.** Despegar así en
+la primera prueba sería temerario, y además no hace falta: lo que se mide es el hold. Por eso
+`takeoff_hold_land_ctbr`:
+
+1. deja que PX4 despegue con setpoints de posición, igual que el ciclo PID;
+2. **se engancha** `ctbr_engage_delay_s` (3 s) después de entrar en el hold, si la actitud es
+   fresca (< 200 ms) y la inclinación está bajo `ctbr_max_tilt_deg`;
+3. arranca desde el empuje de hover y mueve el publicado con una rampa (`ctbr_thr_slew_per_s`)
+   para que el cambio de controlador no meta un escalón;
+4. **se suelta** y devuelve el mando a PX4 si la actitud se queda obsoleta, si el solver falla
+   5 ciclos seguidos, si la inclinación pasa del límite, al frenar por obstáculo, o al salir del
+   hold. Al soltar publica un setpoint de posición en el acto: el controlador de tasas de PX4
+   obedece el **último** setpoint recibido indefinidamente, así que dejar de publicar sin
+   soltar no es una opción;
+5. el descenso y el contacto los hace PX4 (`NAV_LAND`), como en el PID.
+
+Lazo propio a `ctbr_rate_hz` (50 Hz): el de la misión va a 20 Hz y no basta para cerrar actitud
+desde la Pi.
+
+#### El mapeo de empuje hay que calibrarlo
+
+`thrust_body` va normalizado en [0, 1]. El nodo usa un mapeo **lineal** con el hover como ancla:
+`T = g → ctbr_thr_hover` (0.30, el `MPC_THR_HOVER` del FC). Es aproximado por la misma razón que
+afecta a todo lo demás: `THR_MDL_FAC = 0`. **Hay que medirlo en banco** antes de fiarse; está
+como parámetro por eso. Un hover a 0.8 m con el CTBR enganchado y `thrust_norm` en el bag
+contra `dist_bottom` es la medida.
+
+#### Dos avisos de seguridad que no son negociables
+
+- [Los setpoints por uXRCE-DDS no están filtrados por el modo de
+  vuelo](https://github.com/PX4/PX4-Autopilot/issues/26712): van directos a uORB. Publicar
+  tasas afecta al vehículo **en cualquier modo**. El diseño de la base (dejar de publicar si el
+  control ya no es nuestro) pasa de buena práctica a imprescindible.
+- `vehicle_angular_velocity` está **comentado** en el `dds_topics.yaml` de 1.14.3: no llegan
+  las tasas medidas por ese topic. El giróscopo viene en `sensor_combined`.
+
+## 10. Estado y deuda abierta
 
 - ✅ Compilado e instalado en la Pi (2026-10-14; **recompilado el 2026-10-16**
   con los arreglos de acados ya en el repo, `FIN_RC=0`). Solver verificado con
   cuatro casos numéricos (status 0), `ldd` resuelto, ROS 2 enumera el ejecutable.
 - ✅ Comunicación FC → Pi recuperada tras arrancar el cliente DDS desde QGC.
-- ⛔ **Sin prueba de vuelo.** El dron no se ha armado con el MPC.
+- ⛔ **Sin prueba de vuelo.** El dron no se ha armado con ninguno de los tres MPC.
+- ✅ **MPC+ y CTBR compilados e instalados en la Pi** (2026-10-20): `takeoff_hold_land_mpc`
+  con el parámetro de perturbación, `takeoff_hold_land_ctbr` con 0 bibliotecas sin resolver,
+  los tres launches resueltos y las tres tarjetas en la webui.
+- ⚠️ **El mapeo de empuje del CTBR no está calibrado** (`ctbr_thr_hover`). No volar el CTBR
+  hasta medirlo.
+- ⚠️ El tiempo de solver del CTBR se midió **sin** carga de SLAM/DDS/grabación.
 - ✅ **Deuda de código cerrada** (2026-10-16): los dos arreglos de acados v0.6.0
   ya están commiteados en la Pi (`9f1b9a3`); un clon en limpio vuelve a compilar
   el MPC. Pendiente de `git push` desde la Pi.
