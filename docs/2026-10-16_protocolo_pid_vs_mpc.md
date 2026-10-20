@@ -1,15 +1,29 @@
 # Protocolo: comparación PID vs MPC en takeoff – hold – land
 
+**Actualización 2026-10-20:** en la Pi, los launches de ciclo PID y MPC usan
+`slam_health_enabled=false`: la sigma y la antigüedad de `/pose` no bloquean ni
+abortan estas pruebas; siguen las comprobaciones de posición del FC. La zona
+ciega es un círculo de **0.70 m de diámetro** centrado en el LiDAR
+(`obstacle_blind_radius_m=0.35`), en los 360°, y el debounce sube a
+**3 barridos** (`obstacle_debounce_scans=3`): con la zona ciega sola el PID
+habría vuelto a abortar. Los dos abortos del 16-oct eran **falsos positivos**
+del LiDAR 2D con las hélices girando, no obstáculos
+([análisis](../reports/2026-10-20_falsos-obstaculos-al-despegar.md)). Por indicación posterior del
+usuario, la guarda de obstáculos actúa **desde TAKEOFF**, con chequeo de espacio
+libre y barrido utilizable antes de armar. Esta configuración sustituye las descripciones de esas guardas
+en las secciones históricas siguientes. Ver el
+[reporte de revisión](../reports/2026-10-20_zona-ciega-circular-ciclos.md).
+
 Plan de la primera prueba de vuelo con el MPC y de su línea base con el PID.
 Se escribe **antes** de volar para que las dos pruebas sean comparables y para
 que los números salgan listos para el paper.
 
-**Estado:** ⏳ **no ejecutado**. Confirmado el 2026-10-16 contra la Pi: no se ha
-hecho ninguna prueba de takeoff–hold–land, ni con PID ni con MPC. Los logs más
-recientes de `tools/webui/logs/` son de `sensor_eval` del 14 de octubre a las
-14:41, y los dos únicos `mpc_cycle` son los intentos del día 14 que abortaron
-antes de pedir armado ([reporte](../reports/2026-10-14_mpc-compilado-rpi.md)).
-Este documento es el plan, no un resultado.
+**Estado:** 🔄 prueba de seguridad ejecutada el 2026-10-16; comparación pendiente.
+PID y MPC alcanzaron OFFBOARD y armaron a 0.8 m, pero PID aterrizó por salud del
+SLAM y MPC por la parada de obstáculo. **El aborto por obstáculo era falso** y está
+corregido y validado contra los bags; queda por explicar el `sigma_xy = 0.311 m` del SLAM. Los intentos a 1.2 m fueron rechazados antes
+de armar por el techo fiable del LiDAR 1D. No hubo hold de 30 s ni una pareja
+comparable; ver el [reporte](../reports/2026-10-19_pid-mpc-pruebas-guardas-rpi.md).
 
 ---
 
@@ -192,7 +206,59 @@ Un resultado negativo también vale y se publica igual: si el PID iguala al MPC 
 aparece, y buscarla donde el límite de jerk importe (trayectorias más agresivas,
 el patrón en cruz, vuelo cerca de obstáculos).
 
-## 8. Después de los vuelos
+## 8. Pendiente acordado: separar trayectoria y controlador (2026-10-19)
+
+**Objetivo de producto:** conseguir vuelo suave, estable y repetible. La
+comparación sirve al ajuste del dron. Ver el [plan de tuning por capas y fases](2026-10-19_plan_tuning_takeoff_hold_land.md)
+para prerrequisitos, medidas y objetivos candidatos.
+
+**Estado: pendiente de implementar/verificar las referencias y ejecutar las pruebas.**
+La comparación debe distinguir cuánto aporta suavizar la trayectoria y cuánto
+aporta cambiar el controlador exterior. No se presupone una ventaja del MPC.
+
+- [ ] Resolver las condiciones que interrumpieron las pruebas del 2026-10-16:
+  SLAM estable e inspección del retorno trasero del LiDAR. Mantener las guardas
+  activas; las corridas abortadas se registran, pero no sustituyen una pareja
+  completa y comparable.
+- [ ] Preparar tres variantes: **A**, línea base actual P/PID de PX4 con
+  consignas de posición; **B**, la misma cascada con una referencia suave de
+  posición, velocidad y aceleración, usando estas dos últimas como feedforward;
+  **C**, MPC exterior en la Pi con consignas de aceleración, conservando la
+  estabilización de actitud y tasas de PX4.
+- [ ] Verificar en PX4 1.14.3 y en los mensajes publicados que B mantiene
+  activo el control de posición y que C desactiva los lazos de posición y
+  velocidad (campos correspondientes en `NaN` y modo Offboard de aceleración).
+  La variante B es una propuesta pendiente, no una capacidad ya comprobada.
+- [ ] Comparar **A frente a B** para medir el efecto de la trayectoria suave;
+  comparar **B frente a C** con la misma referencia temporal y límites
+  nominales de velocidad, aceleración y jerk para evaluar el cambio de
+  controlador. Registrar los límites que realmente aplica cada variante;
+  las saturaciones de PX4 y las restricciones del MPC no son equivalentes.
+- [ ] Mantener misión, estimador, ganancias internas de PX4, guardas, lugar,
+  altura de 0.8 m, hold de 30 s y registro iguales. Anotar batería, carga útil,
+  condiciones y versiones/configuración de cada corrida. Alternar el orden
+  B/C una vez validada la línea base para reducir el sesgo de batería u orden.
+- [ ] Obtener al menos tres corridas completas por variante. Separar las
+  ventanas de despegue, hold y descenso, y documentar cuándo se entrega el
+  control a `NAV_LAND` para no atribuir al controlador externo su fase final.
+- [ ] Medir error RMS y máximo de posición/altura, sobrepasamiento, tiempo de
+  asentamiento, deriva y variabilidad durante hold; aceleración y jerk
+  comandados y, cuando sea posible, respuesta medida con el mismo filtrado.
+  Distinguir suavidad de la consigna y suavidad del movimiento real.
+- [ ] Registrar tiempo de solver medio, p95 y máximo, fallos del solver,
+  periodo efectivo del lazo, incumplimientos del plazo y edad de la odometría
+  y las consignas. Añadir CPU por núcleo, RAM, temperatura y throttling bajo
+  carga real con SLAM, DDS y grabación activos. El tiempo del solver aislado
+  no demuestra que todo el lazo cumpla el plazo de 50 ms a 20 Hz.
+- [ ] Presentar resultados por corrida y su dispersión, incluidos abortos;
+  concluir mejora solo si supera la variabilidad observada. Si B iguala a C,
+  dejar registrado que no hay ventaja demostrada del MPC en esta misión.
+
+El MPC actual usa un triple integrador con jerk como entrada: la prueba evalúa
+ese controlador exterior, no un NMPC con la dinámica completa del multirrotor.
+Las pruebas del 2026-10-16 todavía no permiten comparar rendimiento (§1 y reporte).
+
+## 9. Después de los vuelos
 
 Reporte en `reports/2026-MM-DD_comparacion-pid-mpc.md` con las tablas de §7, y
 actualizar el hito del README.

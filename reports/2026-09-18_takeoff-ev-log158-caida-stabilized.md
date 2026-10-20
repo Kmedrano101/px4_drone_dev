@@ -1,8 +1,8 @@
-# Log 158 — takeoff EV a 1 m correcto; el patrón en cruz se escapó ~3 m porque el SLAM 2D perdió el tracking
+# Log 158 — el EKF alcanzó el setpoint de 1 m, pero el LiDAR 1D saturó; el patrón en cruz se escapó ~3 m porque el SLAM 2D perdió el tracking
 
 **Fecha del análisis:** 2026-09-18 · **Log:** SD `sess182/log100.ulg` (id MAVLink 158, bajado por USB con
 `scripts/mavlink/logs.py`; `SDLOG_MODE=2`, graba desde el arranque) · **FC#2** PX4 1.14.3 vendor
-**Estado:** ⛔ causa raíz identificada: el SLAM 2D perdió el tracking y el puente ocultó su covarianza · ⚠️ mapa de modos del RC peligroso
+**Estado:** ⛔ causa raíz identificada: el SLAM 2D perdió el tracking y el puente ocultó su covarianza · ⚠️ mapa de modos del RC peligroso · ⚠️ altura real corregida el 2026-10-16 por saturación del LiDAR 1D
 
 **Fuentes cruzadas:** log del FC (158), logs ROS de la Pi (`~/.ros/log/*_1789649204*`) y el rosbag del vuelo
 `cross_pattern_1789649199_bag` (copiado a `logs/2026-09-18/`; truncado por el golpe, `metadata.yaml` vacío, se
@@ -11,6 +11,12 @@ lee en streaming con la librería `mcap`).
 El log 159, el último de la SD, es el de la sesión en curso por USB: con `SDLOG_MODE=2` crecía
 durante la descarga (de 24.7 a 78.8 MB). **Las dos últimas pruebas de vuelo son los dos intentos de este log.**
 
+> **Corrección (2026-10-16):** el rango crudo de 1.34–1.42 m no equivale a esa altura real
+> sobre el hormigón oscuro. El MTF-01P satura por reflectividad; al invertir la curva medida en
+> [`2026-10-16_lidar1d-saturacion-reflectividad.md`](2026-10-16_lidar1d-saturacion-reflectividad.md),
+> el hover estaba a 1.66–1.82 m. Las cifras de `dist_bottom` se conservan abajo como medición
+> cruda, no como altura verdadera.
+
 ## 1. Qué pasó
 
 | | Intento A (166–189 s) | Intento B (277–301 s) |
@@ -18,22 +24,26 @@ durante la descarga (de 24.7 a 78.8 MB). **Las dos últimas pruebas de vuelo son
 | Armado | por comando externo (Pi) | por comando externo (Pi) |
 | Setpoint | `z_armado − 1.0` = −1.73 | `z_armado − 1.0` = −1.46 |
 | Subida según EKF | 0.98 m (z −0.73 → −1.71) | 0.99 m (z −0.46 → −1.45) |
-| LiDAR 1D en hover | 1.34–1.37 m (patas a ~1.18 m) | 1.38–1.42 m (patas a ~1.24 m) |
+| LiDAR 1D crudo en hover | 1.34–1.37 m | 1.38–1.42 m |
+| Altura real inferida | ~1.66–1.72 m | ~1.75–1.82 m |
 | Tiempo hasta la altura | ~9 s (vz máx 0.24 m/s) | ~10 s (vz máx 0.28 m/s) |
 | Nodo | `takeoff_position_hold_ev` (subir, hold 5 s, LAND) | **`cross_pattern_ev`**: tramo 1/8 "adelante" → NED (−0.01, **0.99**) a 290.5 s |
 | Final | LAND de la Pi a 181.5 s, aterrizaje suave, desarme | **se escapa ~3 m → cambio de modo a 294.0 s → caída y vuelco** |
 
-**La altura de 1 m se alcanzó las dos veces.** Si acaso se pasó un poco: el EKF (referencia baro,
-rango como ayuda condicional) mide ~1.0 m de subida y el LiDAR ~1.2 m. La subida es lenta
-(~10 s), lo que en campo puede parecer que "no llega".
+**El EKF alcanzó su setpoint de subida de 1 m las dos veces, pero el hover real no quedó a 1 m.**
+Con el barómetro como referencia y el rango ya saturado, el EKF midió ~1.0 m de subida mientras
+la altura real inferida era 1.66–1.82 m. La subida tarda ~10 s, lo que en campo puede parecer que
+"no llega".
 
-## 2. El LiDAR 1D funcionó bien
+## 2. El transporte del LiDAR 1D funcionó, pero la medición ya estaba saturada
 
 - 32 016 muestras en 320 s = **100 Hz continuos**, sin huecos.
 - 0.17–0.18 m en tierra antes y después de cada vuelo (= `EKF2_MIN_RNG`).
-- Durante la subida la lectura crece de forma monótona y sigue al EKF con un desfase casi constante.
+- Durante la subida la lectura crece de forma monótona y sigue al EKF con un desfase casi constante,
+  pero ese aspecto no descarta la saturación óptica medida después sobre el mismo suelo.
 - `cs_rng_hgt` entra al despegar y se mantiene en todo el vuelo, sin `rng_fault`.
-- Ni valores clavados, ni caídas a 0.02 m (la firma de obstrucción), ni saltos.
+- No hubo huecos, caídas a 0.02 m (firma de obstrucción) ni saltos; el problema es la curva de
+  respuesta, no el transporte ni una obstrucción.
 
 ## 3. Causa raíz del intento B: el SLAM 2D perdió el tracking en el primer tramo de la cruz
 

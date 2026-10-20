@@ -34,8 +34,9 @@ por ROS 2 / uXRCE-DDS.
 - ✅ Firmware optimizado (quitados módulos FW/VTOL → FLASH 98.5% → 92%)
 - ✅ Heading y posición sin magnetómetro por **SLAM 2D (LD19) → visión externa**, fusión EV validada y armado en tierra en Offboard
 - ✅ Parada por obstáculo en 360° con el LiDAR 2D, varianza honesta del EV y monitor de carga de la Pi
-- 🔄 **MPC del ciclo completo** (acados, jerk acotado) compilado en la Pi — 4.4–9.3 ms de solver, sin prueba de vuelo aún
+- 🔄 **MPC del ciclo completo** (acados, jerk acotado) compilado en la Pi — 4.4–9.3 ms de solver; despegue/aterrizaje protegido a 0.8 m probado, comparación PID vs MPC con hold pendiente
 - 🔄 Hold de altura limitado por la **saturación del LiDAR 1D** sobre hormigón oscuro: zona útil ≤1 m
+- 🔄 **Falsos obstáculos al despegar** con el LiDAR 2D: ráfaga de retornos mientras giran las hélices (0 con hélices paradas) — zona ciega de 0.70 m + debounce 3, validados contra los rosbags
 - ⏳ Comparación en vuelo PID vs MPC (takeoff – hold 30 s – land a 0.8 m)
 - ⏳ Navegación indoor completa con LiDAR 3D (Livox + FAST-LIO)
 
@@ -77,6 +78,8 @@ Los plots salen en `scripts/output/<log>/*.png`. Ver [`scripts/README.md`](../sc
 - [El software de la Raspberry Pi](SOFTWARE_ROS2_PX4_DRONE.md) — qué nodo corre, qué protege cada guarda y el incidente que la pagó
 - [MPC del ciclo completo](MPC_CICLO_COMPLETO.md) — el control predictivo que corre en la Pi: modelo, por qué aceleración y no posición, coste de cómputo y deuda abierta
 - [Protocolo PID vs MPC](2026-10-16_protocolo_pid_vs_mpc.md) — cómo se vuela y qué se mide para que la comparación de controladores signifique algo
+- [Plan de ajuste: vuelo suave y repetible](2026-10-19_plan_tuning_takeoff_hold_land.md) — el orden de capas (mecánica → estimación → tasas → empuje → control exterior), qué medir en cada fase y los objetivos candidatos
+- [Companion para MID-360S y SLAM interior](2026-10-19_companion_mid360s_slam.md) — qué ordenador sustituiría a la Pi con un LiDAR 3D: evidencia encontrada, alternativas y prueba de aceptación antes de comprar
 - [Gaps de investigación para publicar](2026-10-01_gaps_publicacion.md) — literatura reciente frente a lo que ya hay medido; hacia dónde enfocar el próximo paper
 - [Offboard RPi ⇄ FC (uXRCE-DDS)](CONFIGURACION_OFFBOARD_RPI4.md)
 - [Integración MTF-01P flujo + LiDAR](INTEGRACION_MTF-01P_FLOW_LIDAR.md)

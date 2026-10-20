@@ -37,8 +37,9 @@ over ROS 2 / uXRCE-DDS.
 - ✅ Simulación Gazebo del dron real (RJX F450 + MTF-01P + D500) en la zona indoor escaneada
 - ✅ Heading and position without a compass via **2D SLAM (LD19) → external vision**: EV fusion validated, ground arming in Offboard
 - ✅ 360° obstacle stop from the raw 2D scan, honest EV variance, and onboard-computer load logged with every test
-- 🔄 **Whole-cycle MPC** (acados, bounded jerk) built on the Pi — 4.4–9.3 ms solver, no flight test yet
+- 🔄 **Whole-cycle MPC** (acados, bounded jerk) built on the Pi — 4.4–9.3 ms solver; guarded 0.8 m takeoff/land exercised, full PID-vs-MPC hold comparison pending
 - 🔄 Altitude hold capped by **1D LiDAR saturation** over dark concrete: usable band ≤1 m
+- 🔄 **False obstacles on takeoff** from the 2D LiDAR: a burst of returns while the props spin (none with props stopped) — 0.70 m blind zone + 3-scan debounce, validated against the rosbags
 - ⏳ In-flight PID vs MPC comparison (takeoff – 30 s hold – land at 0.8 m)
 - ⏳ Full indoor navigation with 3D LiDAR (Livox + FAST-LIO)
 
@@ -79,6 +80,8 @@ Plots are written to `scripts/output/<log>/*.png`. See [`scripts/README.md`](scr
 - [Working method](docs/METODOLOGIA_TRABAJO.md) — how analysis, reports, memory and FC changes are handled
 - [2D-LiDAR EV test plan](docs/2026-09-16_test_lidar2d_ev_offboard.md) — external vision from a 2D scanner, 1D LiDAR for altitude
 - [Research gaps for publication](docs/2026-10-01_gaps_publicacion.md) — literature review vs what the group already has; where the next paper should go
+- [Smooth-and-repeatable tuning plan](docs/2026-10-19_plan_tuning_takeoff_hold_land.md) — the order of layers (mechanics → estimation → rates → thrust → outer loop), what to measure per phase, candidate targets
+- [Companion for a MID-360S](docs/2026-10-19_companion_mid360s_slam.md) — what would replace the Pi for 3D LiDAR SLAM: evidence found, alternatives, acceptance test before buying
 
 **Diagnostic reports** (companion / RPi) — see [`reports/`](reports/README.md)
 - [MTF-01 EKF2 tuning — indoor flow](reports/2026-07-23_mtf01-ekf2-tuning.md)
