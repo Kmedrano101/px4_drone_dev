@@ -4,9 +4,10 @@
 `slam_health_enabled=false`: la sigma y la antigüedad de `/pose` no bloquean ni
 abortan estas pruebas; siguen las comprobaciones de posición del FC. La zona
 ciega es un círculo de **0.70 m de diámetro** centrado en el LiDAR
-(`obstacle_blind_radius_m=0.35`), en los 360°, y el debounce sube a
-**3 barridos** (`obstacle_debounce_scans=3`): con la zona ciega sola el PID
-habría vuelto a abortar. Los dos abortos del 16-oct eran **falsos positivos**
+(`obstacle_blind_radius_m=0.35`), en los 360°, el debounce sube a
+**3 barridos** (`obstacle_debounce_scans=3`) y se añade un **ancho mínimo de
+obstáculo** de 0.15 m (`obstacle_min_width_m`), que es el filtro que de verdad
+separa polvo de obstáculo: con la zona ciega sola el PID habría vuelto a abortar. Los dos abortos del 16-oct eran **falsos positivos**
 del LiDAR 2D con las hélices girando, no obstáculos
 ([análisis](../reports/2026-10-20_falsos-obstaculos-al-despegar.md)). Por indicación posterior del
 usuario, la guarda de obstáculos actúa **desde TAKEOFF**, con chequeo de espacio

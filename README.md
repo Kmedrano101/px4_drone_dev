@@ -39,7 +39,7 @@ over ROS 2 / uXRCE-DDS.
 - ✅ 360° obstacle stop from the raw 2D scan, honest EV variance, and onboard-computer load logged with every test
 - 🔄 **Whole-cycle MPC** (acados, bounded jerk) built on the Pi — 4.4–9.3 ms solver; guarded 0.8 m takeoff/land exercised, full PID-vs-MPC hold comparison pending
 - 🔄 Altitude hold capped by **1D LiDAR saturation** over dark concrete: usable band ≤1 m
-- 🔄 **False obstacles on takeoff** from the 2D LiDAR: a burst of returns while the props spin (none with props stopped) — 0.70 m blind zone + 3-scan debounce, validated against the rosbags
+- ✅ **False obstacles on takeoff** solved: the 2D LiDAR's burst while the props spin (none with props stopped) is separated by the obstacle's **real width** — dust 0.03–0.09 m, a 40 cm pillar 0.40 m, a real obstacle 1.18–1.83 m
 - ⏳ In-flight PID vs MPC comparison (takeoff – 30 s hold – land at 0.8 m)
 - ⏳ Full indoor navigation with 3D LiDAR (Livox + FAST-LIO)
 

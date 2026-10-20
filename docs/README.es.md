@@ -36,7 +36,7 @@ por ROS 2 / uXRCE-DDS.
 - ✅ Parada por obstáculo en 360° con el LiDAR 2D, varianza honesta del EV y monitor de carga de la Pi
 - 🔄 **MPC del ciclo completo** (acados, jerk acotado) compilado en la Pi — 4.4–9.3 ms de solver; despegue/aterrizaje protegido a 0.8 m probado, comparación PID vs MPC con hold pendiente
 - 🔄 Hold de altura limitado por la **saturación del LiDAR 1D** sobre hormigón oscuro: zona útil ≤1 m
-- 🔄 **Falsos obstáculos al despegar** con el LiDAR 2D: ráfaga de retornos mientras giran las hélices (0 con hélices paradas) — zona ciega de 0.70 m + debounce 3, validados contra los rosbags
+- ✅ **Falsos obstáculos al despegar** resueltos: la ráfaga del LiDAR 2D mientras giran las hélices (0 con hélices paradas) se separa por el **ancho real del obstáculo** — polvo 0.03–0.09 m, pilar de 40 cm 0.40 m, obstáculo real 1.18–1.83 m
 - ⏳ Comparación en vuelo PID vs MPC (takeoff – hold 30 s – land a 0.8 m)
 - ⏳ Navegación indoor completa con LiDAR 3D (Livox + FAST-LIO)
 

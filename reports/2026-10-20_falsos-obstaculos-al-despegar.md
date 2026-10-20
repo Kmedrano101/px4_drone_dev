@@ -137,6 +137,68 @@ Por qué 3 y no otra cosa:
   tres bags, y es menos sensible mientras el dron guiña, porque un obstáculo en el borde entre
   dos sectores deja de acumular. **Revertido**, no aporta en el punto de operación elegido.
 
+## 6bis. La solución de verdad: el tamaño angular del obstáculo
+
+Dato de campo: en la zona de pruebas **los únicos obstáculos son pilares de unos 40 cm de
+diámetro**. Eso se puede usar, y resuelve el problema mucho mejor que la zona ciega y el
+debounce, porque un objeto tiene un **tamaño angular que depende de la distancia** y el polvo no.
+
+Agrupando los rayos contiguos de rango parecido y midiendo la **cuerda real** de cada grupo
+(`2·r·sin(ancho_angular/2)`), con el LD19 a 506 rayos/vuelta y 0.713°/rayo:
+
+| | Mayor cuerda | Rayos | Ancho angular |
+|---|---|---|---|
+| Polvo del MPC, dentro de la banda que dispara (0.35–1.10 m) | **0.061 m** | 5 | 3.6° |
+| Polvo del PID, misma banda | **0.085 m** | 13 | 9.3° |
+| Pilar de 0.40 m a 1.00 m *(geometría)* | **0.40 m** | ~32 | 23° |
+| Obstáculo real del bag del accidente (1.0–2.0 m) | **1.18–1.83 m** | 65–81 | 47–58° |
+
+**Factor 14 entre el peor polvo y el obstáculo real más pequeño medido.** Esto no es un umbral
+apretado que haya que ajustar: es una separación física.
+
+`min_obstacle_width_m` descarta los grupos cuya cuerda no llegue al mínimo, **antes** de
+sectorizar. Todo lo que viene después (sectores, `min_points`, velocidad de acercamiento,
+debounce) queda igual. Es una etapa de filtro más, como la zona ciega y el filtro de suelo.
+
+### Resultado sobre los bags
+
+| Ancho mín. | Zona ciega | Debounce | MPC (*debe NO*) | PID (*debe NO*) | Accidente (*debe SÍ*) |
+|---|---|---|---|---|---|
+| 0 *(desactivado)* | 0.00 m | 2 | ⛔ para 0.95 m | ⛔ para 0.16 m | ✅ para 1.65 m |
+| 0 | 0.35 m | 2 | ✅ libre | ⛔ para 0.58 m | ✅ para 1.65 m |
+| 0 | 0.35 m | 3 | ✅ libre | ✅ libre | ✅ para 1.51 m |
+| **0.10 m** | **0.00 m** | **2** | ✅ libre | ✅ libre | ✅ **para 1.65 m** |
+| **0.15 m** | 0.35 m | 3 | ✅ libre | ✅ libre | ✅ para 1.51 m |
+| 0.30 m | 0.35 m | 3 | ✅ libre | ✅ libre | ✅ para 1.51 m |
+
+El filtro de ancho **solo, a 0.10 m, ya limpia las dos corridas sin zona ciega y sin tocar el
+debounce**, conservando la reacción más rápida (parada a 1.65 m en el bag del accidente, 14 cm
+antes que con debounce 3). Las filas con ancho 0 reproducen exactamente la tabla del §5, lo que
+confirma que el filtro desactivado no cambia nada.
+
+### Valor elegido: 0.15 m, y qué cuesta
+
+- **1.8× sobre el peor polvo medido** (0.085 m) y **2.7× por debajo** de un pilar de 40 cm.
+  0.10 m funciona pero deja solo un 18 % de margen sobre el polvo.
+- **Lo que deja de ver:** cualquier objeto de menos de ~15 cm de ancho a la distancia de
+  parada — una pata de trípode, un poste fino, un cable colgando. En esta zona de pruebas no
+  hay nada así, pero **esto no es extrapolable a un interior con mobiliario**, y hay que
+  revisarlo antes de volar en otro sitio. Con `obstacle_min_width_m:=0` se desactiva.
+- Una persona que entra andando sí se detecta por el torso (~35 cm); a la altura del plano de
+  barrido (0.8 m) un muslo suelto queda justo en el límite.
+- `min_points` sigue en 3. El filtro de ancho es la versión correcta de la misma idea: exigir
+  5 rayos pide lo mismo a 0.5 m que a 3 m, y la cuerda no.
+
+Se conservan la zona ciega de 0.35 m y el debounce de 3 aunque el filtro de ancho los haga
+innecesarios para este fallo: son independientes y baratos, y el filtro de ancho todavía no ha
+volado. Cuando vuele, el debounce puede volver a 2 y recuperar esos 0.1 s de reacción — la
+tabla de arriba ya tiene la evidencia de que basta.
+
+Cubierto por `tools/obstacle_guard/test_min_width.cpp`: 14 casos sintéticos, entre ellos un
+pilar de 40 cm a cuatro distancias, los dos anchos de polvo medidos en los bags, el mismo
+objeto a 0.5 y 0.95 m, el grupo que cruza el rayo 0 (sin cerrar el círculo se partiría en dos
+mitades de 0.09 m y se descartaría) y el filtro desactivado.
+
 ## 7. ¿Hay que activar la guarda solo después del despegue?
 
 **No, y conviene no hacerlo.** El razonamiento con los datos:
@@ -153,16 +215,17 @@ Por qué 3 y no otra cosa:
 - Apagar la guarda en el despegue la dejaría ciega en la fase en la que el dron está más cerca
   del suelo y de las personas, para arreglar un problema que ya está arreglado en su origen.
 
-Si en una repetición futura una ráfaga peor volviera a batir el debounce de 3, el siguiente
-paso **no** es cegar la guarda en el despegue, sino tratar el barrido contaminado como lo que
-es: subir el debounce, o no permitir el despegue hasta que el barrido se estabilice.
+Si en una repetición futura una ráfaga peor volviera a batir las tres etapas, el siguiente paso
+**no** es cegar la guarda en el despegue, sino apretar el filtro físico: subir el ancho mínimo
+hacia los 0.25–0.30 m, que un pilar de 40 cm sigue superando con holgura.
 
 ## 8. Qué no se tocó
 
 No se armó el dron, no se voló y no se escribió ningún parámetro en el FC. Los cambios son en
-el repositorio `px4_drone`: el parámetro nuevo del nodo y de los dos launches, y dos argumentos
-extra en `obstacle_guard_replay` (zona ciega y debounce) para poder repetir esta tabla.
-`src/obstacle_guard.cpp` queda como estaba salvo la zona ciega del 2026-10-20.
+el repositorio `px4_drone`: dos parámetros nuevos del nodo y de los dos launches
+(`obstacle_debounce_scans`, `obstacle_min_width_m`), la etapa de agrupación en
+`src/obstacle_guard.cpp`, sus pruebas sintéticas y tres argumentos extra en
+`obstacle_guard_replay` para poder repetir las tablas.
 
 Los rosbags y CSV se quedan en la Pi: superan el límite de 5 MB para datos crudos.
 
