@@ -80,6 +80,7 @@ Los plots salen en `scripts/output/<log>/*.png`. Ver [`scripts/README.md`](../sc
 - [Protocolo PID vs MPC](2026-10-16_protocolo_pid_vs_mpc.md) — cómo se vuela y qué se mide para que la comparación de controladores signifique algo
 - [Plan de ajuste: vuelo suave y repetible](2026-10-19_plan_tuning_takeoff_hold_land.md) — el orden de capas (mecánica → estimación → tasas → empuje → control exterior), qué medir en cada fase y los objetivos candidatos
 - [Parámetros del FC para vuelo suave](2026-10-20_parametros_vuelo_suave_produccion.md) — qué hay hoy en el FC (volcado de 903), qué le hace PX4 a nuestros setpoints durante el despegue, y qué tocar por orden de efecto
+- [Pruebas en banco sin hélices](2026-10-21_pruebas_banco_sin_helices.md) — modo banco: desarme forzado N s tras el TAKEOFF (21196) para que los motores no se vayan al 100 %; orden de pruebas antes de volver al campo
 - [Companion para MID-360S y SLAM interior](2026-10-19_companion_mid360s_slam.md) — qué ordenador sustituiría a la Pi con un LiDAR 3D: evidencia encontrada, alternativas y prueba de aceptación antes de comprar
 - [Gaps de investigación para publicar](2026-10-01_gaps_publicacion.md) — literatura reciente frente a lo que ya hay medido; hacia dónde enfocar el próximo paper
 - [Offboard RPi ⇄ FC (uXRCE-DDS)](CONFIGURACION_OFFBOARD_RPI4.md)
