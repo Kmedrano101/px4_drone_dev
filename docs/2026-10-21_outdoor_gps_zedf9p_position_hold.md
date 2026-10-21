@@ -47,7 +47,7 @@ arrancable y calibrable.
 | `EKF2_MAG_TYPE` | 5 (none) | **0** (auto) | Habilita la fusión del compás |
 | `EKF2_MAG_CHECK` | 1 | 1 | Chequeo de consistencia del compás |
 | **RC — modos de vuelo:** | | | |
-| `COM_FLTMODE2/3/5` | −1 (libre) | **2 (Position)** en uno | El switch hoy no tiene Position; añadirlo a un slot |
+| `COM_FLTMODE4` | 1 (Altitude) | **2 (Position)** ✅ aplicado 2026-10-21 | Slot 4 pasa a Position; Altitude se retira del switch (fallback restante: Stabilized, slot 6) |
 
 Dejar igual: `COM_RC_OVERRIDE=3`, `NAV_RCL_ACT=3` (Land) — o 2 (RTL) ahora que hay GPS/home.
 
