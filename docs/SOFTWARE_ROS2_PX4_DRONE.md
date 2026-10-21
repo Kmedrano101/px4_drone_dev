@@ -172,13 +172,23 @@ los viejos aunque la página parezca nueva.
 El desktop y los procesos ROS lanzados por la webui de la Pi deben usar exactamente:
 
 ```bash
-ROS_DOMAIN_ID=10
+ROS_DOMAIN_ID=0            # = UXRCE_DDS_DOM_ID del FC. NO es una eleccion libre.
 RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
 ```
 
-CycloneDDS queda restringido a la LAN cableada: `eno2` en el desktop (`192.168.1.109`) y
-`eth0` en la Pi (`192.168.1.221`). Esto evita que CycloneDDS elija un puente Docker o la
-Wi-Fi de la Pi.
+⚠️ **El dominio lo fija el FC, no nosotros.** El cliente uXRCE-DDS del FC crea sus topics en
+`UXRCE_DDS_DOM_ID` (hoy **0**). Un nodo de la Pi en otro dominio no ve `vehicle_status` ni la
+posición, y sus setpoints no llegan: el ciclo se queda esperando para siempre. El 2026-10-19
+se puso `10` en la webui para el RViz del escritorio sin tocar el FC, y el 20-oct en el campo
+ningún ciclo pudo arrancar ([reporte](../reports/2026-10-21_cinco-corridas-sin-dds-eth0.md)).
+En `tools/webui/app.py` es una sola constante, `ROS_DOMAIN_ID`. Si algún día se quiere
+aislar del resto de la LAN con otro dominio, hay que cambiar **a la vez** el FC
+(`UXRCE_DDS_DOM_ID`), la webui y este script, y pasar la prueba de banco del reporte.
+
+CycloneDDS lista `eno2` en el desktop (`192.168.1.109`) y `eth0`, `wlan0` y `lo` en la Pi,
+todas con `presence_required="false"`: usa las que existan. Sin eso, en el campo (sin
+Ethernet) Cyclone se negaba a crear el dominio. El clavado del desktop evita que elija un
+puente Docker.
 
 En el desktop, lanzar solo RViz con:
 
@@ -202,7 +212,7 @@ Con un nodo de sensores activo en la Pi, comprobar desde el desktop antes de abr
 
 ```bash
 source /opt/ros/jazzy/setup.bash
-export ROS_DOMAIN_ID=10
+export ROS_DOMAIN_ID=0
 export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
 export CYCLONEDDS_URI="file://$PWD/ros2/cyclonedds-desktop.xml"
 ros2 topic hz /scan

@@ -2,7 +2,7 @@
 
 **Fecha del análisis:** 2026-10-21
 **Origen:** `tools/webui/logs/` de la Pi por SSH, corridas del 2026-10-20 de 14:07 a 14:10
-**Estado:** ✅ causa cerrada, corrección verificada en los tres estados de red. Sin volar.
+**Estado:** ✅ dos causas cerradas (interfaz `eth0` y dominio DDS), corrección verificada en banco. Sin volar.
 
 ## Qué pasó
 
@@ -65,6 +65,31 @@ vuelo no necesita red.
 
 El XML del escritorio (`eno2`) recibe la misma tolerancia. Ahí el clavado se mantiene a
 propósito: sin él, Cyclone podría elegir uno de la docena de puentes de docker.
+
+## El segundo bloqueo, tapado por el primero: el dominio DDS
+
+Con `eth0` arreglado, la prueba de banco del 21-oct (dron en el suelo, `confirm_takeoff:=false`,
+que arranca LiDAR, SLAM, agente XRCE y puente pero el nodo de vuelo se niega) dio:
+
+| | |
+|---|---|
+| LD19 | ✅ `/scan`, 1 publicador, datos |
+| SLAM | ✅ `/pose` en `map` (el aviso "contains 50x readings, expected 515" es benigno) |
+| Enlace XRCE | ✅ "session established"; el FC pasa a `Running, connected` |
+| Cliente DDS del FC | ✅ **arranca solo** desde `extras.txt` (pendiente del 14-oct, cerrado) |
+| `/fmu/out/*` en el **dominio 10** de la Pi | ⛔ **solo `estimator_status_flags`** |
+| `/fmu/out/*` en el **dominio 0** | ✅ **los 9**, `vehicle_status` responde |
+
+El FC publica en `UXRCE_DDS_DOM_ID = 0`. El mismo commit `a3d2506` cambió la webui de
+`ROS_DOMAIN_ID=0` a `10` en sus tres puntos de lanzamiento (el 16-oct estaba en 0, y por eso
+los bags de ese día sí tienen `/fmu/out`). Con la Pi en 10 el nodo de vuelo **nunca ve
+posición ni estado y sus setpoints no llegan al FC**: aunque `eth0` hubiera estado bien, el
+20-oct no habría despegado nada.
+
+Corrección: la Pi vuelve al dominio 0, como una **sola constante** en `app.py`, y el script
+del RViz de escritorio también. No se toca el FC. Si se quiere aislamiento en la LAN del
+laboratorio, lo correcto es `UXRCE_DDS_DOM_ID=10` en el FC **y** todo lo demás a la vez,
+validado con esta misma prueba de banco.
 
 ## Para que no vuelva a pasar en silencio
 
