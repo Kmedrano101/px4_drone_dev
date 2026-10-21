@@ -198,6 +198,17 @@ mapean a nada. Y si se activa el GPS hay que revisar `SYS_HAS_GPS`, `EKF2_GPS_CT
 con `EKF2_HGT_REF=1` la altura pasaría a venir del GPS, que es lo contrario de la configuración
 indoor actual (ver [`PARAMETROS_INDOOR.md`](PARAMETROS_INDOOR.md)).
 
+**La placa concreta** es la **SparkFun GPS-RTK-SMA (ZED-F9P)**: receptor GNSS puro, **sin
+brújula ni IMU** (confirmado por su ficha), conexión por UART. El rumbo lo da la **brújula del
+M100-5883 (QMC5883L)**. Montaje elegido (2026-10-21): **ambos en `GPS1` con cable en Y** — F9P
+en la UART (`Rx1/Tx1`), brújula en el I2C (`SDA/SCL`), que es el único bus I2C del FC. El F9P va
+en GPS1 porque es el que alimenta el EKF (requisito para volar en RTK).
+
+⚠️ **GPS2 no se usa** y este firmware **no trae `SENS_GPS_MASK`/`SENS_GPS_PRIME`** (sin blending
+ni primario/failover — verificado). Para una futura redundancia doble-GPS (tras actualizar a un
+firmware que los soporte) se ha **comprado un buck DC-DC `MP1584EN`** (12V→5V, ajustar a 5,0 V)
+que alimentaría un receptor en `GPS2` desde su pin de 12V. En reserva hasta entonces.
+
 ### MTF-01P — límite real medido
 
 <img src="images/hardware/sensor_mtf01p.webp" alt="MicoAir MTF-01P" width="280">
@@ -468,6 +479,9 @@ velocidad objetivo, aligerar la resolución del mapa, o cambiar de ordenador a b
 | Batería Ovonic 6S 1300 mAh 100C | https://www.ampow.com/products/ovonic-100c-1300mah-6s1p-22-2v-xt60-4pcs-lipo-battery |
 | ESC MicoAir 4-en-1 | https://micoair.com/esc/ |
 | Sensor MicoAir MTF-01P | https://micoair.com/optical_range_sensor_mtf-01p/ · [docs](https://micoair.com/docs-category/mtf-01/) |
+| GPS RTK SparkFun GPS-RTK-SMA (ZED-F9P) | https://www.sparkfun.com/sparkfun-gps-rtk-sma-breakout-zed-f9p-qwiic.html |
+| GPS/brújula M100-5883 (QMC5883L) | combo GPS+compás; se usa solo su compás por I2C |
+| DC-DC MP1584EN (buck 12V→5V, reserva para GPS2) | módulo genérico MP1584EN · ajustar a 5,0 V antes de conectar |
 | SUPER — hardware (BOM) | https://github.com/hku-mars/SUPER-Hardware |
 | SUPER — software | https://github.com/hku-mars/SUPER |
 | SUPER — fork propio (ROS 2) | https://github.com/Kmedrano101/SUPER |

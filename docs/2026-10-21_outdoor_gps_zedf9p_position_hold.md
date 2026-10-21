@@ -24,11 +24,36 @@ magnetómetro I2C.** Los drivers (`qmc5883l`, `hmc5883`, `ist8310`, `lis3mdl`, `
 en el firmware** (responden "Not running", no "command not found"), así que un compás externo es
 arrancable y calibrable.
 
-## Cableado
+## Cableado — topología elegida (2026-10-21): todo en GPS1, cable en Y
 
-- **GPS → GPS1** (`/dev/ttyS0`): RX, TX, 5V, GND. El puerto ya está en protocolo **auto**
-  (`GPS_1_PROTOCOL=0`) y baud **auto** (`SER_GPS1_BAUD=0`): el F9P se autodetecta al enchufarlo.
-- **Brújula → bus I2C** (si se hace Position hold). Montar lejos de cables de potencia/ESC.
+El conector `GPS1` (`/dev/ttyS0`) lleva **UART e I2C a la vez** (SDA, SCL, Rx1, Tx1, 5V, GND).
+Un cable en Y reparte:
+
+```
+GPS1  ├─ SparkFun F9P (RTK) ─→ Rx1, Tx1, 5V, GND      (UART, cruzado TX↔RX)
+      └─ Brújula M100 (QMC5883L) ─→ SDA, SCL, 5V, GND  (I2C)
+```
+
+- El F9P va en GPS1 porque **es el que alimenta el EKF** (necesario para volar en RTK), y el
+  puerto está en protocolo auto (`GPS_1_PROTOCOL=0`) y baud auto (`SER_GPS1_BAUD=0`): se
+  autodetecta al enchufarlo.
+- La brújula va en el I2C de GPS1 porque **es el único bus I2C del FC**. Montarla elevada y
+  **lejos de cables de potencia/ESC** (si no, el campo magnético la corrompe → fuga).
+- La parte GPS del M100 queda sin usar; el compás es lo único que se aprovecha de él.
+
+**Comparación GPS normal vs RTK:** con el **mismo F9P**, activando/desactivando las correcciones
+RTCM (FIX ≈ cm vs standalone ≈ 1–2 m). No con dos receptores: así la comparación aísla el RTK y
+no mezcla dos antenas/posiciones.
+
+### GPS2 descartado — y para qué se compró el MP1584EN
+
+No se usa el conector `GPS2`: su pin de alimentación es **12V** (freiría un GPS de 5V) y, sobre
+todo, **este firmware de fábrica no trae los parámetros de redundancia** (`SENS_GPS_MASK` ni
+`SENS_GPS_PRIME` existen — verificado por NSH), así que un segundo GPS en GPS2 no alimentaría el
+EKF ni tendría failover configurable. Se ha **comprado un módulo DC-DC `MP1584EN`** (buck
+12V→5V, a ajustar a **5,0 V** con el pot antes de conectar) para alimentar un receptor en GPS2
+desde ese 12V **cuando** se actualice a un firmware que sí soporte blending/primario. Hasta
+entonces queda en reserva; la doble-GPS redundante no es viable con el 1.14.3 de fábrica.
 
 ## Parámetros — perfil OUTDOOR (propuesto; aplicar tras respaldo y con hardware montado)
 
