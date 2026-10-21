@@ -85,6 +85,7 @@ Plots are written to `scripts/output/<log>/*.png`. See [`scripts/README.md`](scr
 - [Smooth-and-repeatable tuning plan](docs/2026-10-19_plan_tuning_takeoff_hold_land.md) — the order of layers (mechanics → estimation → rates → thrust → outer loop), what to measure per phase, candidate targets
 - [FC parameters for smooth flight](docs/2026-10-20_parametros_vuelo_suave_produccion.md) — what the FC holds today (903-param dump), what PX4 does to our setpoints during takeoff, and what to change in order of effect
 - [Bench tests without props](docs/2026-10-21_pruebas_banco_sin_helices.md) — bench mode: forced disarm N s after TAKEOFF (21196) so the motors never wind up to 100 %; the order of tests before going back to the field
+- [Outdoor GPS (ZED-F9P) position/altitude hold](docs/2026-10-21_outdoor_gps_zedf9p_position_hold.md) — the F9P gives position but no heading; position hold needs a compass; indoor↔outdoor param profiles and wiring
 - [Companion for a MID-360S](docs/2026-10-19_companion_mid360s_slam.md) — what would replace the Pi for 3D LiDAR SLAM: evidence found, alternatives, acceptance test before buying
 
 **Diagnostic reports** (companion / RPi) — see [`reports/`](reports/README.md)
