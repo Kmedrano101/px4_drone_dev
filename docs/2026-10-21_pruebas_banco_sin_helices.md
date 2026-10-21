@@ -31,6 +31,22 @@ usan todas las tarjetas de campo. Si es > 0 (2–30 s):
 El kill del RC (**canal 8**, `COM_KILL_DISARM=5` s) sigue siendo la red de seguridad; el modo
 banco es para no depender del reflejo.
 
+## Lo que enseñó la primera sesión de banco (2026-10-21)
+
+Los cuatro ciclos **armaron**; PID y MPC llegaron al desarme forzado (PX4 lo aceptó en 12 ms);
+MPC+ y CTBR terminaron antes por intervención del RC y el nodo dejó de publicar como debe.
+Detalle por corrida y el hallazgo del SLAM a 1 Hz en el reporte de la sesión. Tres cosas que
+quedan como regla:
+
+- **Kill a OFF antes de cada corrida.** El primer intento de MPC no armó ("el FC no confirmó
+  ARMED") y el nodo no puede ver el motivo: `vehicle_command_ack` no viaja por DDS en 1.14.3.
+  El kill engranado de la corrida anterior es la causa más probable.
+- **El MTF-01P tiene que estar encendido**, aunque en banco no haga falta: `distance_sensor` y
+  `sensor_optical_flow` estaban en *never published* hasta que se alimentó. En campo, sin él la
+  altura va solo con el barómetro (3 mm/s de deriva) y el aterrizaje a ciegas.
+- **`tools/check_preflight.sh`** con el FC por USB antes de cualquier prueba y antes de salir:
+  dominio DDS, LiDAR 1D publicando, flujo con calidad > 0 y cliente DDS del FC corriendo.
+
 ## Antes de pulsar nada
 
 - Dron **sin hélices**, sobre espuma o sujeto por el frame (a 29 000 rpm vibra).
@@ -38,7 +54,7 @@ banco es para no depender del reflejo.
   puede armar con el USB puesto y con fuente.
 - RC encendido, una persona con el dedo en el kill. **Sticks quietos y gas centrado**: con
   `COM_RC_OVERRIDE=3`, un stick a más del 30 % saca de Offboard.
-- `~/drone_ws/src/px4_drone/tools/check_dds_domain.sh` → *"OK: todos en el dominio 0"*.
+- `~/drone_ws/src/px4_drone/tools/check_preflight.sh` → *"PREVUELO OK"* (incluye el dominio DDS, el MTF-01P y el cliente DDS del FC).
 - **Parada por obstáculo a 0** en las tarjetas de banco: en el laboratorio hay paredes a menos
   de 1 m y el nodo se negaría a armar. En campo, 1.0.
 

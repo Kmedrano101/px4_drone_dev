@@ -37,6 +37,8 @@ por ROS 2 / uXRCE-DDS.
 - 🔄 **Tres variantes de MPC** en la Pi: cinemático (4.4–9.3 ms), **MPC+** con estado de perturbación (mismo binario, sin sesgo permanente) y **CTBR** con actitud en el modelo (2.7 ms de media, 5.9 máx; engancha solo en el hold) — ninguno volado aún
 - 🔄 Hold de altura limitado por la **saturación del LiDAR 1D** sobre hormigón oscuro: zona útil ≤1 m
 - ✅ **Falsos obstáculos al despegar** resueltos: la ráfaga del LiDAR 2D mientras giran las hélices (0 con hélices paradas) se separa por el **ancho real del obstáculo** — polvo 0.03–0.09 m, pilar de 40 cm 0.40 m, obstáculo real 1.18–1.83 m
+- ✅ **Banco sin hélices (21-oct):** los cuatro ciclos arman y llegan al TAKEOFF; desarme forzado aceptado en 12 ms
+- 🔄 **SLAM a ~1 Hz**: karto rechaza el 70–80 % de los barridos del LD19 (número de rayos variable) — el 1.2 Hz del accidente del 18-sep; relay a tamaño fijo en marcha
 - ⏳ Comparación en vuelo PID vs MPC (takeoff – hold 30 s – land a 0.8 m) — salida del 20-oct perdida entera: CycloneDDS clavado a `eth0` sin Ethernet en el campo (corregido y verificado el 21-oct)
 - ⏳ Navegación indoor completa con LiDAR 3D (Livox + FAST-LIO)
 

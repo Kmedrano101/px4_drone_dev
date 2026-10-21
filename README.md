@@ -40,6 +40,8 @@ over ROS 2 / uXRCE-DDS.
 - 🔄 **Three MPC variants** built on the Pi: kinematic (4.4–9.3 ms), **MPC+** with a disturbance state (same binary, offset-free), and a **CTBR NMPC** with attitude in the model (2.7 ms mean, 5.9 ms max; engages only during the hold) — none flown yet
 - 🔄 Altitude hold capped by **1D LiDAR saturation** over dark concrete: usable band ≤1 m
 - ✅ **False obstacles on takeoff** solved: the 2D LiDAR's burst while the props spin (none with props stopped) is separated by the obstacle's **real width** — dust 0.03–0.09 m, a 40 cm pillar 0.40 m, a real obstacle 1.18–1.83 m
+- ✅ **Bench without props (21-Oct):** all four cycles arm and reach TAKEOFF; forced disarm accepted in 12 ms
+- 🔄 **SLAM pose rate ~1 Hz**: karto rejects 70–80 % of LD19 scans (variable ray count) — the 1.2 Hz behind the 18-Sep crash; fixed-size scan relay in progress
 - ⏳ In-flight PID vs MPC comparison (takeoff – 30 s hold – land at 0.8 m) — the 20-Oct outing was lost whole: CycloneDDS pinned to `eth0` with no Ethernet in the field (fixed and verified 21-Oct)
 - ⏳ Full indoor navigation with 3D LiDAR (Livox + FAST-LIO)
 
