@@ -167,6 +167,21 @@ cada petición, pero **`app.py` solo se lee al arrancar**. Tras cambiar las
 tarjetas hay que reiniciar el servicio o los valores por defecto siguen siendo
 los viejos aunque la página parezca nueva.
 
+## 5bis. El relay de barridos: por qué `/scan` ya no sale del driver
+
+Desde el 2026-10-21 el LD19 publica en **`/scan_raw`** y `scan_fixed_size` (de este paquete)
+publica **`/scan`** con **500 rayos fijos**. Motivo: el LD19 entrega 498–506 puntos por vuelta y
+su driver pone un `angle_increment` distinto en cada barrido; karto, dentro de `slam_toolbox`,
+fija el número de rayos con el primero y **rechaza** los demás. Solo pasaba el 20–30 % y la
+pose del SLAM llegaba al EKF a ~1 Hz — el 1.2 Hz del accidente del 18-sep. Con el relay pasan
+todos: 6.3 Hz en banco con `minimum_time_interval=0.1`
+([reporte](../reports/2026-10-21_banco-cuatro-controladores-slam-1hz.md)).
+
+El launch del SLAM es ahora `launch/slam_ld19.launch.py` de `px4_drone` (antes vivía sin
+versionar en `px4_drone_slam`, en la SD de la Pi). Argumentos: `slam_min_time_interval` (0.1) y
+`scan_n_rays` (500). Todo lo que consume `/scan` — SLAM, guarda de obstáculos, bag, RViz —
+no cambia.
+
 ## 6. Ver el LiDAR 2D de la Pi en RViz (desktop)
 
 El desktop y los procesos ROS lanzados por la webui de la Pi deben usar exactamente:

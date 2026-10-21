@@ -1,8 +1,7 @@
 # Banco sin hélices: los cuatro ciclos arman, y el SLAM va a 1 Hz porque karto rechaza los barridos
 
 **Fecha:** 2026-10-21 · **Origen:** cinco corridas de banco (09:53–09:58) en la Pi, logs y bags
-**Estado:** ✅ secuencia hasta el despegue demostrada en los cuatro controladores · ⛔ **hallazgo:**
-el EV al EKF llega a ~1 Hz por un rechazo sistemático de barridos en `slam_toolbox`
+**Estado:** ✅ secuencia hasta el despegue demostrada en los cuatro controladores · ✅ **hallazgo corregido el mismo día:** el EV al EKF llegaba a ~1 Hz por un rechazo sistemático de barridos en `slam_toolbox`; con el relay a tamaño fijo, 6.3 Hz en banco
 
 ## Las cinco corridas
 
@@ -63,17 +62,40 @@ Simulado sobre los bags (aceptación de karto × intervalo mínimo):
 
 `slam_toolbox` va al **17 % de un núcleo** en el banco: hay margen para subir mucho.
 
-### Corrección
+### Corrección, implementada y medida el mismo día
+
+`scan_fixed_size` (`px4_drone`): remuestrea `/scan_raw` a **500 rayos fijos** (0.72°) con el
+criterio del propio driver (binning por ángulo, menor rango por celda, NaN en huecos), y con
+`angle_max` tal que la fórmula de karto da exactamente 500. Lógica en una cabecera sin ROS,
+probada con casos sintéticos (todos los tamaños que da el LD19, un pilar en su celda, el rayo
+más cercano gana, el rayo de 2π cae en la celda 0, la cabecera se conserva) y con los **261
+barridos reales** del bag de banco: todos salen a 500. El launch del SLAM pasa a
+`launch/slam_ld19.launch.py` de `px4_drone` (LD19 en `/scan_raw` → relay → `/scan` →
+slam_toolbox), con `minimum_time_interval` como argumento.
+
+En banco, SLAM solo (sin FC), sonda rclpy de 20 s:
+
+| `minimum_time_interval` | `/scan` | `/pose` | CPU `slam_toolbox` |
+|---|---|---|---|
+| *antes (esta mañana)* | 9.9 Hz, 499–506 rayos | **1.06 Hz** | 17 % de un núcleo |
+| 0.2 s + relay | 9.89 Hz, **todos 500**, 0 rechazos | **3.84 Hz** (simulado 3.80) | 41 % |
+| **0.1 s + relay (nuevo por defecto)** | 9.94 Hz, todos 500, 0 rechazos | **6.29 Hz** (simulado 6.31) | 64 % |
+
+Cero avisos "expected" en ambos. El relay cuesta 1.3 %. 0.05 s (~10 Hz) queda por medir en
+vuelo con toda la pila (agente XRCE al 42 %, MPC, bag). **Falta la prueba en vuelo**: una pose
+a 6 Hz en vez de 1 Hz debería verse directamente en la varianza por edad del puente EV y en la
+estabilidad del hold.
+
+### Corrección (planteamiento original)
 
 Un nodo relay en `px4_drone` que remuestrea `/scan` a una rejilla **fija de 500 rayos** (0.72°),
 con el mismo criterio que ya usa el driver (binning por ángulo, el menor rango por celda, NaN en
 los huecos), y bajar `minimum_time_interval` por pasos midiendo CPU. Se valida *offline* con los
 bags: el contador de "expected" tiene que quedar a cero y `slam_pose_hz` subir.
 
-Dos deudas que aparecen con esto: **`px4_drone_slam` (config y launch del SLAM) no está
-versionado en ningún sitio** — vive solo en la SD de la Pi — y el driver del LD19 tampoco. El
-relay va en `px4_drone`; el cambio de intervalo queda documentado como deuda hasta que ese
-paquete tenga repo.
+Deuda cerrada a medias: el launch y la config del SLAM **ya están en `px4_drone`** (el paquete
+`px4_drone_slam` de la SD queda con `COLCON_IGNORE`). El driver del LD19 (`evarobot_ws`) sigue
+sin versionar; el relay lo hace irrelevante para esto, pero sigue siendo deuda.
 
 ## Qué no se tocó
 
