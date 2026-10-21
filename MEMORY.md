@@ -1,0 +1,1 @@
+- [Armado ciego: el motivo no va por DDS](arming-ciego-statustext-no-dds.md) — PX4 deniega el ARM y el porqué va por STATUSTEXT (no DDS); `arm_watch.py` lo captura. Y la webui dejaba pasar altura > 1.0 m (corregido)
