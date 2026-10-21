@@ -182,3 +182,10 @@ Para subir más hace falta el LiDAR 3D de la siguiente fase.
 - [`CONEXION_MAVLINK_SCRIPTS.md`](CONEXION_MAVLINK_SCRIPTS.md) — cómo leer y escribir estos parámetros
 - [`reports/2026-09-04_fc2-vendor-1143-mtf01p-migracion.md`](../reports/2026-09-04_fc2-vendor-1143-mtf01p-migracion.md) — de dónde salen
 - [`DIAGNOSTICO_RUIDO_MOTORES_YAW.md`](DIAGNOSTICO_RUIDO_MOTORES_YAW.md) — el incidente de `MC_AIRMODE`
+
+## Comunicación con la Pi (no es de vuelo, pero sin él no hay ciclo)
+
+| Parámetro | Valor | Por qué |
+|---|---|---|
+| `UXRCE_DDS_DOM_ID` | **0** | Dominio DDS en el que el FC publica y escucha. **Lo fija el FC**; la webui, el shell de la Pi y los scripts de RViz van al mismo. Si difieren, el nodo de vuelo no ve al FC y espera para siempre (salida del 2026-10-20). Cómo cambiarlo sin romper nada: [CONFIGURACION_OFFBOARD_RPI4.md §2bis](CONFIGURACION_OFFBOARD_RPI4.md#2bis-ros_domain_id-lo-fija-el-fc-es-0-y-así-se-cambia-sin-romper-nada) |
+| `UXRCE_DDS_CFG` | 0 | A propósito: el código 102 no existe en este firmware; el cliente se arranca desde `extras.txt` de la SD |

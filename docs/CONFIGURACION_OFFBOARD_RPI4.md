@@ -62,7 +62,7 @@ Ya venían correctos (verificado por **MAVLink Console**, no por el buscador de 
 ```
 UXRCE_DDS_CFG    = 102        (= TELEM2)
 SER_TEL2_BAUD    = 921600     (baud del DDS)
-UXRCE_DDS_DOM_ID = 0          (debe COINCIDIR con el agent)
+UXRCE_DDS_DOM_ID = 0          (debe COINCIDIR con ROS_DOMAIN_ID en la Pi: ver §2bis)
 ```
 
 **Verificación en MAVLink Console (NSH):**
@@ -74,6 +74,73 @@ param show SER_*             # confirma SER_TEL2_BAUD=921600
 > ⚠️ Los params **sí existían**; el buscador de QGC no los mostraba. La **MAVLink Console es la fuente de verdad**.
 
 ---
+
+## 2bis. `ROS_DOMAIN_ID`: lo fija el FC, es **0**, y así se cambia sin romper nada
+
+> **Regla:** el dominio DDS no es una elección de la Pi ni del escritorio. **Lo fija el FC**
+> con `UXRCE_DDS_DOM_ID`, y todo lo demás se adapta a él. Hoy es **0**.
+
+### Por qué
+
+El cliente uXRCE-DDS del FC crea sus topics (`/fmu/out/*`) y sus suscripciones (`/fmu/in/*`)
+en el dominio `UXRCE_DDS_DOM_ID`. Un proceso ROS 2 en otro dominio **no ve nada** del FC y el
+FC **no recibe nada** de él. No hay error: solo silencio. El nodo de vuelo se queda en
+"Esperando fuente de posicion" hasta el timeout y aborta sin tocar nada.
+
+Así se perdió entera la salida del **2026-10-20**: el commit `px4_drone@a3d2506` (la víspera)
+cambió la webui de `ROS_DOMAIN_ID=0` a `10` en sus tres puntos de lanzamiento para que el RViz
+del escritorio viera la Pi, sin tocar el FC. En el banco, con ese dominio, solo se veía
+`/fmu/out/estimator_status_flags`; en el 0, los nueve topics. Detalle en el
+[reporte](../reports/2026-10-21_cinco-corridas-sin-dds-eth0.md).
+
+### Dónde tiene que coincidir (todos, a la vez)
+
+| Sitio | Dónde | Hoy |
+|---|---|---|
+| **FC** | parámetro `UXRCE_DDS_DOM_ID` (NSH: `param show UXRCE_DDS_DOM_ID`) | **0** |
+| Webui de la Pi | `tools/webui/app.py`, **una sola constante** `ROS_DOMAIN_ID` (la usan los tres lanzamientos y la comprobación previa) | 0 |
+| Shell de la Pi | `~/.bashrc` (`export ROS_DOMAIN_ID`) — solo afecta a quien depura a mano, pero si difiere no ve nada y pierde una hora | 0 |
+| RViz escritorio | `px4_drone/scripts/rviz_lidar_desktop.sh` y `px4_drone_dev/scripts/run_rviz_lidar_desktop.sh` | 0 |
+
+`tools/check_dds_domain.sh` (en `px4_drone`) los compara todos y, si el FC está por USB
+(`/dev/ttyACM0`), lee también el parámetro. Sale con error si alguno difiere.
+
+### Cómo se comprueba que el FC se ve (la prueba que faltó el 20-oct)
+
+Con el dron en el suelo, **sin armar**, y el entorno exacto de la webui:
+
+```bash
+export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp ROS_DOMAIN_ID=0
+export CYCLONEDDS_URI=file:///home/kevin/drone_ws/src/px4_drone/config/cyclonedds-pi.xml
+source /opt/ros/jazzy/setup.bash && source ~/evarobot_ws/install/setup.bash && source ~/drone_ws/install/setup.bash
+ros2 launch px4_drone takeoff_position_hold_ev.launch.py confirm_takeoff:=false &   # el nodo de vuelo se niega; el resto arranca
+sleep 45
+ros2 topic list --no-daemon --spin-time 4 | grep -c fmu/out        # esperado: ~10
+ros2 topic echo --once --qos-reliability best_effort /fmu/out/vehicle_status | grep -E "nav_state|arming_state"
+ros2 topic info -v --no-daemon /fmu/in/vehicle_visual_odometry | grep count   # Subscription count: 1 = el FC escucha
+```
+
+⚠️ **`--no-daemon` es obligatorio.** `ros2 topic list` a secas pregunta al *daemon* de ROS,
+que arranca con su propia configuración y contesta `/rosout` aunque el entorno esté roto.
+⚠️ Para parar: `pkill -x` trunca los nombres a **15 caracteres** (`async_slam_tool`,
+`ev_odometry_bri`, `static_transfor`); con el nombre completo no mata nada y los huérfanos
+dejan los puertos serie ocupados.
+
+El nodo de vuelo, además, si pasan 5 s sin recibir **ni un** `vehicle_status`, lo dice en el
+log con el dominio que está usando y las dos causas conocidas (dominio distinto, agente sin
+sesión), para que el log del campo baste.
+
+### Cómo cambiarlo, si algún día hace falta (p. ej. aislar la LAN del laboratorio)
+
+1. Volcado de parámetros del FC (copia de seguridad).
+2. `UXRCE_DDS_DOM_ID` en el FC al nuevo valor y **reiniciar el FC** (el cliente lee el
+   parámetro al arrancar).
+3. La constante de `app.py`, el `~/.bashrc` de la Pi y los dos scripts de RViz al mismo valor.
+4. `tools/check_dds_domain.sh` con el FC por USB → `OK: todos en el dominio N`.
+5. La prueba de banco de arriba → ~10 `/fmu/out` y `vehicle_status` responde.
+6. Reiniciar el servicio `px4-webui` (lee `app.py` solo al arrancar).
+
+Nunca uno solo de esos pasos. Y nunca la víspera de una salida sin pasar la prueba de banco.
 
 ## 3. Config del UART en la Pi (Ubuntu, sin raspi-config)
 

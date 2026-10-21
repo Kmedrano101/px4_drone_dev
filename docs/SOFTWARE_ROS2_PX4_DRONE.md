@@ -181,7 +181,7 @@ RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
 posición, y sus setpoints no llegan: el ciclo se queda esperando para siempre. El 2026-10-19
 se puso `10` en la webui para el RViz del escritorio sin tocar el FC, y el 20-oct en el campo
 ningún ciclo pudo arrancar ([reporte](../reports/2026-10-21_cinco-corridas-sin-dds-eth0.md)).
-En `tools/webui/app.py` es una sola constante, `ROS_DOMAIN_ID`. Si algún día se quiere
+En `tools/webui/app.py` es una sola constante, `ROS_DOMAIN_ID`. El apartado canónico, con todos los sitios que deben coincidir, la prueba de banco y el procedimiento de cambio, es [CONFIGURACION_OFFBOARD_RPI4.md §2bis](CONFIGURACION_OFFBOARD_RPI4.md#2bis-ros_domain_id-lo-fija-el-fc-es-0-y-así-se-cambia-sin-romper-nada). Si algún día se quiere
 aislar del resto de la LAN con otro dominio, hay que cambiar **a la vez** el FC
 (`UXRCE_DDS_DOM_ID`), la webui y este script, y pasar la prueba de banco del reporte.
 

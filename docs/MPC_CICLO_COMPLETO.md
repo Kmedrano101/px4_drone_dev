@@ -331,8 +331,11 @@ tick, no solo al arrancar.** La base expone ambos como lecturas puras, sin efect
 - ✅ **Deuda de código cerrada** (2026-10-16): los dos arreglos de acados v0.6.0
   ya están commiteados en la Pi (`9f1b9a3`); un clon en limpio vuelve a compilar
   el MPC. Pendiente de `git push` desde la Pi.
-- ⚠️ El cliente DDS del FC se arrancó a mano desde QGC; **no se ha comprobado que
-  persista tras reiniciar el FC**.
+- ✅ El cliente DDS del FC **arranca solo** desde `/fs/microsd/etc/extras.txt`
+  (`uxrce_dds_client start -t serial -d /dev/ttyS3 -b 921600`): verificado el 2026-10-21 tras
+  un reinicio, `Running, connected` con el agente de la Pi. Pendiente del 14-oct cerrado.
+- ⚠️ **El dominio DDS lo fija el FC (`UXRCE_DDS_DOM_ID=0`)**; la Pi entera va en 0. No cambiar
+  uno sin el otro: [cómo y por qué](CONFIGURACION_OFFBOARD_RPI4.md#2bis-ros_domain_id-lo-fija-el-fc-es-0-y-así-se-cambia-sin-romper-nada).
 
 Detalle de la compilación y de los dos intentos de lanzamiento:
 [`reports/2026-10-14_mpc-compilado-rpi.md`](../reports/2026-10-14_mpc-compilado-rpi.md).
