@@ -3,7 +3,12 @@
   <Domain id="any">
     <General>
       <Interfaces>
-        <NetworkInterface name="eno2" multicast="true"/>
+        <!-- presence_required="false": si la interfaz no existe, Cyclone sigue
+             con las demas en vez de negarse a crear el dominio. Lo que paso en la
+             Pi el 2026-10-20 con eth0 en el campo. -->
+        <NetworkInterface name="eno2" presence_required="false" multicast="true"/>
+        <NetworkInterface name="wlo1" presence_required="false" multicast="true"/>
+        <NetworkInterface name="lo" presence_required="false" multicast="true"/>
       </Interfaces>
       <AllowMulticast>true</AllowMulticast>
     </General>
