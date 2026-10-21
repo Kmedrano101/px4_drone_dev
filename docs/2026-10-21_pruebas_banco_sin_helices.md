@@ -25,7 +25,8 @@ usan todas las tarjetas de campo. Si es > 0 (2–30 s):
   el integrador cargado y los motores seguirían girando.
 - Al arrancar, el nodo escribe en rojo que está en modo banco y que **en vuelo real desarmaría
   el dron en el aire**. Por eso tiene sus propias tarjetas en la webui, con el prefijo
-  **"BANCO sin hélices"**, y las de campo no llevan el parámetro.
+  **"BANCO sin hélices"** — una por controlador: PID, MPC, MPC+ y CTBR — y las de campo no
+  llevan el parámetro.
 
 El kill del RC (**canal 8**, `COM_KILL_DISARM=5` s) sigue siendo la red de seguridad; el modo
 banco es para no depender del reflejo.
@@ -72,12 +73,19 @@ Igual, y además: `MPC: solver X ms de media` cada 5 s con datos reales (lejos d
 ciclo), y PX4 en modo `acceleration` (`vehicle_control_mode` en el bag con posición y velocidad
 apagadas).
 
-Para MPC+ (mismo binario, `mpc_dist_gain=0.5`): lanzar la tarjeta MPC+ **no** tiene parada de
-banco — es de campo. Si se quiere ver el observador en banco, lanzar la de banco MPC añadiendo
-`mpc_dist_gain:=0.5` a mano; la línea `perturbacion [...]` debe seguir en **cero**: en el suelo
-`dist_bottom < 0.35 m` y no debe adaptar. Si crece, parar: es la puerta de altura fallando.
+### 3b. "BANCO sin hélices: ciclo MPC+", 5 s
 
-**CTBR no aporta nada en banco**: solo engancha en el hold, que no se alcanza.
+Mismo binario con el observador activo. Lo único que añade, y es importante: la línea
+`perturbacion [x y z]` del log **tiene que seguir en cero** — en el suelo `dist_bottom < 0.35 m`
+y el observador no debe adaptar (PX4 descarta nuestro setpoint antes del despegue, el residuo
+no vale). Si crece, la puerta de altura falla: parar y avisar.
+
+### 3c. "BANCO sin hélices: ciclo CTBR", 5 s
+
+El CTBR **no engancha en banco** (solo toma el lazo de actitud en el hold): hasta el `TAKEOFF`
+se comporta como el PID. Lo que se prueba es lo que nunca se ha probado con un FC real: que el
+nodo arranca, carga el solver CTBR, recibe la actitud y no se cae. En el log: `CTBR: NMPC con
+actitud` al arrancar y **ningún** `CTBR ENGANCHADO`.
 
 ### 4. Leer los logs antes de recoger
 
