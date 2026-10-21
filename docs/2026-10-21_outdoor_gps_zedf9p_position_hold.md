@@ -7,8 +7,8 @@ ningún parámetro del FC ni montado hardware. Respaldo del perfil indoor:
 
 ## El GPS y lo que NO trae
 
-**u-blox ZED-F9P** (RTK, una antena): da **posición** (con RTK, centímetros; autónomo ~1 m, de
-sobra para Position hold). **No lleva brújula ni IMU.** RTK/NTRIP no hace falta para esta prueba.
+**SparkFun GPS-RTK-SMA (ZED-F9P)** (RTK, una antena): da **posición** (con RTK, centímetros; autónomo ~1 m, de
+sobra para Position hold). **No lleva brújula ni IMU.** RTK/NTRIP no hace falta para esta prueba. **Confirmado (ficha SparkFun): la placa no lleva brújula ni IMU**; se conecta por UART, y su Qwiic es I2C de 3.3V para configurar el F9P, no para un compás.
 
 ## La decisión que manda: el rumbo
 
