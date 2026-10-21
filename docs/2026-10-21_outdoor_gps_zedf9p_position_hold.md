@@ -41,6 +41,12 @@ GPS1  ├─ SparkFun F9P (RTK) ─→ Rx1, Tx1, 5V, GND      (UART, cruzado TX�
   **lejos de cables de potencia/ESC** (si no, el campo magnético la corrompe → fuga).
 - La parte GPS del M100 queda sin usar; el compás es lo único que se aprovecha de él.
 
+**Pines del F9P SparkFun (verificado en el hookup guide):** usar el **UART1**, rotulado
+`RX/MOSI` y `TX/MISO` (esos pines comparten UART1/SPI/I2C; en el modo por defecto, jumper
+**DSEL abierto**, son UART1). **NO** usar `TX2/RX2` (UART2, que PX4 no lee por defecto).
+Cruzado: `TX/MISO`→`Rx1`, `RX/MOSI`→`Tx1`. ⚠️ Dejar el **DSEL abierto**; si se cierra, los
+pines pasan a SPI y el UART deja de funcionar.
+
 **Niveles (verificado en la ficha SparkFun):** la placa F9P **acepta 5V** en su entrada (regula
 a 3.3V a bordo) y **todo su UART es 3.3V TTL** → se alimenta del 5V de GPS1 y su UART conecta
 **directo** al UART de GPS1 (3.3V), **sin conversor de nivel**. Cruzar TX↔RX. La brújula del
