@@ -109,3 +109,46 @@ no se vuela indoor con GPS activo ni outdoor con EV activo.
 
 La Pi, la webui, el stack offboard/SLAM y los cuatro controladores no intervienen: esto es FC +
 RC puro. Pendiente prioritario aparcado: capturar el motivo de denegación de armado en banco.
+
+## Verificación por USB del Y cableado — 2026-10-22 (interior, sin cielo)
+
+Prueba de **enumeración de hardware** (no de posición: en interior no hay fix 3D ni RTK, es
+esperado). Por `~/mavlink_tools/shell.py` sobre `/dev/ttyACM0`:
+
+**Brújula del M100 → incompatible con el firmware actual.** El I2C externo (bus 4 del NSH)
+tiene **un dispositivo en `0x2c`** = **QMC5883P**. El cableado está bien (el chip responde:
+5V, GND, SCL, SDA correctos), pero `qmc5883p` da **`command not found`**: el 1.14.3 de fábrica
+**no incluye ese driver**. El firmware sí trae `qmc5883l` (dir. 0x0D), `hmc5883`, `lis3mdl`,
+`rm3100`, `ist8308`, `ak09916`, `bmm150`, `lis2mdl`. **Salida:** una brújula con chip soportado
+(un GY-271/QMC5883L en 0x0D, o un módulo GPS+IST8310), o flashear un firmware con el driver del P
+(descartado por ahora). Con esta brújula tal cual, `SYS_HAS_MAG=1` **no serviría**: no hay quien
+la lea.
+
+**F9P → RESUELTO (2026-10-22, era Rx/Tx cruzados):** tras intercambiarlos, `gps status` da `UBX, OK, 115200, ~1550 B/s` y `sensor_gps` publica (fix_type 0 en interior). Diagnóstico original abajo.
+
+**F9P → alimentado pero sin datos (0 B/s) [histórico].** `gps status`: `NOT OK, /dev/ttyS0, baudrate 0,
+0 B/s`; `sensor_gps` nunca publicó. Como la brújula del **mismo conector GPS1** sí recibe
+alimentación, el **5V/GND del Y está vivo** → el fallo es de las **líneas UART del F9P**, no de
+la alimentación común. Revisar físicamente: (1) **jumper DSEL abierto** (cerrado = SPI, mata
+UART1); (2) **TX/MISO→Rx1 y RX/MOSI→Tx1** bien crimpados y sin cruzar. La config del FC es
+correcta: `GPS_1_CONFIG=201`, `GPS_1_PROTOCOL=0` (auto), `SER_GPS1_BAUD=0` (auto).
+
+## Brújula adoptada: GY-273 (QMC5883L) — 2026-10-22
+
+El compás del M100 (QMC5883P `0x2c`) no tiene driver en 1.14.3 y solo lo soporta PX4 `main`/≥1.17.
+En vez de reflashear FC#2, se **compró un GY-273 (QMC5883L, `0x0D`)**, chip cuyo driver sí está
+en el firmware (`qmc5883l`, verificado "Not running" en la prueba del 22-oct). Compatibilidad:
+- **Dirección `0x0D`**, libre en el bus del GPS1 (solo está ocupado `0x2c`) → sin conflicto.
+- **5V OK:** el GY-273 lleva LDO 3.3V + pull-ups a bordo; se alimenta de los 5V del GPS1. El chip
+  es 2.16–3.6V y el bus ya va a 3.3V. (Si los pull-ups del módulo fueran a 5V habría que mirarlo,
+  pero lo normal es que vayan al rail regulado de 3.3V.)
+- **Seguro aunque venga HMC5883L:** el GY-273 a veces trae HMC5883L (`0x1E`) en vez de QMC5883L;
+  los dos drivers están en 1.14.3, así que funciona igual.
+
+**Puesta en marcha (cuando esté montado, por USB):**
+1. `qmc5883l -X start` → debe detectarlo en `0x0D` (`listener sensor_mag 1` con datos). Si el
+   chip fuese HMC5883L: `hmc5883 -X start`. Confirmar que arranca **solo en el boot**; si no, se
+   añade al `extras.txt` (§6 de PLATAFORMA_HARDWARE.md).
+2. Respaldo de params (ya existe el indoor), luego perfil outdoor: `SYS_HAS_MAG=1`,
+   `EKF2_MAG_TYPE=0`, `EKF2_GPS_CTRL=7`, `EKF2_EV_CTRL=0`, `EKF2_OF_CTRL=0`, `EKF2_RNG_CTRL=0`.
+3. Calibrar el compás en QGC. Luego Position hold en el parking.

@@ -176,8 +176,8 @@ Al mapear TEL4 el sensor apareció — sin haber movido el cable.
 | Flujo óptico + LiDAR | **MicoAir MTF-01P** | TEL4 / UART8 (`/dev/ttyS7`) @115200 | ✅ operativo |
 | IMU | **2× BMI088** | SPI | ✅ calibradas de fábrica |
 | Barómetro | **SPL06** | I2C bus 1, `0x77` | ✅ |
-| Magnetómetro | **ninguno** | — | ❌ ver §5 |
-| GPS / brújula | M100-5883 | GPS1 | solo en FC#1; **no montado en FC#2** |
+| Magnetómetro | **GY-273 (QMC5883L)** | GPS1 / I2C `0x0D` | 🔵 comprado 2026-10-22, por montar; ver §5 y nota GPS |
+| GPS / brújula | M100-5883 (compás **QMC5883P** `0x2c`) | — | ❌ compás sin driver en 1.14.3 (§5); descartado para FC#2 |
 | **GPS RTK** | **u-blox ZED-F9P-02B-01** | GPS1 / UART (libre) | 🔵 disponible, **sin montar**; ver nota |
 | LiDAR 3D | Livox MID360 | — | ⏳ pendiente (driver ya en el workspace) |
 
@@ -199,10 +199,16 @@ con `EKF2_HGT_REF=1` la altura pasaría a venir del GPS, que es lo contrario de 
 indoor actual (ver [`PARAMETROS_INDOOR.md`](PARAMETROS_INDOOR.md)).
 
 **La placa concreta** es la **SparkFun GPS-RTK-SMA (ZED-F9P)**: receptor GNSS puro, **sin
-brújula ni IMU** (confirmado por su ficha), conexión por UART. El rumbo lo da la **brújula del
-M100-5883 (QMC5883L)**. Montaje elegido (2026-10-21): **ambos en `GPS1` con cable en Y** — F9P
-en la UART (`Rx1/Tx1`), brújula en el I2C (`SDA/SCL`), que es el único bus I2C del FC. El F9P va
-en GPS1 porque es el que alimenta el EKF (requisito para volar en RTK).
+brújula ni IMU** (confirmado por su ficha), conexión por UART. El rumbo lo da una **brújula I2C
+añadida en `GPS1`**. Montaje: **ambos en `GPS1` con cable en Y** — F9P en la UART (`Rx1/Tx1`),
+brújula en el I2C (`SDA/SCL`), que es el único bus I2C del FC. El F9P va en GPS1 porque es el que
+alimenta el EKF (requisito para volar en RTK).
+
+**Verificado por USB (2026-10-22):** con el Y cableado, el F9P habla (`gps status`: UBX, OK,
+115200, ~1550 B/s; `sensor_gps` publica — fix 0 en interior, normal). El compás del **M100
+resultó ser un QMC5883P** (responde en `0x2c`, no en el `0x0D` del L) y **este firmware no trae su
+driver** → M100 descartado para el rumbo. Lo sustituye un **GY-273 (QMC5883L, `0x0D`)**, chip con
+driver en 1.14.3; se conecta al mismo I2C del Y. El QMC5883P solo lo soporta PX4 `main`/≥1.17.
 
 ⚠️ **GPS2 no se usa** y este firmware **no trae `SENS_GPS_MASK`/`SENS_GPS_PRIME`** (sin blending
 ni primario/failover — verificado). Para una futura redundancia doble-GPS (tras actualizar a un
@@ -267,8 +273,10 @@ Es `/fmu/out/vehicle_local_position`, no `..._v1`. Usar el nombre versionado no 
 1. **Solo declara 2 puertos serie: GPS1 y TEL1.** Los códigos 102/103/104 (`MAV_x_CONFIG`,
    `UXRCE_DDS_CFG`, `GPS_x_CONFIG`) **no mapean a ningún dispositivo** — fallan en silencio.
    Solución: arrancar los servicios con ruta cruda desde `extras.txt` (§6).
-2. **No trae el driver `qmc5883p`**, solo `qmc5883l`. Son chips distintos → **no hay brújula
-   posible** sin cambiar de magnetómetro o de firmware.
+2. **No trae el driver `qmc5883p`**, solo `qmc5883l` (y hmc5883, ist8310, lis3mdl, rm3100...).
+   Verificado el 2026-10-22: el compás del M100 es un **QMC5883P** (`0x2c`) → ilegible aquí. El
+   driver del P solo está en PX4 `main` (merge 2025-06-30, PR #25115), no en 1.14/1.15/1.16.
+   Solución adoptada: brújula **GY-273 QMC5883L** (`0x0D`), que sí tiene driver.
 3. **`SENS_FLOW_ROT` no existe** → la rotación del flujo está clavada en 0. El sensor debe ir
    montado con su eje X hacia adelante.
 
@@ -480,7 +488,8 @@ velocidad objetivo, aligerar la resolución del mapa, o cambiar de ordenador a b
 | ESC MicoAir 4-en-1 | https://micoair.com/esc/ |
 | Sensor MicoAir MTF-01P | https://micoair.com/optical_range_sensor_mtf-01p/ · [docs](https://micoair.com/docs-category/mtf-01/) |
 | GPS RTK SparkFun GPS-RTK-SMA (ZED-F9P) | https://www.sparkfun.com/sparkfun-gps-rtk-sma-breakout-zed-f9p-qwiic.html |
-| GPS/brújula M100-5883 (QMC5883L) | combo GPS+compás; se usa solo su compás por I2C |
+| GPS/brújula M100-5883 | combo GPS+compás; su compás es **QMC5883P `0x2c`**, sin driver en 1.14.3 → descartado |
+| Brújula GY-273 (QMC5883L `0x0D`) | comprada 2026-10-22; LDO 3.3V + pull-ups a bordo, se alimenta de 5V del GPS1; driver `qmc5883l` presente |
 | DC-DC MP1584EN (buck 12V→5V, reserva para GPS2) | módulo genérico MP1584EN · ajustar a 5,0 V antes de conectar |
 | SUPER — hardware (BOM) | https://github.com/hku-mars/SUPER-Hardware |
 | SUPER — software | https://github.com/hku-mars/SUPER |
