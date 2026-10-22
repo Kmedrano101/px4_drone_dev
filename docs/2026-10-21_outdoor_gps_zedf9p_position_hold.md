@@ -152,3 +152,16 @@ en el firmware (`qmc5883l`, verificado "Not running" en la prueba del 22-oct). C
 2. Respaldo de params (ya existe el indoor), luego perfil outdoor: `SYS_HAS_MAG=1`,
    `EKF2_MAG_TYPE=0`, `EKF2_GPS_CTRL=7`, `EKF2_EV_CTRL=0`, `EKF2_OF_CTRL=0`, `EKF2_RNG_CTRL=0`.
 3. Calibrar el compás en QGC. Luego Position hold en el parking.
+
+## F9P validado con posición real — 2026-10-22 (junto a ventana, cielo parcial)
+
+Captura por `gps_watch.py` (MAVLink `GPS_RAW_INT`, solo lectura) acercando el dron a una ventana:
+- Arranque en frío: ~0–218 s sin satélites (interior), primeros satélites a **t≈219 s**.
+- **Fix 3D a t≈247 s** con 6 satélites; pico **8 satélites, `eph`=6.24 m** (3D).
+- Al alejar de la ventana, degradó (sats↓, vuelta a sin-fix) — coherente con el cielo tapado.
+- Posición coherente con la ubicación (Ávila, ~40.6513 N, −4.6788 O).
+
+**Conclusión:** el F9P funciona de punta a punta (hardware → UART → driver UBX → `sensor_gps` →
+`GPS_RAW_INT`). El `eph` ~6 m es el autónomo normal con cielo parcial; en exterior abierto mejora
+y con RTK baja a cm. **GPS cerrado.** Pendientes para el vuelo outdoor: montar la brújula GY-273
+(QMC5883L) y aplicar el perfil outdoor.
