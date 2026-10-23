@@ -13,6 +13,7 @@ STL original de fábrica (`base_rpi4.stl`, 100 × 75 × 2.5 mm).
 | Espesor | 2.5 mm | 2.5 mm (sin cambio) |
 | Huecos RPi4 | 4× Ø2.7 | **4× M3 (Ø3.2)** |
 | Huecos frame | 4× Ø3.5 (M3) | 4× Ø3.5 (M3) (sin cambio) |
+| Esquinas | vivas | **filete R5 mm** |
 
 - **85 mm en X** = largo de la placa RPi4 física. Los 4 huecos de montaje
   quedan en su posición real: **3.5 mm desde el lado D** (lado GPIO) y
@@ -21,6 +22,8 @@ STL original de fábrica (`base_rpi4.stl`, 100 × 75 × 2.5 mm).
 - **71 mm en Y** (−2 mm en los lados A y C respecto al original). Se mantiene
   para conservar los 4 huecos de sujeción al frame (patrón 48 × 63 mm), que
   están a y = ±31.49 y quedarían fuera si se bajara al ancho exacto de 56 mm.
+- **Esquinas redondeadas con filete de R5 mm** (parámetro `CORNER_R`); el bbox
+  sigue siendo 85 × 71 mm y no se acerca a ningún agujero.
 
 ## Agujeros
 
