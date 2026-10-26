@@ -215,6 +215,16 @@ vende en dos variantes y no son intercambiables en el arranque — **HMC5883L �
 `hmc5883`**; **QMC5883L → `0x0D`, driver `qmc5883l`**. El firmware 1.14.3 trae **ambos** drivers, así
 que cualquiera sirve; confirmar la variante con un escaneo I2C antes de lanzar el driver correcto.
 
+**Pinout de la GY-273 (HMC5883L), 5 pines — chip arriba, de izquierda a derecha:**
+
+| Pos (izq→der) | Serigrafía | Señal | Conexión |
+|---------------|-----------|-------|----------|
+| 1 | **DRDY** | Data Ready (interrupción) | **sin conectar** (no se usa por I2C) |
+| 2 | **SDA** | I2C datos | SDA (GPS1) |
+| 3 | **SCL** | I2C reloj | SCL (GPS1) |
+| 4 | **GND** | tierra | GND (GPS1) |
+| 5 | **VCC** | 3.3–5 V | 5V (GPS1) |
+
 **Orientación de montaje (frame FRD del PX4: +X adelante, +Y derecha, +Z abajo):**
 montar la placa **plana y nivelada**, con el **chip hacia abajo** y la **flecha X apuntando al
 morro**. Así los ejes quedan nativos en FRD → **`CAL_MAG0_ROT = ROTATION_NONE`**. (Si en cambio se
