@@ -1,0 +1,7 @@
+# Config NTRIP para ntrip_rtcm.py — COPIA a ntrip.conf y rellena.
+# ntrip.conf NO se commitea (lleva la contrasena). Son los mismos datos que metiste en QGC.
+host=        # caster SPTR de IGN (de tu cuenta ergnss.ign.es)
+port=2101
+mountpoint=  # el mountpoint VRS / solucion de red (RTCM 3.x)
+user=
+password=

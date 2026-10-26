@@ -48,3 +48,7 @@ logs/2026-09-18/cross_pattern_1789649199_bag/
 # Rosbags, logs de nodo y sysmon de las pruebas PID/MPC de la RPi (64 MB).
 # Analizados en reports/2026-10-19_pid-mpc-pruebas-guardas-rpi.md.
 logs/2026-10-16/rpi_pid_mpc/
+
+# NTRIP: config con credenciales (no commitear)
+scripts/mavlink/ntrip.conf
+ntrip.conf
