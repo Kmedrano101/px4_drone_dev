@@ -49,10 +49,21 @@ pines pasan a SPI y el UART deja de funcionar.
 
 **Niveles (verificado en la ficha SparkFun):** la placa F9P **acepta 5V** en su entrada (regula
 a 3.3V a bordo) y **todo su UART es 3.3V TTL** → se alimenta del 5V de GPS1 y su UART conecta
-**directo** al UART de GPS1 (3.3V), **sin conversor de nivel**. Cruzar TX↔RX. La brújula del
-M100 es compass-only: solo sus 4 pines **V/G/C/D** (VCC, GND, SCL, SDA); sus pines R/T (GPS) se
-dejan sin conectar. ⚠️ Confirmar en la serigrafía del M100 cuál es **SDA** (en algunos la "D" se
-lee como "O").
+**directo** al UART de GPS1 (3.3V), **sin conversor de nivel**. Cruzar TX↔RX.
+
+**Pinout real del M100-5883 (orden del conector, pin 1 → 6, verificado 2026-10-26):**
+
+| Pin | Serigrafía | Señal |
+|-----|-----------|-------|
+| 1 | **C** | SCL |
+| 2 | **D** | SDA |
+| 3 | **R** | Rx (GPS) |
+| 4 | **T** | Tx (GPS) |
+| 5 | **V** | Vcc |
+| 6 | **G** | GND |
+
+La brújula del M100 es compass-only: solo se usan **C, D, V, G** (SCL, SDA, Vcc, GND); los pines
+**R/T** (GPS) se dejan sin conectar. ⚠️ En la serigrafía la **"D" (SDA) se lee a veces como "O"**.
 
 **Comparación GPS normal vs RTK:** con el **mismo F9P**, activando/desactivando las correcciones
 RTCM (FIX ≈ cm vs standalone ≈ 1–2 m). No con dos receptores: así la comparación aísla el RTK y

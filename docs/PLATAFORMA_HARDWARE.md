@@ -505,7 +505,7 @@ velocidad objetivo, aligerar la resolución del mapa, o cambiar de ordenador a b
 | ESC MicoAir 4-en-1 | https://micoair.com/esc/ |
 | Sensor MicoAir MTF-01P | https://micoair.com/optical_range_sensor_mtf-01p/ · [docs](https://micoair.com/docs-category/mtf-01/) |
 | GPS RTK SparkFun GPS-RTK-SMA (ZED-F9P) | https://www.sparkfun.com/sparkfun-gps-rtk-sma-breakout-zed-f9p-qwiic.html |
-| GPS/brújula M100-5883 | combo GPS+compás; su compás es **QMC5883P `0x2c`**, sin driver en 1.14.3 → descartado |
+| GPS/brújula M100-5883 | combo GPS+compás (HGLRC); su compás es **QMC5883P `0x2c`**, sin driver en 1.14.3 → descartado. Pinout conector (pin 1→6): **C D R T V G** = SCL, SDA, Rx, Tx, Vcc, GND |
 | Brújula GY-273 (HMC5883L `0x1E`) | recibida 2026-10-23; LDO 3.3V + pull-ups a bordo, se alimenta de 5V del GPS1; driver `hmc5883` presente. Variante alterna QMC5883L (`0x0D`, `qmc5883l`). Montaje: chip abajo, X al morro → `ROTATION_NONE` |
 | DC-DC MP1584EN (buck 12V→5V, reserva para GPS2) | módulo genérico MP1584EN · ajustar a 5,0 V antes de conectar |
 | SUPER — hardware (BOM) | https://github.com/hku-mars/SUPER-Hardware |
