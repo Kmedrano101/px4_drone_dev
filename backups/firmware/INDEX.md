@@ -1,9 +1,14 @@
 # Índice de versiones de firmware — NxtPX4v2 (hkust_nxt-dual)
 
-Base común: **PX4 commit `82e3322e`** (1.17.0 main). Todas las mods de board son **sin commitear**;
-cada versión guarda su `board_config.diff` para reconstruirla exacta.
+Base común: **PX4 commit `82e3322e`** (1.17.0 main). Cada versión guarda su `board_config.diff`
+para reconstruirla exacta.
 
-Repo de código: `/home/kmedrano/PX4-Autopilot`
+Repo de código: `/home/kmedrano/PX4-Autopilot` (remotos: `origin` = fork propio
+**`Kmedrano101/PX4-Autopilot`**, `upstream` = `PX4/PX4-Autopilot`).
+
+**Fuente de V3 versionada en el fork:** rama **`nxt-dual-custom`** (commit `e1ca111b`) —
+cambios de `boards/hkust/nxt-dual/` (default.px4board + rc.board_sensors). Reconstruir:
+`git fetch origin && git checkout nxt-dual-custom && make hkust_nxt-dual_default`.
 
 > **⚠️ 2026-09-04 — el FC NO tiene ninguna de estas versiones.** Está con el firmware
 > de fábrica **PX4 1.14.3** (branch `micoair743-v1.14.3`, build Nov 19 2024). Fue
