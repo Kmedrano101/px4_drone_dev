@@ -176,3 +176,30 @@ Captura por `gps_watch.py` (MAVLink `GPS_RAW_INT`, solo lectura) acercando el dr
 `GPS_RAW_INT`). El `eph` ~6 m es el autónomo normal con cielo parcial; en exterior abierto mejora
 y con RTK baja a cm. **GPS cerrado.** Pendientes para el vuelo outdoor: montar la brújula GY-273
 (QMC5883L) y aplicar el perfil outdoor.
+
+## Validación en campo abierto — 2026-10-26 (autónomo + **RTK cm**) ✅
+
+Capturado con la tarjeta webui **"Validar GPS RTK"** (`gps_rtk_validate.py`, solo lectura; para al
+alcanzar buen fix sostenido y escribe CSV + resumen con link a Maps).
+
+**Autónomo (sin RTCM) — 2 puntos, cielo abierto (Ávila):**
+
+| Punto | Fix | Sats | `eph` | Tiempo a fix 3D | Posición |
+|-------|-----|------|-------|-----------------|----------|
+| 1 (14:01) | 3D | 16 | **1.01 m** | 1 s | 40.6510646, −4.6788321 |
+| 2 (14:03) | **DGPS** (SBAS/EGNOS) | 21 | **0.79 m** | 0 s | 40.6510018, −4.6785582 |
+
+→ Fix 3D **instantáneo**, 16-21 satélites, **sub-métrico**. El GPS está perfecto en cielo abierto.
+Logs en `tools/webui/logs/sensor_eval/*_gps_rtk_*`.
+
+**RTK fixed (cm) — IGN SPTR VRS vía QGC NTRIP:**
+- NTRIP configurado en QGC (*Settings → NTRIP/RTK*): **Server Settings** (caster SPTR + usuario de
+  la cuenta `ergnss.ign.es`), **Mountpoint Browser** (mountpoint de solución de red / **VRS**), y
+  **GGA Position Reporting** activo (la VRS necesita la posición del vehículo). QGC reenvía el RTCM
+  al FC por MAVLink (vía radio SiK).
+- Resultado: **RTK fixed, error centimétrico** (confirmado en QGC). De autónomo (~1 m) a **cm**.
+- Nota: el card registró las 2 corridas **autónomas** (el NTRIP se activó después); para captar el
+  RTK con el card, correrlo con el NTRIP ya activo (`fix_type` 5 float → 6 fixed).
+
+**Conclusión:** cadena GPS validada de **autónomo sub-métrico** a **RTK centimétrico**. El F9P +
+IGN SPTR VRS funcionan. (Esto es sobre el FC#2 ya en **V3/1.17** con la brújula QMC5883P operativa.)

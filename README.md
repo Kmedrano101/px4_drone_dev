@@ -34,6 +34,8 @@ over ROS 2 / uXRCE-DDS.
 - ✅ Offboard link RPi ⇄ FC via uXRCE-DDS (domain-id + px4_msgs aligned)
 - ✅ Firmware optimized (removed FW/VTOL modules → FLASH 98.5% → 92%)
 - ✅ 2nd drone (FC#2, vendor PX4 1.14.3) brought up — MTF-01P on TEL4 via SD `extras.txt`, 97 params migrated from FC#1
+- ✅ FC#2 moved to **own PX4 1.17 build** (fork `nxt-dual-custom`, flash 83%) to enable the **QMC5883P compass**; offboard uXRCE-DDS re-verified on 1.17 (`px4_msgs` v1.17.0)
+- ✅ **Outdoor GPS (ZED-F9P) validated** in open sky: autonomous sub-meter (`eph` 0.79–1.01 m, 16–21 sats, instant 3D fix) and **RTK cm** via IGN SPTR **VRS** (QGC NTRIP)
 - ✅ Simulación Gazebo del dron real (RJX F450 + MTF-01P + D500) en la zona indoor escaneada
 - ✅ Heading and position without a compass via **2D SLAM (LD19) → external vision**: EV fusion validated, ground arming in Offboard
 - ✅ 360° obstacle stop from the raw 2D scan, honest EV variance, and onboard-computer load logged with every test
