@@ -7,6 +7,35 @@ con el FC vía **uXRCE-DDS** sobre UART, para navegación autónoma con ROS2.
 
 ---
 
+## Actualización 2026-10-26 — también verificado en el **FC#2** (V3/1.17)
+
+El FC#2 (antes vendor 1.14.3) se pasó a **firmware propio V3** (1.17.0, fork
+`Kmedrano101/PX4-Autopilot` rama `nxt-dual-custom`, commit `e1ca111b`, base `82e3322e`).
+`px4_msgs` del companion actualizado a **v1.17.0** (`86d8239`). **Enlace offboard bidireccional
+re-verificado** sobre esta config. Claves que costaron tiempo hoy (confirmadas de nuevo):
+
+1. **Los topics llevan `_v1`** en este firmware: `/fmu/out/vehicle_status_v1`,
+   `/fmu/out/vehicle_local_position_v1`, etc. (otros NO: `vehicle_control_mode`, `vehicle_odometry`,
+   `sensor_combined`…; los de offboard `offboard_control_mode`/`trajectory_setpoint`/`vehicle_command`
+   van **sin** `_v1`). Hacer `echo` del nombre **sin** `_v1` da "does not appear to be published" aunque
+   el FC publique (`Payload tx` > 0). **Confirmar siempre el nombre con `ros2 topic list`.**
+2. **`ros2 topic list` necesita `--no-daemon --spin-time 4`** o la discovery sale intermitente
+   (a veces ve los topics, a veces 0).
+3. **QoS `best_effort`** para suscribirse a `/fmu/out/*` (`--qos-reliability best_effort`); con el
+   `reliable` por defecto no casan y no llega dato.
+4. **El agente `MicroXRCEAgent` necesita el entorno ROS sourceado** o falla con
+   `libfastrtps.so.2.14: cannot open shared object` → lanzarlo tras `source /opt/ros/jazzy/setup.bash`.
+5. Verificado en vivo: `vehicle_local_position_v1` → `xy_valid/z_valid/heading` válidos (brújula
+   QMC5883P ya en el EKF); FC suscrito a `offboard_control_mode`/`vehicle_command`
+   (`Subscription count: 1`). **No hace falta armar para esta verificación.**
+
+**Prearm (QGC) tras flashear:** "Crash dumps present on SD" = hay `fault_*.log` en la SD → borrar
+`/fs/microsd/fault_*.log` (check controlado por `COM_ARM_HFLT_CHK`, dejarlo en 1). "Strong magnetic
+interference" = brújula nueva sin calibrar + cerca de la potencia → calibrar en QGC con el compás en
+su posición final, lejos de ESC/cables.
+
+---
+
 ## 0. Arquitectura
 
 ```
