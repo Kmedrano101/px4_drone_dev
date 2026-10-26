@@ -16,7 +16,8 @@ Repo de código: `/home/kmedrano/PX4-Autopilot`
 | **V0** stock | ❌ recreable | referencia | Board sin mods (git limpio + build) |
 | **Original+mag** | ❌ recreable | ~la que voló bien | Stock + drivers mag (sin USART6/GPS3) |
 | **V1** | ✅ `v1_2026-07-17_usart6gps3+mag/` | guardada | + USART6 sin consola + GPS3 (inútil) + mag |
-| **V2** | ✅ `v2_2026-07-23_optimizada-AB/` | guardada | Revert USART6/GPS3 + optimización (quitar FW/VTOL/etc.) |
+| **V2** | ✅ `v2_2026-07-23_optimizada-AB/` | guardada | Revert USART6/GPS3 + optimización (quitar FW/VTOL/etc.) — flash 92.01% |
+| **V3** | ✅ `v3_2026-10-26_limpia-mc-only/` | **a flashear** | Limpia multirotor: + quita cámaras/gimbal/irlock/LPE/OSD/distancia/telemetría no-MAVLink, baro→SPL06, mag→QMC5883P — **flash 83.06%**; habilita el compás QMC5883P |
 | **V0-vendor** | ❌ no extraíble | **EN EL FC ahora** | Firmware de fábrica PX4 1.14.3 (`micoair743-v1.14.3`) |
 
 ### Backups de parámetros
