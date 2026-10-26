@@ -22,8 +22,8 @@ cambios de `boards/hkust/nxt-dual/` (default.px4board + rc.board_sensors). Recon
 | **Original+mag** | ❌ recreable | ~la que voló bien | Stock + drivers mag (sin USART6/GPS3) |
 | **V1** | ✅ `v1_2026-07-17_usart6gps3+mag/` | guardada | + USART6 sin consola + GPS3 (inútil) + mag |
 | **V2** | ✅ `v2_2026-07-23_optimizada-AB/` | guardada | Revert USART6/GPS3 + optimización (quitar FW/VTOL/etc.) — flash 92.01% |
-| **V3** | ✅ `v3_2026-10-26_limpia-mc-only/` | **a flashear** | Limpia multirotor: + quita cámaras/gimbal/irlock/LPE/OSD/distancia/telemetría no-MAVLink, baro→SPL06, mag→QMC5883P — **flash 83.06%**; habilita el compás QMC5883P |
-| **V0-vendor** | ❌ no extraíble | **EN EL FC ahora** | Firmware de fábrica PX4 1.14.3 (`micoair743-v1.14.3`) |
+| **V3** | ✅ `v3_2026-10-26_limpia-mc-only/` | **EN EL FC ahora** (flasheado 2026-10-26) | Limpia multirotor: + quita cámaras/gimbal/irlock/LPE/OSD/distancia/telemetría no-MAVLink, baro→SPL06, mag→QMC5883P — **flash 83.06%**; **compás QMC5883P funcionando** (bus 4 0x2C, sensor_mag publica) |
+| **V0-vendor** | ❌ no extraíble | rollback | Firmware de fábrica PX4 1.14.3 (`micoair743-v1.14.3`) — params en `backup_fc_2026-10-26_pre-1.17.params` |
 
 ### Backups de parámetros
 
