@@ -176,7 +176,7 @@ Al mapear TEL4 el sensor apareció — sin haber movido el cable.
 | Flujo óptico + LiDAR | **MicoAir MTF-01P** | TEL4 / UART8 (`/dev/ttyS7`) @115200 | ✅ operativo |
 | IMU | **2× BMI088** | SPI | ✅ calibradas de fábrica |
 | Barómetro | **SPL06** | I2C bus 1, `0x77` | ✅ |
-| Magnetómetro | **GY-273 (HMC5883L)** | GPS1 / I2C `0x1E` | 🔵 recibido 2026-10-23, por montar (chip abajo, X al morro, `ROTATION_NONE`); ver §5 y nota GPS |
+| Magnetómetro | ~~GY-273~~ (resultó **QMC5883P** `0x2c`) | — | ❌ etiquetada "HMC5883L" pero el chip es QMC5883P (sin driver en 1.14.3); descartada 2026-10-26. Pendiente compás con IST8310/RM3100/LIS3MDL |
 | GPS / brújula | M100-5883 (compás **QMC5883P** `0x2c`) | — | ❌ compás sin driver en 1.14.3 (§5); descartado para FC#2 |
 | **GPS RTK** | **u-blox ZED-F9P-02B-01** | GPS1 / UART (libre) | 🔵 disponible, **sin montar**; ver nota |
 | LiDAR 3D | Livox MID360 | — | ⏳ pendiente (driver ya en el workspace) |
@@ -207,15 +207,19 @@ alimenta el EKF (requisito para volar en RTK).
 **Verificado por USB (2026-10-22):** con el Y cableado, el F9P habla (`gps status`: UBX, OK,
 115200, ~1550 B/s; `sensor_gps` publica — fix 0 en interior, normal). El compás del **M100
 resultó ser un QMC5883P** (responde en `0x2c`, no en el `0x0D` del L) y **este firmware no trae su
-driver** → M100 descartado para el rumbo. Lo sustituye una **brújula tipo GY-273** en el mismo I2C
-del Y. El QMC5883P solo lo soporta PX4 `main`/≥1.17.
+driver** → M100 descartado para el rumbo. El QMC5883P solo lo soporta PX4 `main`/≥1.17.
 
-**Chip de la GY-273 recibida (2026-10-23): HMC5883L** (`0x1E`, driver `hmc5883`). Ojo: la GY-273 se
-vende en dos variantes y no son intercambiables en el arranque — **HMC5883L → `0x1E`, driver
-`hmc5883`**; **QMC5883L → `0x0D`, driver `qmc5883l`**. El firmware 1.14.3 trae **ambos** drivers, así
-que cualquiera sirve; confirmar la variante con un escaneo I2C antes de lanzar el driver correcto.
+⚠️ **La GY-273 "HMC5883L" TAMBIÉN resultó ser un QMC5883P (verificado 2026-10-26).** Conectada al
+I2C del Y y escaneada por NSH (`i2cdetect -b 4`), la placa responde en **`0x2c`** (no en `0x1E`), y
+`hmc5883 -X start` da **`no device on bus`**. El chip va marcado **`HP5883`** (un HMC5883L iría
+marcado `L883`). Es decir, **los dos compases que tenemos (M100 y GY-273) son QMC5883P** y ninguno
+tiene driver en 1.14.3. El mercado vende como "HMC5883L"/"QMC5883L" muchas placas que montan el
+**QMC5883P** nuevo; la etiqueta engaña, la dirección I2C no. **Chips con driver en 1.14.3:**
+`qmc5883l`(0x0D), `hmc5883`(0x1E), **`ist8310`**, `lis3mdl`, `rm3100`, `ist8308`, `ak09916`,
+`bmm150`, `lis2mdl`. **Solución: comprar un compás con IST8310** (estándar en GPS de dron, fiable),
+o RM3100/LIS3MDL; si se va a por un QMC5883L, exigir que responda en `0x0D` (marcado `DA5883`).
 
-**Pinout de la GY-273 (HMC5883L), 5 pines — chip arriba, de izquierda a derecha:**
+**Pinout de la GY-273 (placa de 5 pines) — chip arriba, de izquierda a derecha:**
 
 | Pos (izq→der) | Serigrafía | Señal | Conexión |
 |---------------|-----------|-------|----------|
@@ -299,11 +303,13 @@ Es `/fmu/out/vehicle_local_position`, no `..._v1`. Usar el nombre versionado no 
    `UXRCE_DDS_CFG`, `GPS_x_CONFIG`) **no mapean a ningún dispositivo** — fallan en silencio.
    Solución: arrancar los servicios con ruta cruda desde `extras.txt` (§6).
 2. **No trae el driver `qmc5883p`**, solo `qmc5883l` (y hmc5883, ist8310, lis3mdl, rm3100...).
-   Verificado el 2026-10-22: el compás del M100 es un **QMC5883P** (`0x2c`) → ilegible aquí. El
-   driver del P solo está en PX4 `main` (merge 2025-06-30, PR #25115), no en 1.14/1.15/1.16.
-   Solución adoptada: brújula **GY-273**. La unidad recibida (2026-10-23) lleva **HMC5883L**
-   (`0x1E`, driver `hmc5883`); la otra variante es QMC5883L (`0x0D`, `qmc5883l`). Ambos drivers
-   están en 1.14.3. Montaje: chip abajo, X al morro → `CAL_MAG0_ROT = ROTATION_NONE` (ver §3).
+   El driver del P solo está en PX4 `main` (merge 2025-06-30, PR #25115), no en 1.14/1.15/1.16.
+   **Los dos compases probados son QMC5883P (`0x2c`) → ilegibles aquí:** el del M100 (verif.
+   2026-10-22) y la GY-273 "HMC5883L" (verif. 2026-10-26, chip marcado `HP5883`, responde en
+   `0x2c` y `hmc5883 -X start` da *no device on bus*). Las etiquetas "HMC5883L"/"QMC5883L" del
+   mercado montan muchas veces el QMC5883P nuevo. **Solución pendiente: compás con `IST8310`**
+   (fiable, estándar en GPS de dron) o RM3100/LIS3MDL; si se va a por QMC5883L, exigir `0x0D`
+   (`DA5883`). Ver §3.
 3. **`SENS_FLOW_ROT` no existe** → la rotación del flujo está clavada en 0. El sensor debe ir
    montado con su eje X hacia adelante.
 
@@ -516,7 +522,7 @@ velocidad objetivo, aligerar la resolución del mapa, o cambiar de ordenador a b
 | Sensor MicoAir MTF-01P | https://micoair.com/optical_range_sensor_mtf-01p/ · [docs](https://micoair.com/docs-category/mtf-01/) |
 | GPS RTK SparkFun GPS-RTK-SMA (ZED-F9P) | https://www.sparkfun.com/sparkfun-gps-rtk-sma-breakout-zed-f9p-qwiic.html |
 | GPS/brújula M100-5883 | combo GPS+compás (HGLRC); su compás es **QMC5883P `0x2c`**, sin driver en 1.14.3 → descartado. Pinout conector (pin 1→6): **C D R T V G** = SCL, SDA, Rx, Tx, Vcc, GND |
-| Brújula GY-273 (HMC5883L `0x1E`) | recibida 2026-10-23; LDO 3.3V + pull-ups a bordo, se alimenta de 5V del GPS1; driver `hmc5883` presente. Variante alterna QMC5883L (`0x0D`, `qmc5883l`). Montaje: chip abajo, X al morro → `ROTATION_NONE` |
+| ~~Brújula GY-273~~ | etiquetada "HMC5883L" pero el chip es **QMC5883P** (`0x2c`, marcado `HP5883`) → sin driver en 1.14.3; **descartada 2026-10-26**. Pendiente compás con IST8310/RM3100/LIS3MDL |
 | DC-DC MP1584EN (buck 12V→5V, reserva para GPS2) | módulo genérico MP1584EN · ajustar a 5,0 V antes de conectar |
 | SUPER — hardware (BOM) | https://github.com/hku-mars/SUPER-Hardware |
 | SUPER — software | https://github.com/hku-mars/SUPER |
