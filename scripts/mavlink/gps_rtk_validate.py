@@ -54,7 +54,10 @@ def connect():
     while time.time() - t0 < 45 and not _stop["flag"]:
         m.mav.heartbeat_send(mavutil.mavlink.MAV_TYPE_GCS,
                              mavutil.mavlink.MAV_AUTOPILOT_INVALID, 0, 0, 0)
-        hb = m.recv_match(type='HEARTBEAT', blocking=True, timeout=0.5)
+        try:
+            hb = m.recv_match(type='HEARTBEAT', blocking=True, timeout=0.5)
+        except Exception:
+            continue          # frame corrupto al sincronizar -> reintentar
         if hb and hb.get_srcSystem() != 250:
             return m
     raise SystemExit("sin heartbeat del FC (revisa USB/puerto)")
@@ -91,7 +94,10 @@ with open(csv_path, "w", newline="") as f:
             m.mav.heartbeat_send(mavutil.mavlink.MAV_TYPE_GCS,
                                  mavutil.mavlink.MAV_AUTOPILOT_INVALID, 0, 0, 0)
             last_hb = time.time()
-        msg = m.recv_match(type='GPS_RAW_INT', blocking=True, timeout=1.5)
+        try:
+            msg = m.recv_match(type='GPS_RAW_INT', blocking=True, timeout=1.5)
+        except Exception:
+            continue          # frame corrupto -> ignorar esta muestra
         if msg is None:
             continue
         t = time.time() - t0
