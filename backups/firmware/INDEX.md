@@ -26,6 +26,7 @@ Repo de código: `/home/kmedrano/PX4-Autopilot`
 | 2026-07-23 | `../backup_fc_2026-07-23.params` (967) | V1 / PX4 1.17.0 |
 | 2026-09-04 | `../backup_fc_2026-09-04.params` (909) | V0-vendor / PX4 1.14.3 recién flasheado — **estado previo, punto de rollback** |
 | 2026-09-04 | `../backup_fc_2026-09-04_post-migracion.params` (914) | V0-vendor + 97 params migrados desde el FC de 1.17 |
+| 2026-10-26 | `../backup_fc_2026-10-26_pre-1.17.params` (908) | V0-vendor / PX4 1.14.3 — **estado actual, rollback antes de pasar a 1.17 (V2) por el compás QMC5883P** |
 
 ### Migración de params 1.17 → 1.14.3 (2026-09-04)
 
