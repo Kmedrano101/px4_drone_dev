@@ -248,3 +248,23 @@ Tarjetas nuevas en la webui (scripts en `tools/sensor_eval/`, canónicos en
    estable (flag `POS_HORIZ_ABS`), sin glitches, con buena exactitud y heading. **No despega**, **no
    arma** (lo arma Kevin por RC/QGC); monitoriza N s y **auto-desarma** al terminar. Veredicto
    LISTO/REVISAR. Caster y credenciales: [[ign-ntrip-caster-sptr]].
+
+#### Resultado de campo — comparación RTK (2026-10-27, 11:42–11:43)
+
+Dos tomas en el mismo punto (Ávila, zona plana), caster IGN `VRS3M` vía QGC:
+
+| Métrica             | Sin corr. (autónomo) | Con corr. (RTK) |
+|---------------------|----------------------|-----------------|
+| Muestras            | 22                   | 91              |
+| Mejor fix / distrib.| 3D (22/22)           | **RTK-fixed (91/91)** |
+| Satélites           | 29                   | 29              |
+| Dispersión RMS      | 0.103 m              | **0.002 m**     |
+| Dispersión máx      | 0.203 m              | 0.009 m         |
+| Offset centroides (A→B) | — | **1.119 m** (error absoluto del autónomo, RTK = verdad) |
+
+- **RTK-fixed en el 100 % de las muestras** con corrección; enganchó al instante y se mantuvo 90 s.
+- **Repetibilidad ×59 mejor** (±10 cm → **±2 mm**), el comportamiento esperado de un F9P en RTK-fixed.
+- **Matiz:** el `eph` de `GPS_RAW_INT` no baja en RTK-fixed (0.51 → 0.56 m) — no refleja la solución RTK
+  en este firmware; la métrica fiable es la **dispersión real (2 mm)**. No es un problema.
+- Veredicto del comparador: **RTK MEJORA**. Pendiente: chequeo EKF2 armado en tierra (tarjeta 4) y
+  calibración de brújula (prearm la bloquea si no).
