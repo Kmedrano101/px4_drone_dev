@@ -266,5 +266,12 @@ Dos tomas en el mismo punto (Ávila, zona plana), caster IGN `VRS3M` vía QGC:
 - **Repetibilidad ×59 mejor** (±10 cm → **±2 mm**), el comportamiento esperado de un F9P en RTK-fixed.
 - **Matiz:** el `eph` de `GPS_RAW_INT` no baja en RTK-fixed (0.51 → 0.56 m) — no refleja la solución RTK
   en este firmware; la métrica fiable es la **dispersión real (2 mm)**. No es un problema.
-- Veredicto del comparador: **RTK MEJORA**. Pendiente: chequeo EKF2 armado en tierra (tarjeta 4) y
-  calibración de brújula (prearm la bloquea si no).
+- Veredicto del comparador: **RTK MEJORA**. Brújula ya calibrada; pendiente el chequeo EKF2 armado
+  en tierra (tarjeta 4). Mapa a escala: `https://claude.ai/artifact/3kZet9oqaQ4vxh5hKALCbM`.
+
+**Conclusión (exactitud absoluta ≠ precisión):** en posición absoluta los dos modos coinciden a
+~1 m (en un mapa, el mismo sitio); el autónomo ya acierta a ~1 m con 29 sats. Lo que aporta el RTK no
+es "dónde estás" sino que la posición **no se mueva**: ±2 mm vs ±10-20 cm con el dron quieto (×59).
+Esos ±10 cm de ruido del autónomo son los que hacen derivar un multirrotor en position hold y los que
+obligan al EKF2 a pelear contra una medida ruidosa. Por eso el RTK es decisivo para vuelo estable
+aunque el mapa parezca igual. Reporte completo: `reports/2026-10-27_campo-rtk-validado-fixed.md`.

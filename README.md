@@ -37,6 +37,7 @@ over ROS 2 / uXRCE-DDS.
 - ✅ FC#2 moved to **own PX4 1.17 build** (fork `nxt-dual-custom`, flash 83%) to enable the **QMC5883P compass**; offboard uXRCE-DDS re-verified on 1.17 (`px4_msgs` v1.17.0)
 - ✅ **Outdoor GPS (ZED-F9P) validated** in open sky: autonomous sub-meter (`eph` 0.79–1.01 m, 16–21 sats, instant 3D fix) and **RTK cm** via IGN SPTR **VRS** (QGC NTRIP)
 - ✅ **Outdoor estimation profile applied** (GPS fused `EKF2_GPS_CTRL=7`, baro height, flow/range off) with switchable **indoor↔outdoor profile files** (QGC *Load from file* or CLI); **motor-output map fixed** (motor 2↔3 cross-wiring → `PWM_MAIN_FUNC = 101,104,103,102`)
+- ✅ **RTK validated in the field** (IGN NTRIP `VRS3M`): RTK-fixed 91/91 samples, position scatter 10 cm → **2 mm** (×59). Absolute location ≈ same (~1 m) as autonomous; the real win is **stability** for position hold and a quieter feed to EKF2 — see [report](reports/2026-10-27_campo-rtk-validado-fixed.md)
 - ✅ Simulación Gazebo del dron real (RJX F450 + MTF-01P + D500) en la zona indoor escaneada
 - ✅ Heading and position without a compass via **2D SLAM (LD19) → external vision**: EV fusion validated, ground arming in Offboard
 - ✅ 360° obstacle stop from the raw 2D scan, honest EV variance, and onboard-computer load logged with every test
