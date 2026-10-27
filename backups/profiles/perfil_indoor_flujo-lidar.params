@@ -1,0 +1,23 @@
+# Onboard parameters for Vehicle 1
+#
+# Stack: PX4 Pro
+# Vehicle: Multi-Rotor
+# Version: 1.17.0
+#
+# >>> PERFIL INDOOR  (flujo optico + LiDAR, sin GPS) (FC#2) <<<
+# Perfil de ESTIMACION + failsafe indoor<->outdoor (mutuamente excluyentes). Carga PARCIAL:
+# solo toca estos params; el resto (motores, tuning, bateria) no se altera.
+# Failsafe RC/Datalink loss = Land (3) en ambos: no hay RTL fiable (brujula/compass).
+#   QGC : Vehicle Setup > Parameters > Tools > Load from file...  (luego Reboot)
+#   CLI : FC_DEV=/dev/ttyACM0 ~/.venvs/mav/bin/python ~/mavlink_tools/load_params.py <fichero>
+#
+# Vehicle-Id Component-Id Name Value Type
+1	1	EKF2_GPS_CTRL	0	6
+1	1	EKF2_HGT_REF	2	6
+1	1	EKF2_OF_CTRL	1	6
+1	1	EKF2_RNG_CTRL	1	6
+1	1	EKF2_EV_CTRL	0	6
+1	1	EKF2_MAG_TYPE	0	6
+1	1	COM_ARM_WO_GPS	1	6
+1	1	NAV_RCL_ACT	3	6
+1	1	NAV_DLL_ACT	3	6

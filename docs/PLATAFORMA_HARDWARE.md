@@ -29,8 +29,8 @@ Ficha técnica completa del dron: qué hay montado, qué firmware corre y cómo 
 | Hélices (4×) | **HQProp 7×4×3** (7040), tripala | 7" |
 | ESC | **MicoAir Bluejay-4IN1-60A** | 60 A × 4 · 3-6S · firmware **Bluejay 0.19.2** (BLHeli_S) · 44 × 43.5 × 5.2 mm · 13.5 g · montaje 30.5×30.5 (Φ4) · [ficha](https://micoair.com/esc/) |
 | Batería | **Ovonic 6S1P 1300 mAh 100C** | 22.2 V · **222 g** · 74 × 44 × 34 mm · XT60 · 130 A continuos / 260 A pico · [ficha](https://www.ampow.com/products/ovonic-100c-1300mah-6s1p-22-2v-xt60-4pcs-lipo-battery) |
-| Protocolo de motor | DShot 600 | `PWM_MAIN_TIM0=-3`, `DSHOT_MIN=0.055` |
-| Mapeo de motores | `PWM_MAIN_FUNC1..4 = 101, 104, 102, 103` | migrado y verificado |
+| Protocolo de motor | DShot 600 bidireccional | `PWM_MAIN_TIM0=-3`, `DSHOT_MIN=0.055`, `DSHOT_BIDIR_EN=1` |
+| Mapeo de salidas | `PWM_MAIN_FUNC1..4 = 101, 104, 103, 102` | ⚠️ corregido 2026-10-27 (ver abajo) |
 
 **Empuje de hover medido en vuelo real:** 0.284 (media) / 0.287 (mediana), p10-p90 0.270-0.295
 → `MPC_THR_HOVER=0.30`. El grupo propulsor da **9.4 kg de empuje total**, muy sobrado para un
@@ -43,10 +43,57 @@ F450 — margen pensado para cargar el MID360 y el ordenador a bordo.
 el FC#1, ±0.15). Ya actualizado a **±0.159** en los cuatro rotores, con los opuestos en negativo.
 QGC muestra `0.16` por redondeo a dos decimales; el valor guardado es 0.159.
 
+### Mapeo de motores — geometría vs. salidas (⚠️ corregido 2026-10-27)
+
+Hay **dos capas** y conviene no confundirlas:
+
+1. **Geometría (`CA_ROTOR*`)** — define los 4 rotores lógicos (Motor 1-4 en QGC) con su
+   posición y sentido de giro. Es el Quad-X estándar y **no se toca**:
+
+   | Motor (QGC) | `CA_ROTOR` | PX | PY | `KM` | Giro | Posición física |
+   |---|---|---|---|---|---|---|
+   | Motor 1 | ROTOR0 | +0.159 | +0.159 | +0.05 | **CCW** | delantero-derecha |
+   | Motor 2 | ROTOR1 | −0.159 | −0.159 | +0.05 | **CCW** | trasero-izquierda |
+   | Motor 3 | ROTOR2 | +0.159 | −0.159 | −0.05 | **CW**  | delantero-izquierda |
+   | Motor 4 | ROTOR3 | −0.159 | +0.159 | −0.05 | **CW**  | trasero-derecha |
+
+   (Ejes PX4 **FRD**: +X al morro, +Y a la derecha. `KM` positivo = CCW, negativo = CW.)
+
+2. **Salidas (`PWM_MAIN_FUNC1..4`)** — a qué pin físico del ESC (MAIN 1-4) va cada motor
+   lógico. **Esta es la capa que compensa el cableado**:
+
+   | Salida ESC | Función | Motor lógico |
+   |---|---|---|
+   | MAIN 1 | 101 | Motor 1 |
+   | MAIN 2 | 104 | Motor 4 |
+   | MAIN 3 | **103** | **Motor 3** |
+   | MAIN 4 | **102** | **Motor 2** |
+
+**El arreglo (2026-10-27):** el cableado entre el **motor 2 y el motor 3** estaba cruzado, así
+que el mapeo previo (`FUNC3=102`, `FUNC4=103`) mandaba cada señal al motor equivocado. Se
+intercambiaron **`PWM_MAIN_FUNC3` ↔ `PWM_MAIN_FUNC4`** (quedan `103` y `102`) para que cada
+salida accione el motor físico correcto. La geometría `CA_ROTOR*` no cambió. Verificado con
+*Identify & Assign Motors* de QGC (hélices quitadas) — cada motor responde donde debe y en el
+sentido correcto.
+
+> ⚠️ **Restore point:** los backups de params **anteriores al 2026-10-27** llevan el mapeo viejo
+> (`FUNC3=102`, `FUNC4=103`). Recargar uno de ellos **vuelve a cruzar motor 2↔3** → hay que
+> re-aplicar `PWM_MAIN_FUNC3=103` y `PWM_MAIN_FUNC4=102` después. Usar el backup
+> `*_2026-10-27_*` como referencia correcta.
+
 **Autonomía muy corta.** 1300 mAh es **2.5× menos** que los 3300 mAh de la BOM de SUPER. Con
 estos motores en hover el consumo estará en el entorno de 20-30 A, lo que deja del orden de
 **3-4 minutos de vuelo** — estimación gruesa, hay que medirla con el log de `battery_status`.
 Suficiente para pruebas indoor cortas; escaso para el trabajo de navegación de SUPER.
+
+**Calibración de batería (2026-10-27).** Con la LiPo de vuelo (6S 1300 100C) y **25.0 V medidos**
+con voltímetro, el FC leía 24.70 V → se recalibró `BAT1_V_DIV` 9.9131 → **10.0315** (ahora lee
+~24.9 V, <0.5%). ⚠️ **La corriente NO está calibrada**: el FC marca ~13.6 A con el dron parado y
+hélices quitadas (imposible) → `BAT1_A_PER_V=17` es el valor por defecto / el canal de corriente
+no da una lectura válida. Consecuencia: **el % y los mAh (conteo de culombios) no son fiables** y
+no hay que usar un `COM_LOW_BAT_ACT` basado en % (dispararía RTL prematuro). Gestionar la batería
+**por voltaje de celda** (aterrizar ~3.6 V/celda ≈ 21.6 V). Para calibrar `A_PER_V` hace falta un
+banco con hélices quitadas, gas fijo y medir los amperios reales con pinza/vatímetro.
 
 ⚠️ Los ESC generan el **beacon** haciendo sonar los propios motores (no llevan buzzer): energizan
 las bobinas a frecuencia audible sin conmutar, y el estátor vibra. Tras ~10 min inactivo empieza

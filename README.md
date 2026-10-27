@@ -36,6 +36,7 @@ over ROS 2 / uXRCE-DDS.
 - ✅ 2nd drone (FC#2, vendor PX4 1.14.3) brought up — MTF-01P on TEL4 via SD `extras.txt`, 97 params migrated from FC#1
 - ✅ FC#2 moved to **own PX4 1.17 build** (fork `nxt-dual-custom`, flash 83%) to enable the **QMC5883P compass**; offboard uXRCE-DDS re-verified on 1.17 (`px4_msgs` v1.17.0)
 - ✅ **Outdoor GPS (ZED-F9P) validated** in open sky: autonomous sub-meter (`eph` 0.79–1.01 m, 16–21 sats, instant 3D fix) and **RTK cm** via IGN SPTR **VRS** (QGC NTRIP)
+- ✅ **Outdoor estimation profile applied** (GPS fused `EKF2_GPS_CTRL=7`, baro height, flow/range off) with switchable **indoor↔outdoor profile files** (QGC *Load from file* or CLI); **motor-output map fixed** (motor 2↔3 cross-wiring → `PWM_MAIN_FUNC = 101,104,103,102`)
 - ✅ Simulación Gazebo del dron real (RJX F450 + MTF-01P + D500) en la zona indoor escaneada
 - ✅ Heading and position without a compass via **2D SLAM (LD19) → external vision**: EV fusion validated, ground arming in Offboard
 - ✅ 360° obstacle stop from the raw 2D scan, honest EV variance, and onboard-computer load logged with every test
@@ -87,7 +88,8 @@ Plots are written to `scripts/output/<log>/*.png`. See [`scripts/README.md`](scr
 - [Smooth-and-repeatable tuning plan](docs/2026-10-19_plan_tuning_takeoff_hold_land.md) — the order of layers (mechanics → estimation → rates → thrust → outer loop), what to measure per phase, candidate targets
 - [FC parameters for smooth flight](docs/2026-10-20_parametros_vuelo_suave_produccion.md) — what the FC holds today (903-param dump), what PX4 does to our setpoints during takeoff, and what to change in order of effect
 - [Bench tests without props](docs/2026-10-21_pruebas_banco_sin_helices.md) — bench mode: forced disarm N s after TAKEOFF (21196) so the motors never wind up to 100 %; the order of tests before going back to the field
-- [Outdoor GPS (ZED-F9P) position/altitude hold](docs/2026-10-21_outdoor_gps_zedf9p_position_hold.md) — the F9P gives position but no heading; position hold needs a compass; indoor↔outdoor param profiles and wiring
+- [Outdoor GPS (ZED-F9P) position/altitude hold](docs/2026-10-21_outdoor_gps_zedf9p_position_hold.md) — the F9P gives position but no heading; **outdoor estimation profile applied** (GPS fused), switchable indoor↔outdoor profiles (QGC/CLI), wiring and pre-arm checklist
+- [Motor-output map & geometry](docs/PLATAFORMA_HARDWARE.md) — Quad-X geometry (`CA_ROTOR*`) vs output map (`PWM_MAIN_FUNC*`); the motor 2↔3 cross-wiring fix (2026-10-27)
 - [Companion for a MID-360S](docs/2026-10-19_companion_mid360s_slam.md) — what would replace the Pi for 3D LiDAR SLAM: evidence found, alternatives, acceptance test before buying
 
 **Diagnostic reports** (companion / RPi) — see [`reports/`](reports/README.md)
@@ -95,6 +97,12 @@ Plots are written to `scripts/output/<log>/*.png`. See [`scripts/README.md`](scr
 - [FC#2 vendor 1.14.3 — MTF-01P + param migration](reports/2026-09-04_fc2-vendor-1143-mtf01p-migracion.md)
 
 **Firmware versions** — see [backups/firmware/INDEX.md](backups/firmware/INDEX.md).
+
+**Parameter profiles & backups** (`backups/`)
+- [Indoor estimation profile](backups/profiles/perfil_indoor_flujo-lidar.params) — optical-flow + LiDAR, GPS off (`EKF2_GPS_CTRL=0`, height = range)
+- [Outdoor estimation profile](backups/profiles/perfil_outdoor_gps.params) — GPS fused + compass, flow/range off (`EKF2_GPS_CTRL=7`, baro height) — **applied 2026-10-27**
+- Partial param files (9 keys: estimation + RC/datalink-loss failsafe → **Land**) to switch via QGC *Tools → Load from file* or `scripts/mavlink/load_params.py`; they leave motors/tuning/battery untouched. Reboot the FC after switching.
+- Full state snapshots (939 params, both with the motor-map fix): `backups/backup_fc_2026-10-27_outdoor-motorfix.params` (current) and `..._indoor-motorfix.params`.
 
 **Reference platform** — this build replicates the [SUPER](https://github.com/hku-mars/SUPER) MAV
 platform from HKU MaRS Lab ([hardware BOM](https://github.com/hku-mars/SUPER-Hardware)) as a base

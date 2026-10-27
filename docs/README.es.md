@@ -83,7 +83,8 @@ Los plots salen en `scripts/output/<log>/*.png`. Ver [`scripts/README.md`](../sc
 - [Plan de ajuste: vuelo suave y repetible](2026-10-19_plan_tuning_takeoff_hold_land.md) — el orden de capas (mecánica → estimación → tasas → empuje → control exterior), qué medir en cada fase y los objetivos candidatos
 - [Parámetros del FC para vuelo suave](2026-10-20_parametros_vuelo_suave_produccion.md) — qué hay hoy en el FC (volcado de 903), qué le hace PX4 a nuestros setpoints durante el despegue, y qué tocar por orden de efecto
 - [Pruebas en banco sin hélices](2026-10-21_pruebas_banco_sin_helices.md) — modo banco: desarme forzado N s tras el TAKEOFF (21196) para que los motores no se vayan al 100 %; orden de pruebas antes de volver al campo
-- [Outdoor con GPS ZED-F9P: Position/Altitude hold](2026-10-21_outdoor_gps_zedf9p_position_hold.md) — el F9P da posición pero no rumbo; Position hold necesita brújula; perfiles indoor↔outdoor y cableado
+- [Outdoor con GPS ZED-F9P: Position/Altitude hold](2026-10-21_outdoor_gps_zedf9p_position_hold.md) — el F9P da posición pero no rumbo; **perfil outdoor aplicado** (GPS fusionado), perfiles indoor↔outdoor conmutables (QGC/CLI), cableado y checklist de prearmado
+- [Mapeo de motores y geometría](PLATAFORMA_HARDWARE.md) — geometría Quad-X (`CA_ROTOR*`) vs mapeo de salidas (`PWM_MAIN_FUNC*`); el arreglo del cruce de cable motor 2↔3 (2026-10-27)
 - [Companion para MID-360S y SLAM interior](2026-10-19_companion_mid360s_slam.md) — qué ordenador sustituiría a la Pi con un LiDAR 3D: evidencia encontrada, alternativas y prueba de aceptación antes de comprar
 - [Gaps de investigación para publicar](2026-10-01_gaps_publicacion.md) — literatura reciente frente a lo que ya hay medido; hacia dónde enfocar el próximo paper
 - [Offboard RPi ⇄ FC (uXRCE-DDS)](CONFIGURACION_OFFBOARD_RPI4.md)
@@ -93,6 +94,12 @@ Los plots salen en `scripts/output/<log>/*.png`. Ver [`scripts/README.md`](../sc
 - [Tuning EKF2 del MTF-01 — flow indoor](../reports/2026-07-23_mtf01-ekf2-tuning.md)
 
 **Versiones de firmware** — ver [backups/firmware/INDEX.md](../backups/firmware/INDEX.md).
+
+**Perfiles y backups de parámetros** (`backups/`)
+- [Perfil indoor](../backups/profiles/perfil_indoor_flujo-lidar.params) — flujo óptico + LiDAR, GPS off (`EKF2_GPS_CTRL=0`, altura por rango)
+- [Perfil outdoor](../backups/profiles/perfil_outdoor_gps.params) — GPS fusionado + brújula, flujo/rango off (`EKF2_GPS_CTRL=7`, altura por baro) — **aplicado 2026-10-27**
+- Ficheros de carga **parcial** (9 params: estimación + failsafe RC/datalink → **Land**) para conmutar por QGC *Tools → Load from file* o `scripts/mavlink/load_params.py`; no tocan motores/tuning/batería. Reiniciar el FC al cambiar.
+- Volcados completos (939 params, ambos con el arreglo del mapeo de motores): `backup_fc_2026-10-27_outdoor-motorfix.params` (actual) e `..._indoor-motorfix.params`.
 Cada versión incluye el `.px4` flasheable (QGC → Custom firmware) y su
 `board_config.diff` para reconstruir; `.bin`/`.elf` se omiten.
 

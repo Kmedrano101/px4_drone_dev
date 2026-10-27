@@ -31,14 +31,16 @@ ap.add_argument("--dwell", type=float, default=20)
 ap.add_argument("--max-duration", type=float, default=1800)
 ap.add_argument("--hz", type=float, default=1.0)
 ap.add_argument("--out-dir", default=".")
+ap.add_argument("--label", default="", help="etiqueta de la toma (p.ej. sin_corr / con_corr)")
 a = ap.parse_args()
 
 DEV = os.environ.get("FC_DEV", "/dev/ttyACM0")
 BAUD = int(os.environ.get("FC_BAUD", "115200"))
 os.makedirs(a.out_dir, exist_ok=True)
 stamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-csv_path = os.path.join(a.out_dir, f"{stamp}_gps_rtk.csv")
-sum_path = os.path.join(a.out_dir, f"{stamp}_gps_rtk_summary.txt")
+lbl = f"_{a.label}" if a.label else ""
+csv_path = os.path.join(a.out_dir, f"{stamp}{lbl}_gps_rtk.csv")
+sum_path = os.path.join(a.out_dir, f"{stamp}{lbl}_gps_rtk_summary.txt")
 
 _stop = {"flag": False}
 def _sig(*_):          # la webui manda SIGINT para parar -> cerramos limpio
@@ -146,6 +148,8 @@ if _stop["flag"]:
 # ---- resumen ----
 lines = []
 lines.append("=== Resumen validacion GPS (F9P) ===")
+if a.label:
+    lines.append(f"toma: {a.label}")
 lines.append(f"fecha: {stamp}   duracion: {time.time()-t0:.0f} s   muestras: {n}")
 lines.append(f"motivo de parada: {stop_reason}")
 lines.append(f"mejor fix: {best_fix} ({FIX.get(best_fix, best_fix)})")

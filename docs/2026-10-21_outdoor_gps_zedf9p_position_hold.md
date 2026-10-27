@@ -79,10 +79,28 @@ EKF ni tendría failover configurable. Se ha **comprado un módulo DC-DC `MP1584
 desde ese 12V **cuando** se actualice a un firmware que sí soporte blending/primario. Hasta
 entonces queda en reserva; la doble-GPS redundante no es viable con el 1.14.3 de fábrica.
 
-## Parámetros — perfil OUTDOOR (propuesto; aplicar tras respaldo y con hardware montado)
+## Parámetros — perfil OUTDOOR (✅ APLICADO 2026-10-27)
 
-> No aplicar nada sin: (1) respaldo hecho, (2) GPS —y brújula si Position— montados. Kevin
-> ejecuta el armado.
+> **Aplicado el 2026-10-27** (brújula QMC5883P montada y operativa, FC#2 en 1.17). Se cargó por
+> MAVLink (`load_params.py`) y se guardó en NVM. Los dos perfiles son **ficheros cargables** para
+> cambiar fácil entre indoor y outdoor — por QGC o por CLI:
+>
+> | Perfil | Fichero (repo + Pi `~/mavlink_tools/`) | Backup completo |
+> |---|---|---|
+> | **Indoor** (flujo+LiDAR) | `backups/profiles/perfil_indoor_flujo-lidar.params` | `backup_fc_2026-10-27_indoor-motorfix.params` |
+> | **Outdoor** (GPS+brújula) | `backups/profiles/perfil_outdoor_gps.params` | `backup_fc_2026-10-27_outdoor-motorfix.params` |
+>
+> - **QGC:** Vehicle Setup → Parameters → Tools → *Load from file...* → elegir el perfil → Reboot.
+> - **CLI (Pi):** `FC_DEV=/dev/ttyACM0 ~/.venvs/mav/bin/python ~/mavlink_tools/load_params.py perfil_outdoor_gps.params`
+> - Son **cargas parciales** (9 params: estimación + failsafe de enlace); el resto —motores,
+>   tuning, batería— es común y no se altera. **Reiniciar el FC** tras cambiar de perfil (reinit EKF).
+> - **Failsafe (aplicado 2026-10-27, ambos perfiles):** `NAV_RCL_ACT=3` (RC loss → **Land**) y
+>   `NAV_DLL_ACT=3` (datalink loss → **Land**). Land en lugar de RTL: la brújula aún no está
+>   calibrada (RTL no fiable) y la zona outdoor es plana y segura. `COM_LOW_BAT_ACT=0` (solo aviso)
+>   hasta calibrar la corriente de batería (el % no es fiable).
+>
+> Pendiente antes de volar Position: calibrar la brújula (prearm *"strong mag interference"*).
+> Kevin ejecuta el armado.
 
 | Parámetro | Indoor (hoy) | Outdoor | Por qué |
 |---|---|---|---|
@@ -98,7 +116,8 @@ entonces queda en reserva; la doble-GPS redundante no es viable con el 1.14.3 de
 | **RC — modos de vuelo:** | | | |
 | `COM_FLTMODE4` | 1 (Altitude) | **2 (Position)** ✅ aplicado 2026-10-21 | Slot 4 pasa a Position; Altitude se retira del switch (fallback restante: Stabilized, slot 6) |
 
-Dejar igual: `COM_RC_OVERRIDE=3`, `NAV_RCL_ACT=3` (Land) — o 2 (RTL) ahora que hay GPS/home.
+Failsafe de enlace **aplicado = Land** (`NAV_RCL_ACT=3`, `NAV_DLL_ACT=3`), no RTL (brújula sin
+calibrar, zona plana segura). `COM_RC_OVERRIDE` sin cambios.
 
 ## Antes de armar (outdoor)
 
@@ -108,13 +127,21 @@ Dejar igual: `COM_RC_OVERRIDE=3`, `NAV_RCL_ACT=3` (Land) — o 2 (RTL) ahora que
    Esperar a "Ready to fly" / EKF con posición global válida.
 3. Primer vuelo: **Altitude** (slot 4) para validar propulsión y actitud con espacio. Luego
    **Position** solo con la brújula calibrada y el GPS sano.
-4. Failsafe: con GPS, RTL (`NAV_RCL_ACT=2`) es una opción real; decidir antes de volar.
+4. Failsafe: **Land** en pérdida de RC/datalink (`NAV_RCL_ACT=3`/`NAV_DLL_ACT=3`, aplicado) — la
+   zona es plana y segura. Low-bat en aviso hasta calibrar la corriente (el % no es fiable).
 
 ## Volver a indoor
 
-Restaurar el perfil: `~/mavlink_tools/set_params.py backup_fc_2026-10-21_indoor-profile.params`
-(reactiva EV/flujo/rango y desactiva GPS/mag). Los dos perfiles son **mutuamente excluyentes**:
-no se vuela indoor con GPS activo ni outdoor con EV activo.
+Cargar el perfil indoor (flujo+LiDAR, sin GPS):
+`FC_DEV=/dev/ttyACM0 ~/.venvs/mav/bin/python ~/mavlink_tools/load_params.py perfil_indoor_flujo-lidar.params`
+(reactiva flujo/rango y desactiva GPS; `EKF2_HGT_REF=2`). Los dos perfiles son **mutuamente
+excluyentes**: no se vuela indoor con GPS activo ni outdoor con flujo/rango. Reiniciar el FC
+después. Para el indoor con **SLAM/visión externa** (EV_CTRL=9) usar el backup previo
+`backup_fc_2026-10-21_indoor-profile.params`.
+
+> Nota: la tabla de arriba lista los valores de referencia; los valores **realmente aplicados**
+> están en los ficheros `backups/profiles/*.params` (7 params). El indoor de hoy es flujo+LiDAR
+> con EV apagado (no el EV=9 del 21-oct).
 
 ## Qué NO cambia
 
@@ -193,8 +220,9 @@ alcanzar buen fix sostenido y escribe CSV + resumen con link a Maps).
 Logs en `tools/webui/logs/sensor_eval/*_gps_rtk_*`.
 
 **RTK fixed (cm) — IGN SPTR VRS vía QGC NTRIP:**
-- NTRIP configurado en QGC (*Settings → NTRIP/RTK*): **Server Settings** (caster SPTR + usuario de
-  la cuenta `ergnss.ign.es`), **Mountpoint Browser** (mountpoint de solución de red / **VRS**), y
+- NTRIP configurado en QGC (*Settings → NTRIP/RTK*): **Server Settings** (host **`ergnss-tr.ign.es`**
+  puerto **2101** = solución de red, usuario de la cuenta `ergnss.ign.es/gnuserportal`, TLS **off**),
+  **Mountpoint** = **`VRS3M`** (VRS, RTCM 3.2 MSM; otros: VRS3/MAC3M/FKP3M/CERCANA3M), y
   **GGA Position Reporting** activo (la VRS necesita la posición del vehículo). QGC reenvía el RTCM
   al FC por MAVLink (vía radio SiK).
 - Resultado: **RTK fixed, error centimétrico** (confirmado en QGC). De autónomo (~1 m) a **cm**.
@@ -203,3 +231,20 @@ Logs en `tools/webui/logs/sensor_eval/*_gps_rtk_*`.
 
 **Conclusión:** cadena GPS validada de **autónomo sub-métrico** a **RTK centimétrico**. El F9P +
 IGN SPTR VRS funcionan. (Esto es sobre el FC#2 ya en **V3/1.17** con la brújula QMC5883P operativa.)
+
+### Procedimiento de campo — comparar RTK y chequear EKF2 (webui, 2026-10-27)
+
+Tarjetas nuevas en la webui (scripts en `tools/sensor_eval/`, canónicos en
+`scripts/mavlink/`), todas **solo lectura** salvo el auto-desarme del último:
+
+1. **GPS RTK — toma 1: SIN correcciones** (`gps_rtk_validate.py --label sin_corr`): en el punto
+   fijo, con **NTRIP desactivado** en QGC → autónomo (~1 m).
+2. **GPS RTK — toma 2: CON correcciones** (`--label con_corr`): **mismo punto, sin mover el dron**,
+   con **NTRIP activo** en QGC (caster IGN, mountpoint `VRS3M`) → espera fix RTK float(5)→fixed(6).
+3. **GPS RTK — comparar** (`gps_rtk_compare.py`): coge las dos últimas tomas y saca dispersión,
+   eph, fix y el **offset entre centroides** (= error del autónomo con el RTK como verdad).
+4. **EKF2 + GPS RTK armado en tierra** (`ekf_rtk_armed_check.py`): **antes de volar**, con el dron
+   **armado y quieto (hélices quitadas)**, confirma que el EKF2 mantiene **posición global absoluta**
+   estable (flag `POS_HORIZ_ABS`), sin glitches, con buena exactitud y heading. **No despega**, **no
+   arma** (lo arma Kevin por RC/QGC); monitoriza N s y **auto-desarma** al terminar. Veredicto
+   LISTO/REVISAR. Caster y credenciales: [[ign-ntrip-caster-sptr]].

@@ -112,7 +112,7 @@ BAT1_N_CELLS    = 6
 BAT1_V_EMPTY    = 3.5
 
 # Motores (mapeo)
-PWM_MAIN_FUNC1..4 = 101,104,102,103   # (verificado en log 2026-07-01)
+PWM_MAIN_FUNC1..4 = 101,104,103,102   # corregido 2026-10-27: cruce de cable motor 2<->3 (antes 101,104,102,103)
 ```
 
 ### Lecciones clave
