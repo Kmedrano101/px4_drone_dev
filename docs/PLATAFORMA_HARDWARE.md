@@ -90,10 +90,22 @@ Suficiente para pruebas indoor cortas; escaso para el trabajo de navegación de 
 con voltímetro, el FC leía 24.70 V → se recalibró `BAT1_V_DIV` 9.9131 → **10.0315** (ahora lee
 ~24.9 V, <0.5%). ⚠️ **La corriente NO está calibrada**: el FC marca ~13.6 A con el dron parado y
 hélices quitadas (imposible) → `BAT1_A_PER_V=17` es el valor por defecto / el canal de corriente
-no da una lectura válida. Consecuencia: **el % y los mAh (conteo de culombios) no son fiables** y
-no hay que usar un `COM_LOW_BAT_ACT` basado en % (dispararía RTL prematuro). Gestionar la batería
-**por voltaje de celda** (aterrizar ~3.6 V/celda ≈ 21.6 V). Para calibrar `A_PER_V` hace falta un
-banco con hélices quitadas, gas fijo y medir los amperios reales con pinza/vatímetro.
+no da una lectura válida.
+
+**Síntoma y corrección del % (2026-10-27, 2ª revisión).** QGC marcaba la batería "descargándose
+rápido" y llegaba a **0% con 24.1 V reales medidos** (= 4.0 V/celda ≈ 75-80% de carga). Causa: el %
+de PX4 se calcula por **conteo de culombios** (integra la corriente sobre `BAT1_CAPACITY=1300 mAh`),
+y con `A_PER_V=17` sobreestimando la corriente (~13.6 A en reposo) el estimador "consume" los
+1300 mAh en pocos minutos → 0% falso, mientras el voltaje real seguía alto. **Corrección aplicada:**
+`BAT1_CAPACITY = -1` → desactiva el conteo de culombios, el **% se estima por voltaje** (`N_CELLS=6`,
+`V_EMPTY=3.5`, `V_CHARGED=4.2` ya correctos; a 24.1 V ≈ 74% en reposo). El % por voltaje baja bajo
+carga (sag) y se recupera en reposo, es lo normal. Backup previo:
+`backups/backup_fc_2026-10-27_bat-pre-capfix.params`.
+
+Sigue vigente: no usar `COM_LOW_BAT_ACT` por % como criterio fino; gestionar **por voltaje de celda**
+(aterrizar ~3.6 V/celda ≈ 21.6 V). Fix definitivo del fuel-gauge por mAh: calibrar `A_PER_V` en banco
+(hélices quitadas, gas fijo, amperios reales con pinza/vatímetro) y entonces re-habilitar
+`BAT1_CAPACITY=1300`.
 
 ⚠️ Los ESC generan el **beacon** haciendo sonar los propios motores (no llevan buzzer): energizan
 las bobinas a frecuencia audible sin conmutar, y el estátor vibra. Tras ~10 min inactivo empieza
