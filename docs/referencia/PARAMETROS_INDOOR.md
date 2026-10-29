@@ -4,7 +4,7 @@ Configuración completa para **hover y position hold en interior** con MTF-01P (
 LiDAR), **sin GPS y sin magnetómetro**.
 
 **Firmware:** PX4 1.14.3 de fábrica (`micoair743-v1.14.3`) · **Valores leídos del FC el 2026-09-07**
-Volcado de referencia: [`backups/backup_fc_2026-09-07.params`](../backups/backup_fc_2026-09-07.params)
+Volcado de referencia: [`backups/backup_fc_2026-09-07.params`](../../backups/backup_fc_2026-09-07.params)
 
 > Ordenado **por importancia**: el grupo A decide si el dron puede navegar; el F solo afecta a
 > lo que puedes diagnosticar después. Si tienes que revisar algo con prisa, empieza por arriba.
@@ -21,7 +21,7 @@ vuelo: lo rompe.
 | Param | Actual | Opciones | Qué hace y por qué importa |
 |---|---|---|---|
 | `EKF2_OF_CTRL` | **1** ✅ | 0 off · 1 on | Activa la fusión de flujo óptico. **Es la única fuente de posición horizontal que tienes.** Sin esto no hay Position mode |
-| `EKF2_RNG_CTRL` | **1** ✅ | 0 off · 1 condicional · 2 siempre | Fusión del LiDAR como altura. En condicional solo entra por debajo de `EKF2_RNG_A_HMAX`. **A 1 porque el sensor solo es fiable hasta ~1 m** — medido con láser el 2026-10-16: la lectura satura siguiendo `2.53·(1−e^(−real/2.21))` sobre hormigón oscuro, con −17 % de error ya a 1.5 m ([reporte](../reports/2026-10-16_lidar1d-saturacion-reflectividad.md)). ⚠ **No subir a 2**: fusionaría el rango también por encima de la saturación, que es el mecanismo del escape vertical del vuelo 2 |
+| `EKF2_RNG_CTRL` | **1** ✅ | 0 off · 1 condicional · 2 siempre | Fusión del LiDAR como altura. En condicional solo entra por debajo de `EKF2_RNG_A_HMAX`. **A 1 porque el sensor solo es fiable hasta ~1 m** — medido con láser el 2026-10-16: la lectura satura siguiendo `2.53·(1−e^(−real/2.21))` sobre hormigón oscuro, con −17 % de error ya a 1.5 m ([reporte](../../reports/2026-10-16_lidar1d-saturacion-reflectividad.md)). ⚠ **No subir a 2**: fusionaría el rango también por encima de la saturación, que es el mecanismo del escape vertical del vuelo 2 |
 | `EKF2_HGT_REF` | **0** ✅ | 0 barómetro · 1 GPS · 2 rango · 3 visión | **Referencia de altura del EKF.** Fue la causa del accidente: con el LiDAR como referencia y el sensor saturando a 2.4 m, un despegue a 5 m no tiene punto de equilibrio y el dron sube sin parar. **Requiere reboot** |
 | `EKF2_GPS_CTRL` | **0** ✅ | bitmask: b0 lat/lon · b1 alt · b2 vel 3D · b3 heading | GPS desactivado por completo. Coherente con volar solo en interior |
 | `EKF2_MAG_TYPE` | **5** ✅ | 0 auto · 1 heading · 2 3-ejes · 3 VTOL · 4 MC · 5 ninguno | Sin brújula. **Requiere reboot.** Consecuencia: `heading_good_for_control=false` y el yaw pasa a control por velocidad — pero el flujo **sí** fusiona sin yaw |
@@ -150,7 +150,7 @@ Radio de telemetría: `MAV_0_CONFIG=101` (TEL1), `SER_TEL1_BAUD=57600`, `MAV_0_R
 ### Aplicado el 2026-10-16 (verificado con un volcado completo, 908/908 params)
 
 `EKF2_RNG_A_HMAX` 1.5→**1.0**, para que la ayuda de rango del EKF solo entre donde el
-sensor es honesto ([reporte de la saturación](../reports/2026-10-16_lidar1d-saturacion-reflectividad.md)).
+sensor es honesto ([reporte de la saturación](../../reports/2026-10-16_lidar1d-saturacion-reflectividad.md)).
 En el mismo paso, el techo de altura de los nodos bajó de 1.2 a 1.0 m en el código
 (`px4_drone@54ade05`) para que firmware y software digan lo mismo.
 
@@ -180,8 +180,8 @@ Para subir más hace falta el LiDAR 3D de la siguiente fase.
 ## Referencias
 
 - [`CONEXION_MAVLINK_SCRIPTS.md`](CONEXION_MAVLINK_SCRIPTS.md) — cómo leer y escribir estos parámetros
-- [`reports/2026-09-04_fc2-vendor-1143-mtf01p-migracion.md`](../reports/2026-09-04_fc2-vendor-1143-mtf01p-migracion.md) — de dónde salen
-- [`DIAGNOSTICO_RUIDO_MOTORES_YAW.md`](DIAGNOSTICO_RUIDO_MOTORES_YAW.md) — el incidente de `MC_AIRMODE`
+- [`reports/2026-09-04_fc2-vendor-1143-mtf01p-migracion.md`](../../reports/2026-09-04_fc2-vendor-1143-mtf01p-migracion.md) — de dónde salen
+- [`DIAGNOSTICO_RUIDO_MOTORES_YAW.md`](../historico/DIAGNOSTICO_RUIDO_MOTORES_YAW.md) — el incidente de `MC_AIRMODE`
 
 ## Comunicación con la Pi (no es de vuelo, pero sin él no hay ciclo)
 

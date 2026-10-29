@@ -7,7 +7,7 @@ son los de `PX4-Autopilot`; esto es un respaldo versionado.
 dejes dentro queda sin trackear y se pierde con un `git clean`, al cambiar de rama del
 submódulo, al actualizarlo o al reclonar PX4. Con esta copia se recupera en un comando.
 
-Documentación completa: [`docs/SIMULACION_GAZEBO_INDOOR.md`](../docs/SIMULACION_GAZEBO_INDOOR.md).
+Documentación completa: [`docs/referencia/SIMULACION_GAZEBO_INDOOR.md`](../docs/referencia/SIMULACION_GAZEBO_INDOOR.md).
 
 ## Contenido
 
@@ -53,7 +53,7 @@ cd ~/PX4-Autopilot && make px4_sitl_default
 
 La geometría de `rjx_f450_base/model.sdf` sale de
 [`scripts/gazebo/gen_rjx_f450.py`](../scripts/gazebo/gen_rjx_f450.py), con las medidas de
-[`docs/PLATAFORMA_HARDWARE.md`](../docs/PLATAFORMA_HARDWARE.md). El generador escribe
+[`docs/referencia/PLATAFORMA_HARDWARE.md`](../docs/referencia/PLATAFORMA_HARDWARE.md). El generador escribe
 **directamente en PX4-Autopilot**; luego hay que hacer `./sync_px4.sh backup`.
 
 ⚠️ Sobrescribe el fichero entero: si editas el `model.sdf` a mano y relanzas el generador,

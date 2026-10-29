@@ -288,9 +288,9 @@ hacia adelante**; no hay corrección por software.
 En FC#2 no hay brújula conectada (`i2cdetect -b 1` solo muestra `0x77`, el barómetro
 SPL06; `listener sensor_mag` → "never published") y este firmware **no puede** manejar un
 QMC5883P. Esto reproduce el bloqueo del reporte
-[`2026-07-23_mtf01-ekf2-tuning.md`](../reports/2026-07-23_mtf01-ekf2-tuning.md):
+[`2026-07-23_mtf01-ekf2-tuning.md`](../../reports/2026-07-23_mtf01-ekf2-tuning.md):
 sin yaw, el flujo óptico no fusiona. Opciones: un mag de los soportados (IST8310, RM3100…),
 yaw externo por EV (Livox + FAST-LIO), o pasar a la V2 de main.
 
 Detalle completo de la sesión, incluida la migración de 97 params desde el FC#1:
-[`reports/2026-09-04_fc2-vendor-1143-mtf01p-migracion.md`](../reports/2026-09-04_fc2-vendor-1143-mtf01p-migracion.md).
+[`reports/2026-09-04_fc2-vendor-1143-mtf01p-migracion.md`](../../reports/2026-09-04_fc2-vendor-1143-mtf01p-migracion.md).

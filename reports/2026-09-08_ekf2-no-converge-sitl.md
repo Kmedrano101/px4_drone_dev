@@ -104,7 +104,7 @@ make px4_sitl gz_rjx_f450_indoor # el completo
 
 ## Documentos relacionados
 
-- [`docs/SIMULACION_GAZEBO_INDOOR.md`](../docs/SIMULACION_GAZEBO_INDOOR.md)
+- [`docs/referencia/SIMULACION_GAZEBO_INDOOR.md`](../docs/referencia/SIMULACION_GAZEBO_INDOOR.md)
 - `px4_drone` rama `gazebo-sim`, `docs/gazebo_sim.md`
 
 

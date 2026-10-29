@@ -5,7 +5,7 @@ y escribir parámetros, abrir la consola NuttX y muestrear sensores.
 
 **Probado el 2026-09-07** contra el FC#2 (PX4 1.14.3 de fábrica, `micoair743-v1.14.3`).
 
-Herramientas: [`scripts/mavlink/`](../scripts/mavlink/)
+Herramientas: [`scripts/mavlink/`](../../scripts/mavlink/)
 
 ---
 
@@ -99,7 +99,7 @@ Por radio no hace falta (el enlace ya emite), pero el mismo código sirve para l
 
 PX4 expone su shell por `SERIAL_CONTROL` con `device = 10` (SHELL) y flags
 `RESPOND | EXCLUSIVE | MULTI`. Se envía en trozos de 70 bytes y se "bombea" la salida
-mandando paquetes vacíos ([`shell.py`](../scripts/mavlink/shell.py)):
+mandando paquetes vacíos ([`shell.py`](../../scripts/mavlink/shell.py)):
 
 ```bash
 FC_DEV=/dev/ttyACM0 ~/.venvs/mav/bin/python scripts/mavlink/shell.py \
@@ -298,6 +298,6 @@ $V scripts/mavlink/dump_params.py backups/backup_fc_$(date +%F)_post.params
 
 ## Referencias del proyecto
 
-- [`scripts/mavlink/`](../scripts/mavlink/) — las herramientas
-- [`reports/2026-09-04_fc2-vendor-1143-mtf01p-migracion.md`](../reports/2026-09-04_fc2-vendor-1143-mtf01p-migracion.md) — migración de parámetros por MAVLink
+- [`scripts/mavlink/`](../../scripts/mavlink/) — las herramientas
+- [`reports/2026-09-04_fc2-vendor-1143-mtf01p-migracion.md`](../../reports/2026-09-04_fc2-vendor-1143-mtf01p-migracion.md) — migración de parámetros por MAVLink
 - [`INTEGRACION_MTF-01P_FLOW_LIDAR.md`](INTEGRACION_MTF-01P_FLOW_LIDAR.md) — el sensor y su puerto

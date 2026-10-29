@@ -3,7 +3,7 @@
 **Fecha:** 2026-10-21 · **Objetivo:** volar el FC#2 outdoor en modo manual (RC, sin la Pi),
 validando Altitude hold y Position hold con GPS. **Estado:** preparación. No se ha cambiado
 ningún parámetro del FC ni montado hardware. Respaldo del perfil indoor:
-[`backups/backup_fc_2026-10-21_indoor-profile.params`](../backups/backup_fc_2026-10-21_indoor-profile.params).
+[`backups/backup_fc_2026-10-21_indoor-profile.params`](../../backups/backup_fc_2026-10-21_indoor-profile.params).
 
 ## El GPS y lo que NO trae
 

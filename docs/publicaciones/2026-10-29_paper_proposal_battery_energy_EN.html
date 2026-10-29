@@ -1,0 +1,434 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Paper proposal: battery and energy in real flight</title>
+<style>
+  @page { size: A4; margin: 16mm 15mm 16mm 15mm; }
+  :root {
+    --navy: #1f3a5f; --ink: #1d2733; --muted: #5b6774; --line: #d7dde3;
+    --accent: #e07b39; --teal: #2a9d8f; --soft: #f3f6f9; --warn: #c0392b; --ok: #2e8b57;
+  }
+  * { box-sizing: border-box; }
+  body { font-family: "Noto Sans", "DejaVu Sans", Arial, sans-serif; color: var(--ink); font-size: 9.8pt; line-height: 1.34; margin: 0; }
+  h1 { font-size: 24pt; line-height: 1.15; color: var(--navy); margin: 0 0 6px; }
+  h2 { font-size: 15pt; color: var(--navy); margin: 0 0 8px; padding-bottom: 4px; border-bottom: 2px solid var(--navy); }
+  h3 { font-size: 11.2pt; color: var(--navy); margin: 10px 0 4px; }
+  p { margin: 0 0 7px; }
+  .page { page-break-after: always; }
+  .page:last-child { page-break-after: auto; }
+  .kicker { text-transform: uppercase; letter-spacing: .12em; font-size: 8.5pt; color: var(--accent); font-weight: 700; }
+  .sub { font-size: 12pt; color: var(--muted); margin-bottom: 14px; }
+  .meta { font-size: 9pt; color: var(--muted); }
+  .thesis { background: var(--soft); border-left: 5px solid var(--accent); padding: 10px 14px; margin: 14px 0; font-size: 11pt; }
+  .grid { display: grid; gap: 10px; }
+  .g2 { grid-template-columns: 1fr 1fr; }
+  .g3 { grid-template-columns: 1fr 1fr 1fr; }
+  .g4 { grid-template-columns: repeat(4, 1fr); }
+  .card { border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; background: #fff; }
+  .card h4 { margin: 0 0 4px; font-size: 10.5pt; color: var(--navy); display: flex; align-items: center; gap: 6px; }
+  .card.soft { background: var(--soft); }
+  .photo { border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: #fff; text-align: center; }
+  .photo img { width: 100%; height: 120px; object-fit: contain; display: block; background: #fff; }
+  .photo .cap { font-size: 8.5pt; color: var(--muted); padding: 4px 6px; border-top: 1px solid var(--line); }
+  table { border-collapse: collapse; width: 100%; font-size: 8.9pt; margin: 5px 0 8px; }
+  th, td { border: 1px solid var(--line); padding: 3px 5px; vertical-align: top; text-align: left; }
+  th { background: var(--soft); color: var(--navy); }
+  .pill { display: inline-block; padding: 1px 7px; border-radius: 10px; font-size: 8.3pt; font-weight: 700; }
+  .ok { background: #e3f3e8; color: var(--ok); } .todo { background: #fdeede; color: var(--accent); } .no { background: #f9e0dd; color: var(--warn); }
+  .ico { width: 18px; height: 18px; flex: 0 0 18px; }
+  .fig { margin: 8px 0 10px; }
+  .fig .cap { font-size: 8.8pt; color: var(--muted); margin-top: 3px; }
+  .figimg { width: 100%; border: 1px solid var(--line); border-radius: 6px; }
+  ul { margin: 0 0 8px 18px; padding: 0; } li { margin: 0 0 3px; }
+  .small { font-size: 8.8pt; color: var(--muted); }
+  .big { font-size: 20pt; font-weight: 700; color: var(--navy); line-height: 1; }
+  .stat { text-align: center; padding: 8px 6px; }
+  .stat .lbl { font-size: 8.5pt; color: var(--muted); margin-top: 3px; }
+  svg text { font-family: "Noto Sans", "DejaVu Sans", Arial, sans-serif; }
+  .ref { font-size: 8pt; margin: 0 0 2px 0; color: var(--muted); }
+</style>
+</head>
+<body>
+
+<!-- ============ PAGE 1: COVER ============ -->
+<section class="page">
+  <div class="kicker">Publication proposal · discussion draft · 29 October 2026</div>
+  <h1>The battery as seen from flight: LiPo versus Li-ion on a real quadrotor, with end-of-discharge ground truth</h1>
+  <div class="sub">Battery model identification from flight logs and remaining-flight-time error, measured against real discharges to cutoff, comparing PX4's stock estimator with an equivalent-circuit model.</div>
+  <div class="meta">Kevin Medrano (TIDOP, University of Salamanca) · collaboration with the energy group · platform RJX F450 / PX4 1.17 / RTK</div>
+
+  <div class="thesis">
+    <b>One-sentence idea.</b> Consumption models and "energy-aware" control are saturated in simulation. What nobody publishes is the field measurement with ground truth: how wrong the remaining flight time shown to the pilot is, per battery chemistry, when the pack is actually discharged to cutoff. This drone has already lived that failure (0 % reported at a real 24.1 V) and has everything needed to measure it.
+  </div>
+
+  <div class="grid g4" style="margin-top:14px">
+    <div class="photo"><img src="../images/hardware/frame_rjx_f450.jpg" alt="RJX F450 frame"><div class="cap">RJX F450 carbon frame, 450 mm</div></div>
+    <div class="photo"><img src="../images/hardware/motor_tmotor_f90_2806.jpg" alt="T-Motor F90 motor"><div class="cap">4 × T-Motor F90 1300 KV, 45 A peak each</div></div>
+    <div class="photo"><img src="../images/hardware/bateria_ovonic_6s_1300.jpg" alt="6S battery"><div class="cap">LiPo 6S 1300 mAh 100C (current, 4.8 min of flight)</div></div>
+    <div class="photo"><img src="../images/hardware/fc_nxtpx4v2.webp" alt="NxtPX4 flight controller"><div class="cap">NxtPX4 v2 FC, custom PX4 1.17 build, bidirectional DShot</div></div>
+  </div>
+
+  <div class="grid g4" style="margin-top:14px">
+    <div class="card stat"><div class="big">4.8 min</div><div class="lbl">real flight on 1300 mAh down to 3.60 V/cell (log 18)</div></div>
+    <div class="card stat"><div class="big">2 mm</div><div class="lbl">static RTK-fixed scatter (91/91 samples)</div></div>
+    <div class="card stat"><div class="big">0 %</div><div class="lbl">battery level PX4 reported at a real 24.1 V (27 Oct)</div></div>
+    <div class="card stat"><div class="big">~3 C</div><div class="lbl">mean drone current on a 4.5 Ah pack</div></div>
+  </div>
+
+  <h3 style="margin-top:16px">What we ask of the energy group</h3>
+  <div class="grid g3">
+    <div class="card"><h4><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="#2a9d8f" stroke-width="2"><rect x="3" y="7" width="16" height="10" rx="2"/><path d="M19 10h2v4h-2"/><path d="M7 10v4M11 10v4"/></svg>Battery bench</h4>OCV-SoC curve, HPPC pulses at 2-3 temperatures and a reference capacity test of each pack every ~10 flights.</div>
+    <div class="card"><h4><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="#2a9d8f" stroke-width="2"><path d="M4 18 10 8l4 6 6-10"/></svg>Model and estimator</h4>Equivalent circuit (1-2 RC + R0(SoC,T)) identified from flight and from the bench; SoC estimator with a Kalman filter (UKF).</div>
+    <div class="card"><h4><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="#2a9d8f" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>Interpretation</h4>Why each chemistry behaves as it does at 3-15 C, what the voltage cutoff leaves unused, and what to recommend to the autopilot.</div>
+  </div>
+</section>
+
+<!-- ============ PAGE 2: WHY ============ -->
+<section class="page">
+  <h2>1 · Why: the gap in the literature and the real problem</h2>
+  <div class="grid g3">
+    <div class="card soft"><h4><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="#e07b39" stroke-width="2"><path d="M12 2 2 20h20z"/><path d="M12 9v5M12 17h.01"/></svg>Gap 1 · control</h4>
+      The savings claimed for energy-aware control (NMPC 36 %, PID tuning 70 %, battery-aware planning 7.5 %) are <b>all simulated</b>. There is no real-flight measurement of the energy cost of the controller.</div>
+    <div class="card soft"><h4><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="#e07b39" stroke-width="2"><path d="M12 2 2 20h20z"/><path d="M12 9v5M12 17h.01"/></svg>Gap 2 · battery <span class="pill todo">chosen</span></h4>
+      Nobody identifies the battery model <b>from flight logs</b> at 3-15 C, nor validates <b>remaining flight time against real discharges to cutoff</b>. Cell datasets cover 0.1 to 5 C. A thesis on 162 public PX4 logs admits it: "no ground truth for remaining flight time exists".</div>
+    <div class="card soft"><h4><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="#e07b39" stroke-width="2"><path d="M12 2 2 20h20z"/><path d="M12 9v5M12 17h.01"/></svg>Gap 3 · dataset</h4>
+      The only open multirotor dataset with current is the 2021 DJI M100 one (closed autopilot). None exists with an open autopilot, calibrated current, RTK, per-motor RPM and pack temperature.</div>
+  </div>
+
+  <h3>Closest work (and what it leaves open)</h3>
+  <table>
+    <tr><th style="width:38%">Work</th><th>What it does</th><th>What it does not do</th></tr>
+    <tr><td>Motion-Specific Battery Health Assessment for Quadrotors (ICRA 2026)</td><td>Measures current in flight (S500 + Pixhawk 6C, 4S 2.2 Ah) and replays it in an electrochemical model.</td><td>Degradation is simulated; no validation on the pack; number of flights not stated; no temperature, one chemistry.</td></tr>
+    <tr><td>Dibbern et al., JATE 2023</td><td>ECM + EKF/UKF/coulomb counting with mission profiles. Finds that end-of-discharge error does not track SoC error.</td><td>Bench data, not flight.</td></tr>
+    <tr><td>ML-based SoH for UAVs (arXiv 2607.06791, 2026)</td><td>342 + 289 flights, capacity measured every 10 flights.</td><td>No temperature, no physical model, one chemistry.</td></tr>
+    <tr><td>Battery-aware predictive planning (arXiv 2609.12188, 2026)</td><td>Reduced-order battery model inside the planner.</td><td>Simulation only; acknowledges that the controller changes the energy-accuracy trade-off but does not measure it.</td></tr>
+    <tr><td>LiPo vs Li-ion guides (manufacturers, 2025-2026)</td><td>"30-50 % more endurance with Li-ion".</td><td>No controlled test on the same drone and the same mission.</td></tr>
+  </table>
+
+  <h3>The problem, measured on this drone</h3>
+  <div class="grid" style="grid-template-columns: 1fr 1.1fr">
+    <div class="fig">
+      <img class="figimg" src="../images/03_bateria_sag.png" alt="Voltage sag under load measured on the drone">
+      <div class="cap">Real measurement (23 Jun 2026, old pack): cell voltage drops from 4.2 to 3.26 V under 55 A peaks and recovers to 3.95 V when throttle is released. That drop is internal resistance, and it fools any estimator that looks only at voltage. (Plot labels in Spanish: V/celda = V per cell, Corriente = current, tiempo = time.)</div>
+    </div>
+    <div>
+      <p><b>27 Oct 2026, field flight.</b> PX4 reported <b>0 % at a real 24.1 V</b> (4.0 V/cell, ~75 %): coulomb counting was integrating a bogus current from the ESC. After switching to voltage-based estimation, the percentage swings with the sag under load.</p>
+      <p><b>What we want to answer:</b></p>
+      <ul>
+        <li>How wrong is the remaining time (in seconds) 1, 2 and 3 min before cutoff, per estimator and per chemistry?</li>
+        <li>Does the internal resistance identified <i>in flight</i> match the bench value (HPPC)?</li>
+        <li>How much energy does the 3.5 V/cell cutoff under load leave unused in Li-ion versus LiPo?</li>
+        <li>Is setting <code>BAT1_R_INTERNAL</code> per chemistry in PX4 enough to fix it?</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PAGE 3: WHAT IS TESTED ============ -->
+<section class="page">
+  <h2>2 · What is tested: two matched chemistries, three estimators</h2>
+
+  <div class="grid g2">
+    <div class="card">
+      <h4><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="#1f3a5f" stroke-width="2"><rect x="3" y="7" width="16" height="10" rx="2"/><path d="M19 10h2v4h-2"/><rect x="5" y="9" width="9" height="6" fill="#1f3a5f" stroke="none"/></svg>LiPo pouch, high discharge</h4>
+      <table>
+        <tr><td>Pack</td><td><b>6S1P 4500 mAh 60C</b> (×2)</td></tr>
+        <tr><td>Nominal energy</td><td>~100 Wh</td></tr>
+        <tr><td>Mass</td><td>~510 g</td></tr>
+        <tr><td>Continuous discharge</td><td>270 A</td></tr>
+        <tr><td>Internal resistance</td><td>low (mΩ per cell, to be measured)</td></tr>
+        <tr><td>Typical use</td><td>FPV, small industrial</td></tr>
+      </table>
+    </div>
+    <div class="card">
+      <h4><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="#1f3a5f" stroke-width="2"><rect x="8" y="3" width="8" height="18" rx="2"/><path d="M10 3V2h4v1"/><rect x="10" y="9" width="4" height="10" fill="#1f3a5f" stroke="none"/></svg>Li-ion cylindrical 21700, high discharge</h4>
+      <table>
+        <tr><td>Pack</td><td><b>6S1P Molicel P50B</b>, 5000 mAh (×2)</td></tr>
+        <tr><td>Nominal energy</td><td>~108 Wh</td></tr>
+        <tr><td>Mass</td><td>6 × 70 g + assembly ≈ 460 g</td></tr>
+        <tr><td>Continuous discharge</td><td>60 A (45 A if P45B)</td></tr>
+        <tr><td>Internal resistance</td><td>several times the LiPo's (to be measured)</td></tr>
+        <tr><td>Typical use</td><td>long range, industrial endurance</td></tr>
+      </table>
+    </div>
+  </div>
+  <p class="small" style="margin-top:6px">Same voltage, same nominal capacity and same mass (±10 %): the only thing that changes is the chemistry. Two packs of each to separate pack-to-pack variation. Semi-solid state ruled out (1-3 C continuous, a 4.5 Ah pack cannot sustain this drone); LiHV is not a new chemistry; LiFePO4 is not used in multirotors.</p>
+
+  <h3>Hypotheses (stated before measuring)</h3>
+  <div class="grid g3">
+    <div class="card soft"><b>H1.</b> Li-ion delivers more Wh per gram, but its higher internal resistance makes the 3.5 V/cell cutoff <i>under load</i> leave more energy unused than in LiPo.</div>
+    <div class="card soft"><b>H2.</b> PX4's voltage-based estimator (the stock one) is more wrong on Li-ion than on LiPo; coulomb counting with calibrated current is equally wrong on both; ECM+UKF is the best on both.</div>
+    <div class="card soft"><b>H3.</b> R0 identified from flight logs matches the bench (HPPC) within 15 %, and setting it in <code>BAT1_R_INTERNAL</code> measurably reduces PX4's remaining-time error.</div>
+  </div>
+
+  <h3>The three estimators compared (all on the same flights, by offline replay)</h3>
+  <table>
+    <tr><th style="width:24%">Estimator</th><th>Input</th><th>What happens to it in flight</th><th style="width:18%">Who uses it</th></tr>
+    <tr><td><b>PX4 voltage-based</b> (stock)</td><td>Pack voltage + optional IR compensation (<code>BAT1_R_INTERNAL</code>)</td><td>Swings with the sag; with high internal resistance it badly underestimates under load.</td><td>Thousands of PX4 drones</td></tr>
+    <tr><td><b>Coulomb counting</b></td><td>Calibrated current integrated over capacity</td><td>Good if the real capacity is up to date; blind to temperature and to energy not extractable at high current.</td><td>PX4 optional, DJI, BMS</td></tr>
+    <tr><td><b>ECM + UKF</b> (proposed)</td><td>Voltage, current, temperature, equivalent-circuit parameters</td><td>Separates OCV from the IR drop; predicts end of discharge under the real load.</td><td>Battery literature; here, in flight</td></tr>
+  </table>
+</section>
+
+<!-- ============ PAGE 4: HOW (INSTRUMENTATION) ============ -->
+<section class="page">
+  <h2>3 · How it is measured: instrumentation on the drone</h2>
+  <div class="fig">
+  <svg viewBox="0 0 760 330" width="100%" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#5b6774"/></marker>
+      <marker id="arrA" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#e07b39"/></marker>
+      <marker id="arrT" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#2a9d8f"/></marker>
+    </defs>
+    <rect x="20" y="40" width="110" height="54" rx="8" fill="#fdeede" stroke="#e07b39" stroke-width="1.5"/>
+    <text x="75" y="62" text-anchor="middle" font-size="12" font-weight="700" fill="#1d2733">6S battery</text>
+    <text x="75" y="80" text-anchor="middle" font-size="10" fill="#5b6774">LiPo or Li-ion</text>
+    <line x1="130" y1="67" x2="180" y2="67" stroke="#e07b39" stroke-width="3" marker-end="url(#arrA)"/>
+    <rect x="182" y="46" width="86" height="42" rx="6" fill="#fff" stroke="#e07b39" stroke-width="1.5"/>
+    <text x="225" y="64" text-anchor="middle" font-size="11" font-weight="700" fill="#1d2733">1 mΩ shunt</text>
+    <text x="225" y="79" text-anchor="middle" font-size="9" fill="#5b6774">100 A, ≥3 W</text>
+    <line x1="268" y1="67" x2="318" y2="67" stroke="#e07b39" stroke-width="3" marker-end="url(#arrA)"/>
+    <rect x="320" y="40" width="120" height="54" rx="8" fill="#fdeede" stroke="#e07b39" stroke-width="1.5"/>
+    <text x="380" y="62" text-anchor="middle" font-size="12" font-weight="700" fill="#1d2733">4-in-1 ESC</text>
+    <text x="380" y="80" text-anchor="middle" font-size="10" fill="#5b6774">4 × F90 motors · eRPM</text>
+    <line x1="225" y1="88" x2="225" y2="130" stroke="#5b6774" stroke-width="1.5" marker-end="url(#arr)"/>
+    <rect x="160" y="132" width="130" height="50" rx="8" fill="#e8f4f2" stroke="#2a9d8f" stroke-width="1.5"/>
+    <text x="225" y="152" text-anchor="middle" font-size="12" font-weight="700" fill="#1d2733">INA228</text>
+    <text x="225" y="168" text-anchor="middle" font-size="9.5" fill="#5b6774">V, I, energy · 100 Hz · I2C</text>
+    <rect x="20" y="132" width="120" height="50" rx="8" fill="#e8f4f2" stroke="#2a9d8f" stroke-width="1.5"/>
+    <text x="80" y="152" text-anchor="middle" font-size="12" font-weight="700" fill="#1d2733">2 × DS18B20</text>
+    <text x="80" y="168" text-anchor="middle" font-size="9.5" fill="#5b6774">pack T, ambient T · 1-Wire</text>
+    <rect x="80" y="225" width="210" height="70" rx="10" fill="#fff" stroke="#2a9d8f" stroke-width="2"/>
+    <text x="185" y="249" text-anchor="middle" font-size="13" font-weight="700" fill="#1d2733">Raspberry Pi 4 (ROS 2 Jazzy)</text>
+    <text x="185" y="267" text-anchor="middle" font-size="9.5" fill="#5b6774">power_logger + energy_profile (Offboard)</text>
+    <text x="185" y="283" text-anchor="middle" font-size="9.5" fill="#2a9d8f" font-weight="700">→ one rosbag per flight</text>
+    <line x1="80" y1="182" x2="120" y2="223" stroke="#2a9d8f" stroke-width="1.5" marker-end="url(#arrT)"/>
+    <line x1="225" y1="182" x2="200" y2="223" stroke="#2a9d8f" stroke-width="1.5" marker-end="url(#arrT)"/>
+    <rect x="470" y="132" width="150" height="70" rx="10" fill="#fff" stroke="#1f3a5f" stroke-width="2"/>
+    <text x="545" y="155" text-anchor="middle" font-size="13" font-weight="700" fill="#1d2733">NxtPX4 FC · PX4 1.17</text>
+    <text x="545" y="172" text-anchor="middle" font-size="9.5" fill="#5b6774">EKF2, IMU, baro, esc_status</text>
+    <text x="545" y="188" text-anchor="middle" font-size="9.5" fill="#1f3a5f" font-weight="700">→ .ulg on the SD card</text>
+    <line x1="440" y1="67" x2="545" y2="130" stroke="#5b6774" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#arr)"/>
+    <text x="520" y="100" font-size="9" fill="#5b6774">per-motor eRPM</text>
+    <line x1="290" y1="260" x2="468" y2="200" stroke="#1f3a5f" stroke-width="2" marker-end="url(#arr)" marker-start="url(#arr)"/>
+    <text x="395" y="225" font-size="9.5" fill="#1f3a5f" font-weight="700">TEL2 · uXRCE-DDS 921600</text>
+    <text x="395" y="238" font-size="9" fill="#5b6774">setpoints ↑ · battery_status, odometry, GPS ↓</text>
+    <rect x="650" y="40" width="95" height="54" rx="8" fill="#f3f6f9" stroke="#1f3a5f" stroke-width="1.5"/>
+    <text x="697" y="62" text-anchor="middle" font-size="12" font-weight="700" fill="#1d2733">ZED-F9P</text>
+    <text x="697" y="80" text-anchor="middle" font-size="10" fill="#5b6774">RTK · UART</text>
+    <line x1="697" y1="94" x2="600" y2="130" stroke="#5b6774" stroke-width="1.5" marker-end="url(#arr)"/>
+    <rect x="640" y="225" width="110" height="70" rx="10" fill="#f3f6f9" stroke="#5b6774" stroke-width="1.5"/>
+    <text x="695" y="249" text-anchor="middle" font-size="12" font-weight="700" fill="#1d2733">Tablet + QGC</text>
+    <text x="695" y="266" text-anchor="middle" font-size="9.5" fill="#5b6774">NTRIP IGN (4G)</text>
+    <text x="695" y="282" text-anchor="middle" font-size="9.5" fill="#5b6774">RTCM → SiK radio</text>
+    <line x1="640" y1="255" x2="600" y2="204" stroke="#5b6774" stroke-width="1.5" marker-end="url(#arr)"/>
+    <rect x="470" y="300" width="14" height="6" fill="#e07b39"/><text x="490" y="306" font-size="9" fill="#5b6774">power</text>
+    <rect x="540" y="300" width="14" height="6" fill="#2a9d8f"/><text x="560" y="306" font-size="9" fill="#5b6774">new logging (Pi)</text>
+    <rect x="660" y="300" width="14" height="6" fill="#1f3a5f"/><text x="680" y="306" font-size="9" fill="#5b6774">already validated</text>
+  </svg>
+  <div class="cap">Figure 1. Two independent records of the same flight: the autopilot writes its log to the SD card and the Pi records current, voltage and temperature through its own path. They are aligned afterwards using the voltage, which both sensors see. The ESC current is not used (it is invalid: it reads 13.6 A with the drone sitting still).</div>
+  </div>
+
+  <h3>What gets installed (product photos)</h3>
+  <div class="grid" style="grid-template-columns: repeat(5, 1fr); margin-bottom:10px">
+    <div class="photo"><img src="../images/sensores/ina228_adafruit.jpg" alt="INA228"><div class="cap"><b>INA228</b> I2C breakout, 20-bit. Used with an external shunt (the on-board one is 15 mΩ, ≤10 A).</div></div>
+    <div class="photo" style="display:flex;flex-direction:column"><div style="flex:1;display:flex;align-items:center;justify-content:center;height:120px">
+      <svg viewBox="0 0 140 70" width="92%"><rect x="10" y="22" width="120" height="26" rx="3" fill="#c8a165" stroke="#8a6a3a"/><rect x="48" y="18" width="44" height="34" fill="#4a4a4a"/><circle cx="22" cy="35" r="6" fill="#fff" stroke="#8a6a3a"/><circle cx="118" cy="35" r="6" fill="#fff" stroke="#8a6a3a"/><text x="70" y="64" text-anchor="middle" font-size="9" fill="#5b6774">1 mΩ · 100 A · ≥3 W</text></svg></div>
+      <div class="cap"><b>External shunt</b> on the XT60 positive lead. 100 A → 100 mV; dissipates 0.4 W at 20 A.</div></div>
+    <div class="photo"><img src="../images/sensores/ds18b20_adafruit.jpg" alt="DS18B20"><div class="cap"><b>DS18B20</b> encapsulated, 1-Wire. One taped to the pack, one for ambient.</div></div>
+    <div class="photo"><img src="../images/sensores/p50b_molicel.png" alt="Molicel P50B"><div class="cap"><b>Molicel INR21700-P50B</b>: 5 Ah, 60 A, ~70 g. Six in series = the Li-ion pack.</div></div>
+    <div class="photo"><img src="../images/sensores/pm02_px4docs.jpg" alt="PM02 power module"><div class="cap"><b>Phase 2:</b> analog power module (Holybro PM02 or Mauch Hall) into the FC's current pad.</div></div>
+  </div>
+  <p class="small" style="margin-top:-4px">Product images: Adafruit (INA228, DS18B20), 18650batterystore (P50B), PX4 documentation (PM02). Illustrative only; the exact part is chosen at purchase.</p>
+
+  <div class="grid g3">
+    <div class="card"><h4>What the Pi measures (new)</h4><ul><li>INA228 + external shunt: V, I at 100 Hz and energy integrated on-chip.</li><li>Pack and ambient temperature at 1 Hz.</li><li>Profile phase (takeoff, hold, up, down, out, back, land).</li><li>Optional: per-cell voltage with an ADS1115 on the balance lead.</li></ul></div>
+    <div class="card"><h4>What the FC measures (already)</h4><ul><li>Pack voltage (calibrated to &lt;0.5 %).</li><li>eRPM of the 4 motors via bidirectional DShot.</li><li>IMU, barometer, attitude, flight mode.</li><li>RTK position and velocity (cm) and fix type.</li><li>Battery log rate raised from 5 to 100 Hz by a file on the SD card.</li></ul></div>
+    <div class="card"><h4>What the bench measures (energy)</h4><ul><li>OCV versus SoC per chemistry.</li><li>HPPC: R0 and RC constants at 2-3 temperatures.</li><li>Reference capacity every ~10 flights (fade).</li><li>Per-cell resistance with an ESR meter.</li></ul></div>
+  </div>
+</section>
+
+<!-- ============ PAGE 5: HOW (FLIGHT PROFILES) ============ -->
+<section class="page">
+  <h2>4 · How it is flown: three identical profiles, Offboard with RTK</h2>
+  <p>The drone flies autonomously, commanded from the Pi, with the same setpoints on every flight. RTK (2 mm static, cm in flight) makes "the same setpoint" the same physical place. Each flight ends <b>on battery, not on time</b>: when the filtered cell voltage drops below 3.5 V under load, the drone returns to the mark and lands. That is the ground truth for remaining time.</p>
+
+  <div class="fig">
+  <svg viewBox="0 0 760 250" width="100%" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <marker id="a2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#1f3a5f"/></marker>
+      <g id="drone"><rect x="-10" y="-3" width="20" height="6" rx="2" fill="#1f3a5f"/><line x1="-14" y1="-6" x2="14" y2="6" stroke="#1f3a5f" stroke-width="2"/><line x1="-14" y1="6" x2="14" y2="-6" stroke="#1f3a5f" stroke-width="2"/><circle cx="-14" cy="-6" r="4" fill="none" stroke="#e07b39" stroke-width="1.5"/><circle cx="14" cy="-6" r="4" fill="none" stroke="#e07b39" stroke-width="1.5"/><circle cx="-14" cy="6" r="4" fill="none" stroke="#e07b39" stroke-width="1.5"/><circle cx="14" cy="6" r="4" fill="none" stroke="#e07b39" stroke-width="1.5"/></g>
+    </defs>
+    <rect x="10" y="10" width="235" height="230" rx="10" fill="#f3f6f9" stroke="#d7dde3"/>
+    <text x="127" y="34" text-anchor="middle" font-size="13" font-weight="700" fill="#1f3a5f">A · Hover</text>
+    <line x1="30" y1="200" x2="225" y2="200" stroke="#5b6774" stroke-width="2"/>
+    <use href="#drone" x="127" y="120"/>
+    <line x1="60" y1="200" x2="60" y2="120" stroke="#2a9d8f" stroke-width="1.5" stroke-dasharray="3 3" marker-end="url(#a2)"/>
+    <text x="66" y="160" font-size="10" fill="#2a9d8f" font-weight="700">1.5 m</text>
+    <text x="127" y="222" text-anchor="middle" font-size="9.5" fill="#5b6774">still over the mark until cutoff</text>
+    <text x="127" y="55" text-anchor="middle" font-size="9.5" fill="#5b6774">pure induced power, the reference</text>
+    <rect x="262" y="10" width="235" height="230" rx="10" fill="#f3f6f9" stroke="#d7dde3"/>
+    <text x="379" y="34" text-anchor="middle" font-size="13" font-weight="700" fill="#1f3a5f">B · Vertical</text>
+    <line x1="282" y1="200" x2="477" y2="200" stroke="#5b6774" stroke-width="2"/>
+    <use href="#drone" x="379" y="160"/>
+    <use href="#drone" x="379" y="70" opacity="0.35"/>
+    <line x1="420" y1="150" x2="420" y2="82" stroke="#1f3a5f" stroke-width="2" marker-end="url(#a2)" marker-start="url(#a2)"/>
+    <text x="428" y="120" font-size="10" fill="#1f3a5f" font-weight="700">1 ↔ 5 m</text>
+    <text x="428" y="134" font-size="9.5" fill="#5b6774">1 m/s, 3 s pause</text>
+    <text x="379" y="222" text-anchor="middle" font-size="9.5" fill="#5b6774">climb/descend cycles until cutoff</text>
+    <text x="379" y="55" text-anchor="middle" font-size="9.5" fill="#5b6774">high current transients</text>
+    <rect x="514" y="10" width="236" height="230" rx="10" fill="#f3f6f9" stroke="#d7dde3"/>
+    <text x="632" y="34" text-anchor="middle" font-size="13" font-weight="700" fill="#1f3a5f">C · Horizontal</text>
+    <line x1="534" y1="200" x2="730" y2="200" stroke="#5b6774" stroke-width="2"/>
+    <use href="#drone" x="560" y="130"/>
+    <use href="#drone" x="705" y="130" opacity="0.35"/>
+    <line x1="580" y1="130" x2="684" y2="130" stroke="#1f3a5f" stroke-width="2" marker-end="url(#a2)" marker-start="url(#a2)"/>
+    <text x="632" y="122" text-anchor="middle" font-size="10" fill="#1f3a5f" font-weight="700">20 m out and back</text>
+    <text x="632" y="150" text-anchor="middle" font-size="9.5" fill="#5b6774">2 m/s, at 2 m, fixed heading</text>
+    <text x="632" y="222" text-anchor="middle" font-size="9.5" fill="#5b6774">J per metre with RTK velocity</text>
+    <text x="632" y="55" text-anchor="middle" font-size="9.5" fill="#5b6774">realistic mission profile</text>
+  </svg>
+  <div class="cap">Figure 2. Profiles relative to the takeoff mark, with a fixed compass heading. Every flight: charge to 4.20 V/cell, 30 min rest, weigh the drone, log wind and temperature, fly to cutoff.</div>
+  </div>
+
+  <div class="grid g2">
+    <div class="card">
+      <h4>Sequence of one flight</h4>
+      <ol style="margin:0 0 0 18px;padding:0">
+        <li>Pack at ambient temperature, charged to 4.20 V/cell and rested 30 min.</li>
+        <li>Drone on the mark; RTK fixed required to take off (node gate).</li>
+        <li>Pilot sets the switch to Offboard and arms; the node takes off and runs the profile.</li>
+        <li>If the fix drops to float in flight, the flight continues and the segment is tagged; no abort.</li>
+        <li>Filtered cell voltage (2 s) &lt; 3.5 V under load → return to the mark and land.</li>
+        <li>30 min rest and final OCV reading; record in the session manifest.</li>
+      </ol>
+    </div>
+    <div class="card">
+      <h4>Experimental matrix</h4>
+      <table style="margin:0">
+        <tr><th>Factor</th><th>Levels</th></tr>
+        <tr><td>Chemistry</td><td>LiPo 4500 60C · Li-ion P50B (2 packs each)</td></tr>
+        <tr><td>Profile</td><td>Hover · Vertical · Horizontal</td></tr>
+        <tr><td>Repetitions</td><td>≥ 5 per cell, ABBA order within a session</td></tr>
+        <tr><td>Total</td><td><b>30-40 flights to cutoff</b>, 4-6 field sessions</td></tr>
+        <tr><td>Duration per flight</td><td>~10-12 min (log 18 scaled to the 4.5 Ah pack)</td></tr>
+      </table>
+      <p class="small" style="margin-top:6px">Safety with 1P Li-ion: cap PX4's maximum thrust at ~0.6 (plenty: 9.4 kg of thrust for ~1.5 kg) and gentle profiles. Pilot on RC as backup at all times.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PAGE 6: ANALYSIS AND FIGURES ============ -->
+<section class="page">
+  <h2>5 · What comes out of the data: analysis and planned figures</h2>
+  <div class="fig">
+  <svg viewBox="0 0 760 150" width="100%" xmlns="http://www.w3.org/2000/svg">
+    <defs><marker id="a3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#5b6774"/></marker></defs>
+    <rect x="10" y="30" width="120" height="70" rx="8" fill="#f3f6f9" stroke="#1f3a5f"/>
+    <text x="70" y="55" text-anchor="middle" font-size="11" font-weight="700" fill="#1d2733">.ulg + rosbag</text>
+    <text x="70" y="72" text-anchor="middle" font-size="9" fill="#5b6774">sync by voltage</text>
+    <text x="70" y="86" text-anchor="middle" font-size="9" fill="#5b6774">&lt; 10 ms</text>
+    <line x1="130" y1="65" x2="165" y2="65" stroke="#5b6774" stroke-width="1.5" marker-end="url(#a3)"/>
+    <rect x="167" y="30" width="130" height="70" rx="8" fill="#f3f6f9" stroke="#1f3a5f"/>
+    <text x="232" y="55" text-anchor="middle" font-size="11" font-weight="700" fill="#1d2733">ECM identification</text>
+    <text x="232" y="72" text-anchor="middle" font-size="9" fill="#5b6774">R0(SoC,T), RC, OCV</text>
+    <text x="232" y="86" text-anchor="middle" font-size="9" fill="#5b6774">flight vs bench</text>
+    <line x1="297" y1="65" x2="332" y2="65" stroke="#5b6774" stroke-width="1.5" marker-end="url(#a3)"/>
+    <rect x="334" y="30" width="150" height="70" rx="8" fill="#f3f6f9" stroke="#1f3a5f"/>
+    <text x="409" y="52" text-anchor="middle" font-size="11" font-weight="700" fill="#1d2733">3 estimators (replay)</text>
+    <text x="409" y="69" text-anchor="middle" font-size="9" fill="#5b6774">PX4 voltage · coulomb</text>
+    <text x="409" y="83" text-anchor="middle" font-size="9" fill="#5b6774">ECM + UKF</text>
+    <line x1="484" y1="65" x2="519" y2="65" stroke="#5b6774" stroke-width="1.5" marker-end="url(#a3)"/>
+    <rect x="521" y="30" width="130" height="70" rx="8" fill="#e8f4f2" stroke="#2a9d8f" stroke-width="1.5"/>
+    <text x="586" y="52" text-anchor="middle" font-size="11" font-weight="700" fill="#1d2733">Error vs truth</text>
+    <text x="586" y="69" text-anchor="middle" font-size="9" fill="#5b6774">t remaining at 1/2/3 min</text>
+    <text x="586" y="83" text-anchor="middle" font-size="9" fill="#5b6774">SoC, usable Wh</text>
+    <line x1="651" y1="65" x2="686" y2="65" stroke="#5b6774" stroke-width="1.5" marker-end="url(#a3)"/>
+    <rect x="688" y="30" width="62" height="70" rx="8" fill="#fdeede" stroke="#e07b39" stroke-width="1.5"/>
+    <text x="719" y="60" text-anchor="middle" font-size="10" font-weight="700" fill="#1d2733">Paper</text>
+    <text x="719" y="76" text-anchor="middle" font-size="9" fill="#5b6774">+ dataset</text>
+    <text x="380" y="130" text-anchor="middle" font-size="9.5" fill="#5b6774">All offline and reproducible: the same flights feed the three estimators and allow sweeping PX4 parameters without flying again.</text>
+  </svg>
+  </div>
+
+  <h3>Paper figures (what we want each one to say)</h3>
+  <table>
+    <tr><th style="width:5%">#</th><th style="width:34%">Figure</th><th>Message</th></tr>
+    <tr><td>F1</td><td>Platform and instrumentation</td><td>What is measured, with what, and the two logging paths.</td></tr>
+    <tr><td>F2</td><td>RTK trajectories of the three profiles, all flights overlaid</td><td>The profiles are repeatable at cm level: the variable is the battery, not the flight.</td></tr>
+    <tr><td>F3</td><td>V, I and T of a full discharge, LiPo and Li-ion side by side</td><td>The same mission produces different curves: sag, heating and cutoff point.</td></tr>
+    <tr><td>F4</td><td>R0 identified in flight versus bench HPPC, by SoC and temperature</td><td>Can the battery be characterised from logs without a lab? (H3)</td></tr>
+    <tr><td>F5</td><td>Remaining-time error versus horizon, by estimator and chemistry</td><td>The central figure: how wrong the pilot is and with which estimator they stop being wrong. (H2)</td></tr>
+    <tr><td>F6</td><td>Usable Wh in flight versus bench Wh, by chemistry and profile</td><td>What the voltage cutoff leaves unused. (H1)</td></tr>
+    <tr><td>F7</td><td>Endurance in minutes and in minutes per gram</td><td>The number everybody quotes without measuring, measured.</td></tr>
+    <tr><td>F8</td><td>Reference capacity over the campaign</td><td>Fade over 30-40 flights; reported, not promised.</td></tr>
+  </table>
+
+  <h3>Metrics</h3>
+  <div class="grid g3">
+    <div class="card soft"><b>Battery</b><ul><li>SoC error (RMS, max)</li><li>Remaining-time error in s at 1, 2 and 3 min before cutoff</li><li>R0, τ1, τ2 flight vs bench</li><li>Usable Wh / bench Wh</li></ul></div>
+    <div class="card soft"><b>Flight</b><ul><li>Mean power per phase</li><li>J per metre (profile C) with RTK velocity</li><li>Hover power versus mass, against momentum theory</li><li>Pack temperature rise</li></ul></div>
+    <div class="card soft"><b>Quality</b><ul><li>RTK scatter per profile</li><li>Wind per flight (anemometer)</li><li>% of RTK-fixed samples</li><li>Attitude tracking error</li></ul></div>
+  </div>
+</section>
+
+<!-- ============ PAGE 7: PLAN, ROLES, VENUES ============ -->
+<section class="page">
+  <h2>6 · Plan, roles and where to publish</h2>
+  <div class="grid g2">
+    <div class="card">
+      <h4><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="#1f3a5f" stroke-width="2"><path d="M4 7h16M4 12h10M4 17h7"/></svg>Drone side (TIDOP)</h4>
+      <ul><li>Instrumentation: INA228 + shunt, DS18B20, clamp-meter calibration.</li><li>Pi nodes: power logging and Offboard profiles with battery-based termination.</li><li>Field campaign with pilot and RTK; logs and rosbags.</li><li>Synchronisation, phase segmentation, replay of PX4's estimator.</li><li>Open dataset (Zenodo) and flight figures.</li></ul>
+    </div>
+    <div class="card">
+      <h4><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="#2a9d8f" stroke-width="2"><path d="M9 3h6v5l4 9a2 2 0 0 1-2 3H7a2 2 0 0 1-2-3l4-9z"/></svg>Energy side</h4>
+      <ul><li>Bench protocol: OCV-SoC, HPPC at 2-3 temperatures, reference capacity, per-cell ESR.</li><li>Equivalent-circuit model and identification (bench and flight).</li><li>ECM + UKF estimator and end-of-discharge error analysis.</li><li>Electrochemical interpretation of the LiPo / Li-ion differences.</li><li>Assembly of the 6S1P Li-ion pack if not bought ready-made.</li></ul>
+    </div>
+  </div>
+
+  <h3>Timeline (from material arrival)</h3>
+  <table>
+    <tr><th style="width:16%">Weeks</th><th>Milestone</th><th style="width:16%">Status</th></tr>
+    <tr><td>0</td><td>Purchase: 2 LiPo 4500 60C, 2 Li-ion P50B with balance lead, INA228, 1 mΩ 100 A shunt, 2 DS18B20, DC clamp meter, anemometer.</td><td><span class="pill todo">pending</span></td></tr>
+    <tr><td>1-2</td><td>Instrumentation on the drone, Pi nodes, bench calibration without propellers, test 0: outdoor Offboard hover with RTK.</td><td><span class="pill todo">pending</span></td></tr>
+    <tr><td>2-3</td><td>Bench tests of the four packs (OCV, HPPC, capacity).</td><td><span class="pill todo">energy</span></td></tr>
+    <tr><td>3-6</td><td>Campaign: 4-6 sessions, 30-40 flights to cutoff.</td><td><span class="pill todo">field</span></td></tr>
+    <tr><td>6-9</td><td>Identification, estimators, figures.</td><td><span class="pill todo">both</span></td></tr>
+    <tr><td>9-12</td><td>Writing and submission.</td><td><span class="pill todo">both</span></td></tr>
+  </table>
+
+  <div class="grid g2">
+    <div class="card soft">
+      <h4>Already validated on the drone (nothing to invent)</h4>
+      <ul>
+        <li><span class="pill ok">ok</span> Offboard link over DDS with PX4 1.17.</li>
+        <li><span class="pill ok">ok</span> RTK fixed with IGN NTRIP from the tablet (flights 17/18: 92-97 % fixed).</li>
+        <li><span class="pill ok">ok</span> Compass calibrated, outdoor profile, failsafes and RC override.</li>
+        <li><span class="pill ok">ok</span> FC voltage calibrated; per-motor eRPM in the log.</li>
+        <li><span class="pill ok">ok</span> Outdoor takeoff/hold/land node (still to be flown).</li>
+        <li><span class="pill no">no</span> Current: the ESC channel is invalid. Hence the INA228.</li>
+      </ul>
+    </div>
+    <div class="card soft">
+      <h4>Venues and risks</h4>
+      <p><b>Venues:</b> Journal of Energy Storage or Energies (battery angle); Drones or Aerospace Science and Technology (UAV angle); IEEE Trans. Transportation Electrification. The dataset, separately, in Scientific Data or Data in Brief.</p>
+      <p><b>Risks:</b> (1) "LiPo ECMs are already studied": the defence is the 3-15 C regime, identification from flight, the ground truth and two chemistries on the same drone. (2) Small fade over 30-40 flights: reported, SoH not promised. (3) Wind: anemometer per flight, discard gusts, ABBA order.</p>
+    </div>
+  </div>
+
+  <p class="small" style="margin-top:6px"><b>Second paper with the same instrumentation:</b> energy per mission of the controller (PID, jerk-limited and MPC, already implemented on the Pi) with the accuracy-energy Pareto front measured in the field; the published savings (7-70 %) are all simulated.</p>
+
+  <h3>Key references</h3>
+  <div class="grid g2" style="gap:2px 14px">
+    <p class="ref">Motion-Specific Battery Health Assessment for Quadrotors, ICRA 2026 · arxiv.org/abs/2603.12791</p>
+    <p class="ref">Dibbern et al., load-dependent SoC and end of discharge of a multirotor battery, JATE 12(2), 2023</p>
+    <p class="ref">Battery-Aware Predictive Trajectory Planning for Multirotors, 2026 · arxiv.org/abs/2609.12188</p>
+    <p class="ref">ML-based battery SoH prediction for UAV maintenance, 2026 · arxiv.org/abs/2607.06791</p>
+    <p class="ref">Rodrigues et al., DJI M100 energy dataset, Sci. Data 2021 · Bills et al., eVTOL battery dataset, Sci. Data 2023</p>
+    <p class="ref">Full review and decisions (Spanish): docs/publicaciones/2026-10-29_paper_energia_bateria_campo.md (px4_drone_dev repo)</p>
+  </div>
+</section>
+
+</body>
+</html>

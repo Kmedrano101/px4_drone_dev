@@ -69,26 +69,26 @@ Los plots salen en `scripts/output/<log>/*.png`. Ver [`scripts/README.md`](../sc
 ## Recursos del proyecto
 
 **Documentación — informes de ingeniería** (`docs/`)
-- [Informe de puesta a punto y vuelo](INFORME_VUELO_DRONE.md)
-- [Ruido de motores = saturación de yaw](DIAGNOSTICO_RUIDO_MOTORES_YAW.md)
-- [Plataforma: hardware, firmware y comunicaciones](PLATAFORMA_HARDWARE.md) — ficha técnica + referencia SUPER
-- [Parámetros indoor](PARAMETROS_INDOOR.md) — todos los parámetros sin GPS, por orden de importancia
-- [Conexión MAVLink con scripts](CONEXION_MAVLINK_SCRIPTS.md) — hablar con el FC por cable o radio sin QGC
-- [Metodología de trabajo](METODOLOGIA_TRABAJO.md) — cómo se analiza, dónde queda cada hallazgo y reglas al tocar el FC
-- [Plan de test LiDAR 2D + EV](2026-09-16_test_lidar2d_ev_offboard.md) — odometría externa con LiDAR 2D y altura con LiDAR 1D
-- [Lo que está verificado en el fuente de PX4 1.14.3](PX4_1143_FUENTE_VERIFICADO.md) — hechos leídos en el código del tag que corre el FC, con archivo y línea: control, offboard, EV, altura y lo que el firmware de fábrica no expone
-- [El software de la Raspberry Pi](SOFTWARE_ROS2_PX4_DRONE.md) — qué nodo corre, qué protege cada guarda y el incidente que la pagó
-- [MPC del ciclo completo](MPC_CICLO_COMPLETO.md) — el control predictivo que corre en la Pi: modelo, por qué aceleración y no posición, coste de cómputo y deuda abierta
-- [Protocolo PID vs MPC](2026-10-16_protocolo_pid_vs_mpc.md) — cómo se vuela y qué se mide para que la comparación de controladores signifique algo
-- [Plan de ajuste: vuelo suave y repetible](2026-10-19_plan_tuning_takeoff_hold_land.md) — el orden de capas (mecánica → estimación → tasas → empuje → control exterior), qué medir en cada fase y los objetivos candidatos
-- [Parámetros del FC para vuelo suave](2026-10-20_parametros_vuelo_suave_produccion.md) — qué hay hoy en el FC (volcado de 903), qué le hace PX4 a nuestros setpoints durante el despegue, y qué tocar por orden de efecto
-- [Pruebas en banco sin hélices](2026-10-21_pruebas_banco_sin_helices.md) — modo banco: desarme forzado N s tras el TAKEOFF (21196) para que los motores no se vayan al 100 %; orden de pruebas antes de volver al campo
-- [Outdoor con GPS ZED-F9P: Position/Altitude hold](2026-10-21_outdoor_gps_zedf9p_position_hold.md) — el F9P da posición pero no rumbo; **perfil outdoor aplicado** (GPS fusionado), perfiles indoor↔outdoor conmutables (QGC/CLI), cableado y checklist de prearmado
-- [Mapeo de motores y geometría](PLATAFORMA_HARDWARE.md) — geometría Quad-X (`CA_ROTOR*`) vs mapeo de salidas (`PWM_MAIN_FUNC*`); el arreglo del cruce de cable motor 2↔3 (2026-10-27)
-- [Companion para MID-360S y SLAM interior](2026-10-19_companion_mid360s_slam.md) — qué ordenador sustituiría a la Pi con un LiDAR 3D: evidencia encontrada, alternativas y prueba de aceptación antes de comprar
-- [Gaps de investigación para publicar](2026-10-01_gaps_publicacion.md) — literatura reciente frente a lo que ya hay medido; hacia dónde enfocar el próximo paper
-- [Offboard RPi ⇄ FC (uXRCE-DDS)](CONFIGURACION_OFFBOARD_RPI4.md)
-- [Integración MTF-01P flujo + LiDAR](INTEGRACION_MTF-01P_FLOW_LIDAR.md)
+- [Informe de puesta a punto y vuelo](historico/INFORME_VUELO_DRONE.md)
+- [Ruido de motores = saturación de yaw](historico/DIAGNOSTICO_RUIDO_MOTORES_YAW.md)
+- [Plataforma: hardware, firmware y comunicaciones](referencia/PLATAFORMA_HARDWARE.md) — ficha técnica + referencia SUPER
+- [Parámetros indoor](referencia/PARAMETROS_INDOOR.md) — todos los parámetros sin GPS, por orden de importancia
+- [Conexión MAVLink con scripts](referencia/CONEXION_MAVLINK_SCRIPTS.md) — hablar con el FC por cable o radio sin QGC
+- [Metodología de trabajo](referencia/METODOLOGIA_TRABAJO.md) — cómo se analiza, dónde queda cada hallazgo y reglas al tocar el FC
+- [Plan de test LiDAR 2D + EV](planes/2026-09-16_test_lidar2d_ev_offboard.md) — odometría externa con LiDAR 2D y altura con LiDAR 1D
+- [Lo que está verificado en el fuente de PX4 1.14.3](referencia/PX4_1143_FUENTE_VERIFICADO.md) — hechos leídos en el código del tag que corre el FC, con archivo y línea: control, offboard, EV, altura y lo que el firmware de fábrica no expone
+- [El software de la Raspberry Pi](referencia/SOFTWARE_ROS2_PX4_DRONE.md) — qué nodo corre, qué protege cada guarda y el incidente que la pagó
+- [MPC del ciclo completo](referencia/MPC_CICLO_COMPLETO.md) — el control predictivo que corre en la Pi: modelo, por qué aceleración y no posición, coste de cómputo y deuda abierta
+- [Protocolo PID vs MPC](planes/2026-10-16_protocolo_pid_vs_mpc.md) — cómo se vuela y qué se mide para que la comparación de controladores signifique algo
+- [Plan de ajuste: vuelo suave y repetible](planes/2026-10-19_plan_tuning_takeoff_hold_land.md) — el orden de capas (mecánica → estimación → tasas → empuje → control exterior), qué medir en cada fase y los objetivos candidatos
+- [Parámetros del FC para vuelo suave](planes/2026-10-20_parametros_vuelo_suave_produccion.md) — qué hay hoy en el FC (volcado de 903), qué le hace PX4 a nuestros setpoints durante el despegue, y qué tocar por orden de efecto
+- [Pruebas en banco sin hélices](planes/2026-10-21_pruebas_banco_sin_helices.md) — modo banco: desarme forzado N s tras el TAKEOFF (21196) para que los motores no se vayan al 100 %; orden de pruebas antes de volver al campo
+- [Outdoor con GPS ZED-F9P: Position/Altitude hold](planes/2026-10-21_outdoor_gps_zedf9p_position_hold.md) — el F9P da posición pero no rumbo; **perfil outdoor aplicado** (GPS fusionado), perfiles indoor↔outdoor conmutables (QGC/CLI), cableado y checklist de prearmado
+- [Mapeo de motores y geometría](referencia/PLATAFORMA_HARDWARE.md) — geometría Quad-X (`CA_ROTOR*`) vs mapeo de salidas (`PWM_MAIN_FUNC*`); el arreglo del cruce de cable motor 2↔3 (2026-10-27)
+- [Companion para MID-360S y SLAM interior](planes/2026-10-19_companion_mid360s_slam.md) — qué ordenador sustituiría a la Pi con un LiDAR 3D: evidencia encontrada, alternativas y prueba de aceptación antes de comprar
+- [Gaps de investigación para publicar](publicaciones/2026-10-01_gaps_publicacion.md) — literatura reciente frente a lo que ya hay medido; hacia dónde enfocar el próximo paper
+- [Offboard RPi ⇄ FC (uXRCE-DDS)](referencia/CONFIGURACION_OFFBOARD_RPI4.md)
+- [Integración MTF-01P flujo + LiDAR](referencia/INTEGRACION_MTF-01P_FLOW_LIDAR.md)
 
 **Reportes de diagnóstico** (companion / RPi) — ver [`reports/`](../reports/README.md)
 - [Tuning EKF2 del MTF-01 — flow indoor](../reports/2026-07-23_mtf01-ekf2-tuning.md)

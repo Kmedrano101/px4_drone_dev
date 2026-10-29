@@ -5,7 +5,7 @@
 **Estado:** ✅ Éxito completo — EKF2 fusiona odometría del LiDAR 2D en `POSE_FRAME_NED`; posición horizontal y rumbo validados para control sin magnetómetro.
 
 **Contexto:**  
-Fase 2 del [plan de test LiDAR 2D](../docs/2026-09-16_test_lidar2d_ev_offboard.md): validar en tierra y con el dron desarmado que la pose estimada por el SLAM 2D (`slam_toolbox`) se traduce correctamente a `VehicleOdometry` y es aceptada y fusionada por el estimador de estados EKF2 de PX4.
+Fase 2 del [plan de test LiDAR 2D](../docs/planes/2026-09-16_test_lidar2d_ev_offboard.md): validar en tierra y con el dron desarmado que la pose estimada por el SLAM 2D (`slam_toolbox`) se traduce correctamente a `VehicleOdometry` y es aceptada y fusionada por el estimador de estados EKF2 de PX4.
 
 ---
 

@@ -59,7 +59,7 @@ que **si regeneras el escaneo la simulación coge la versión nueva sola**.
 
 `Tools/simulation/gz` es un **submódulo upstream de PX4**: nada de lo propio que dejes ahí
 está trackeado, y se pierde con un `git clean`, al cambiar de rama del submódulo, al
-actualizarlo o al reclonar PX4. Por eso hay una copia en [`gazebo/`](../gazebo/README.md):
+actualizarlo o al reclonar PX4. Por eso hay una copia en [`gazebo/`](../../gazebo/README.md):
 
 ```bash
 cd ~/src/drone_tunning/gazebo
@@ -242,7 +242,7 @@ láser *como terreno*. Rota esa cadena, `cs_opt_flow` nunca se activa,
 referencia de PX4 (`4021_gz_x500_flow`) no toca ninguno de los tres.
 
 Ya están corregidos en `4023_gz_rjx_f450_indoor`. Detalle completo en
-[`reports/2026-09-08_ekf2-no-converge-sitl.md`](../reports/2026-09-08_ekf2-no-converge-sitl.md).
+[`reports/2026-09-08_ekf2-no-converge-sitl.md`](../../reports/2026-09-08_ekf2-no-converge-sitl.md).
 
 ### Validar vuelos contra groundtruth, no contra el EKF
 
@@ -270,8 +270,8 @@ tenerlas presentes antes de sacar conclusiones de un vuelo simulado.
 | Autonomía | ~3-4 min (1300 mAh) | Sin límite | — |
 
 **La primera es la importante.** El bloqueo real del hold de posición indoor es la falta de
-yaw sin brújula (ver [`reports/2026-07-23_mtf01-ekf2-tuning.md`](../reports/2026-07-23_mtf01-ekf2-tuning.md)
-y [`reports/2026-09-04_fc2-vendor-1143-mtf01p-migracion.md`](../reports/2026-09-04_fc2-vendor-1143-mtf01p-migracion.md)).
+yaw sin brújula (ver [`reports/2026-07-23_mtf01-ekf2-tuning.md`](../../reports/2026-07-23_mtf01-ekf2-tuning.md)
+y [`reports/2026-09-04_fc2-vendor-1143-mtf01p-migracion.md`](../../reports/2026-09-04_fc2-vendor-1143-mtf01p-migracion.md)).
 Con la brújula perfecta de la simulación el dron vuela sin problema, así que **un vuelo
 simulado OK no demuestra nada** sobre ese fallo. Para reproducirlo hay que desactivar el mag.
 
@@ -286,7 +286,7 @@ y marcos de puerta sin hundir el rendimiento.
 
 La geometría del edificio no se dibujó a mano: sale de la nube escaneada
 `IndoorZone/Indoor_clean_less_dense.ply` con
-[`scripts/gazebo/muros_cv.py`](../scripts/gazebo/muros_cv.py) (necesita
+[`scripts/gazebo/muros_cv.py`](../../scripts/gazebo/muros_cv.py) (necesita
 `/usr/bin/python3`, que es el intérprete que tiene cv2 + open3d + trimesh; el
 python del venv NO los tiene).
 

@@ -170,7 +170,7 @@ for s_i, sy in enumerate([1, -1]):
 
 sdf = ('<?xml version="1.0" encoding="UTF-8"?>\n<!--\n'
        "  RJX F450 carbono - recreacion del drone real de pruebas indoor.\n"
-       "  Medidas y masas de docs/PLATAFORMA_HARDWARE.md:\n"
+       "  Medidas y masas de docs/referencia/PLATAFORMA_HARDWARE.md:\n"
        "    frame RJX F450, 450 mm de diagonal -> rotores a +-0.159 m\n"
        "    T-Motor F90 2806.5 1300KV: 33.4 x 34.7 mm, 46.6 g, 2360 g de empuje con 7x4\n"
        "    HQProp 7x4x3 tripala\n"

@@ -120,7 +120,7 @@ Así se perdió entera la salida del **2026-10-20**: el commit `px4_drone@a3d250
 cambió la webui de `ROS_DOMAIN_ID=0` a `10` en sus tres puntos de lanzamiento para que el RViz
 del escritorio viera la Pi, sin tocar el FC. En el banco, con ese dominio, solo se veía
 `/fmu/out/estimator_status_flags`; en el 0, los nueve topics. Detalle en el
-[reporte](../reports/2026-10-21_cinco-corridas-sin-dds-eth0.md).
+[reporte](../../reports/2026-10-21_cinco-corridas-sin-dds-eth0.md).
 
 ### Dónde tiene que coincidir (todos, a la vez)
 

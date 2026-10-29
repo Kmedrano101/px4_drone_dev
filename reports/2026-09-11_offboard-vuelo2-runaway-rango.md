@@ -95,7 +95,7 @@ suelo la z saltó **+3.8 m**: fue un **cambio de instancia EKF1→EKF0** a 430.6
 **Procedimiento:**
 4. **Gas centrado durante todo el offboard.** En la sesión 2 estaba a +0.98, y en la 4 a −0.55 (en esa sesión, un paso a STAB lo habría dejado caer).
 5. **Reboot del FC entre vuelos** hasta tener el EKF estable. Un estado de rango roto sobrevive al desarme.
-6. **Techo físico**: probar solo en un espacio con techo o en exterior con margen. Sin GPS no hay geofence ni `LNDMC_ALT_MAX` (ver `docs/PARAMETROS_INDOOR.md` §C).
+6. **Techo físico**: probar solo en un espacio con techo o en exterior con margen. Sin GPS no hay geofence ni `LNDMC_ALT_MAX` (ver `docs/referencia/PARAMETROS_INDOOR.md` §C).
 
 ## 6. Por qué hay tanta deriva a ≤2 m en campo
 

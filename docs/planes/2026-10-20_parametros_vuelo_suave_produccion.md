@@ -1,7 +1,7 @@
 # Parámetros del FC para vuelo suave: estado real y qué tocar
 
 **Fecha:** 2026-10-20 · **Fuente:** volcado completo del FC#2 por USB (903/903 parámetros)
-**Copia de seguridad:** [`backups/backup_fc_2026-10-20_pre-optimizacion.params`](../backups/backup_fc_2026-10-20_pre-optimizacion.params)
+**Copia de seguridad:** [`backups/backup_fc_2026-10-20_pre-optimizacion.params`](../../backups/backup_fc_2026-10-20_pre-optimizacion.params)
 **Estado:** análisis. **No se ha escrito ningún parámetro.**
 
 Complementa al [plan de ajuste por capas](2026-10-19_plan_tuning_takeoff_hold_land.md), que
@@ -24,7 +24,7 @@ estaba escrito:
 Verificado en `commander_params.c` del tag. Consecuencias prácticas:
 
 - **Bueno:** ya hay escape por sticks, que es más directo que el switch ch6/ch8. La
-  [memoria de escape por RC](../README.md) estaba obsoleta y queda corregida.
+  [memoria de escape por RC](../../README.md) estaba obsoleta y queda corregida.
 - **A vigilar en las pruebas:** un roce accidental del stick durante los 30 s de hold **aborta
   la corrida**, y un microcorte del enlace RC provoca un LAND automático. Las dos cosas hay que
   anotarlas como causas de aborto válidas en el protocolo, para no atribuirlas al controlador.
@@ -130,7 +130,7 @@ adivinar. **Hasta medirlo, no escribirlo.**
 
 Hipótesis, no hecho. Con `EKF2_HGT_REF = 0` el barómetro es la referencia de altura, y está a
 79 °C con una deriva medida de 3 mm/s en tierra
-([reporte](../reports/2026-10-16_baro-temperatura-deriva-z.md)). Subir su ruido declarado hace
+([reporte](../../reports/2026-10-16_baro-temperatura-deriva-z.md)). Subir su ruido declarado hace
 que el EKF se apoye más en el LiDAR 1D, que a 0.8 m está dentro de su zona honesta y además
 engancha por `EKF2_RNG_A_HMAX = 1.0`. Hay que comprobarlo contra el log, no darlo por bueno.
 

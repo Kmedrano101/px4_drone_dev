@@ -5,7 +5,7 @@
 **Estado:** ✅ Resuelto — escaneos procesados en continuo, mapa expandiéndose en vivo y pose estimada por scan matching.
 
 **Contexto:**  
-Fase 1 del [plan de test LiDAR 2D](../docs/2026-09-16_test_lidar2d_ev_offboard.md): validar la calidad del mapa y estimación de movimiento llevando el dron a mano con el LiDAR 2D LD19/D500 conectado a la RPi 4 en `/dev/ttyUSB0`, sin odometría de ruedas (TF `odom -> base_link` estática en identidad) y visualizando en RViz 2 localmente.
+Fase 1 del [plan de test LiDAR 2D](../docs/planes/2026-09-16_test_lidar2d_ev_offboard.md): validar la calidad del mapa y estimación de movimiento llevando el dron a mano con el LiDAR 2D LD19/D500 conectado a la RPi 4 en `/dev/ttyUSB0`, sin odometría de ruedas (TF `odom -> base_link` estática en identidad) y visualizando en RViz 2 localmente.
 
 **Objetivo evaluado:**  
 Mover el dron a mano por la estancia y comprobar que `slam_toolbox` (modo online async) genera el grid de ocupación (`/map`), estima la pose del dron (`/pose`) y mantiene la coherencia geométrica de la habitación.
@@ -23,7 +23,7 @@ Al arrancar `slam_test.launch.py` en la Raspberry Pi 4 y mover el dron manualmen
 
 ## 2. Diagnóstico y Causa Raíz
 
-En [`slam_toolbox_params.yaml`](../docs/2026-09-16_test_lidar2d_ev_offboard.md), la configuración inicial definía:
+En [`slam_toolbox_params.yaml`](../docs/planes/2026-09-16_test_lidar2d_ev_offboard.md), la configuración inicial definía:
 ```yaml
 minimum_travel_distance: 0.01  # 1 cm
 minimum_travel_heading: 0.01   # 0.01 rad

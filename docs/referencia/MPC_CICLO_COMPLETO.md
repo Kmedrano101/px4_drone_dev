@@ -192,7 +192,7 @@ Dos detalles que no son de adorno:
 
 - **Solo adapta por encima de `mpc_dist_min_agl_m`** (0.35 m). En tierra, con la máquina de
   despegue de PX4 por debajo de `rampup`, el FC **descarta nuestro setpoint** y mete 100 m/s²
-  hacia abajo ([parámetros](2026-10-20_parametros_vuelo_suave_produccion.md) §2): el residuo
+  hacia abajo ([parámetros](../planes/2026-10-20_parametros_vuelo_suave_produccion.md) §2): el residuo
   medido ahí no es nuestra perturbación, y el observador se iría a su tope.
 - **Con `d = 0` el modelo es idéntico al anterior**, y el banco de pruebas lo demuestra: los
   cuatro casos de siempre devuelven exactamente los mismos números. Un solo solver y una sola
@@ -338,6 +338,6 @@ tick, no solo al arrancar.** La base expone ambos como lecturas puras, sin efect
   uno sin el otro: [cómo y por qué](CONFIGURACION_OFFBOARD_RPI4.md#2bis-ros_domain_id-lo-fija-el-fc-es-0-y-así-se-cambia-sin-romper-nada).
 
 Detalle de la compilación y de los dos intentos de lanzamiento:
-[`reports/2026-10-14_mpc-compilado-rpi.md`](../reports/2026-10-14_mpc-compilado-rpi.md).
+[`reports/2026-10-14_mpc-compilado-rpi.md`](../../reports/2026-10-14_mpc-compilado-rpi.md).
 Protocolo de la comparación contra el PID:
-[`2026-10-16_protocolo_pid_vs_mpc.md`](2026-10-16_protocolo_pid_vs_mpc.md).
+[`2026-10-16_protocolo_pid_vs_mpc.md`](../planes/2026-10-16_protocolo_pid_vs_mpc.md).

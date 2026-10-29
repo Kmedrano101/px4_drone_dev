@@ -144,7 +144,7 @@ Diez ciclos no bastan para afirmar fiabilidad comercial.
   simulación primero; planificar por separado cualquier validación física.
 
 El usuario ejecuta el armado. Se conservan guardas, escape RC y procedimientos
-de la [metodología](METODOLOGIA_TRABAJO.md); las pruebas abortadas cuentan al
+de la [metodología](../referencia/METODOLOGIA_TRABAJO.md); las pruebas abortadas cuentan al
 evaluar disponibilidad aunque no formen una pareja válida para comparar seguimiento.
 
 ## Fuentes
@@ -158,4 +158,4 @@ evaluar disponibilidad aunque no formen una pareja válida para comparar seguimi
 - [Fuente v1.14.3: parámetros](https://github.com/PX4/PX4-Autopilot/blob/v1.14.3/src/modules/mc_pos_control/mc_pos_control_params.c).
 - [Fuente v1.14.3: control de posición](https://github.com/PX4/PX4-Autopilot/blob/v1.14.3/src/modules/mc_pos_control/MulticopterPositionControl.cpp).
 - [Fuente v1.14.3: aceleración y empuje](https://github.com/PX4/PX4-Autopilot/blob/v1.14.3/src/modules/mc_pos_control/PositionControl/PositionControl.cpp).
-- [Pruebas locales del 2026-10-16](../reports/2026-10-19_pid-mpc-pruebas-guardas-rpi.md).
+- [Pruebas locales del 2026-10-16](../../reports/2026-10-19_pid-mpc-pruebas-guardas-rpi.md).

@@ -82,6 +82,6 @@ pasa el veredicto (0.56 ≤ 1.0), así que no da falso REVISAR.
 
 ## Referencias
 
-- Doc de configuración: `docs/2026-10-21_outdoor_gps_zedf9p_position_hold.md`.
+- Doc de configuración: `docs/planes/2026-10-21_outdoor_gps_zedf9p_position_hold.md`.
 - Caster/credenciales: memoria `ign-ntrip-caster-sptr`.
 - Resultado y conclusión: memoria `rtk-campo-fixed-2mm-27oct`.

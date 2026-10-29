@@ -75,23 +75,23 @@ Plots are written to `scripts/output/<log>/*.png`. See [`scripts/README.md`](scr
 
 ## Project Resources
 
-**Documentation — engineering reports** (`docs/`)
-- [Platform: hardware, firmware & comms](docs/PLATAFORMA_HARDWARE.md) — full spec sheet + SUPER reference
-- [Flight bring-up report](docs/INFORME_VUELO_DRONE.md) — 4 problems solved, reference config, lessons
-- [Motor-noise = yaw saturation](docs/DIAGNOSTICO_RUIDO_MOTORES_YAW.md) — "loud motors on arming" root cause
-- [Offboard RPi ⇄ FC (uXRCE-DDS)](docs/CONFIGURACION_OFFBOARD_RPI4.md) — companion link setup
-- [MTF-01P flow + LiDAR integration](docs/INTEGRACION_MTF-01P_FLOW_LIDAR.md) — sensor bring-up saga
-- [Indoor parameter reference](docs/PARAMETROS_INDOOR.md) — every GPS-free indoor param, ranked by importance
-- [Direct MAVLink scripting](docs/CONEXION_MAVLINK_SCRIPTS.md) — talk to the FC over USB cable or radio without QGC
-- [Working method](docs/METODOLOGIA_TRABAJO.md) — how analysis, reports, memory and FC changes are handled
-- [2D-LiDAR EV test plan](docs/2026-09-16_test_lidar2d_ev_offboard.md) — external vision from a 2D scanner, 1D LiDAR for altitude
-- [Research gaps for publication](docs/2026-10-01_gaps_publicacion.md) — literature review vs what the group already has; where the next paper should go
-- [Smooth-and-repeatable tuning plan](docs/2026-10-19_plan_tuning_takeoff_hold_land.md) — the order of layers (mechanics → estimation → rates → thrust → outer loop), what to measure per phase, candidate targets
-- [FC parameters for smooth flight](docs/2026-10-20_parametros_vuelo_suave_produccion.md) — what the FC holds today (903-param dump), what PX4 does to our setpoints during takeoff, and what to change in order of effect
-- [Bench tests without props](docs/2026-10-21_pruebas_banco_sin_helices.md) — bench mode: forced disarm N s after TAKEOFF (21196) so the motors never wind up to 100 %; the order of tests before going back to the field
-- [Outdoor GPS (ZED-F9P) position/altitude hold](docs/2026-10-21_outdoor_gps_zedf9p_position_hold.md) — the F9P gives position but no heading; **outdoor estimation profile applied** (GPS fused), switchable indoor↔outdoor profiles (QGC/CLI), wiring and pre-arm checklist
-- [Motor-output map & geometry](docs/PLATAFORMA_HARDWARE.md) — Quad-X geometry (`CA_ROTOR*`) vs output map (`PWM_MAIN_FUNC*`); the motor 2↔3 cross-wiring fix (2026-10-27)
-- [Companion for a MID-360S](docs/2026-10-19_companion_mid360s_slam.md) — what would replace the Pi for 3D LiDAR SLAM: evidence found, alternatives, acceptance test before buying
+**Documentation — engineering reports** (`docs/`, index in [docs/README.md](docs/README.md): `referencia/` stable docs · `planes/` dated plans & protocols · `publicaciones/` literature & paper proposals · `historico/` bring-up reports)
+- [Platform: hardware, firmware & comms](docs/referencia/PLATAFORMA_HARDWARE.md) — full spec sheet + SUPER reference
+- [Flight bring-up report](docs/historico/INFORME_VUELO_DRONE.md) — 4 problems solved, reference config, lessons
+- [Motor-noise = yaw saturation](docs/historico/DIAGNOSTICO_RUIDO_MOTORES_YAW.md) — "loud motors on arming" root cause
+- [Offboard RPi ⇄ FC (uXRCE-DDS)](docs/referencia/CONFIGURACION_OFFBOARD_RPI4.md) — companion link setup
+- [MTF-01P flow + LiDAR integration](docs/referencia/INTEGRACION_MTF-01P_FLOW_LIDAR.md) — sensor bring-up saga
+- [Indoor parameter reference](docs/referencia/PARAMETROS_INDOOR.md) — every GPS-free indoor param, ranked by importance
+- [Direct MAVLink scripting](docs/referencia/CONEXION_MAVLINK_SCRIPTS.md) — talk to the FC over USB cable or radio without QGC
+- [Working method](docs/referencia/METODOLOGIA_TRABAJO.md) — how analysis, reports, memory and FC changes are handled
+- [2D-LiDAR EV test plan](docs/planes/2026-09-16_test_lidar2d_ev_offboard.md) — external vision from a 2D scanner, 1D LiDAR for altitude
+- [Research gaps for publication](docs/publicaciones/2026-10-01_gaps_publicacion.md) — literature review vs what the group already has; where the next paper should go
+- [Smooth-and-repeatable tuning plan](docs/planes/2026-10-19_plan_tuning_takeoff_hold_land.md) — the order of layers (mechanics → estimation → rates → thrust → outer loop), what to measure per phase, candidate targets
+- [FC parameters for smooth flight](docs/planes/2026-10-20_parametros_vuelo_suave_produccion.md) — what the FC holds today (903-param dump), what PX4 does to our setpoints during takeoff, and what to change in order of effect
+- [Bench tests without props](docs/planes/2026-10-21_pruebas_banco_sin_helices.md) — bench mode: forced disarm N s after TAKEOFF (21196) so the motors never wind up to 100 %; the order of tests before going back to the field
+- [Outdoor GPS (ZED-F9P) position/altitude hold](docs/planes/2026-10-21_outdoor_gps_zedf9p_position_hold.md) — the F9P gives position but no heading; **outdoor estimation profile applied** (GPS fused), switchable indoor↔outdoor profiles (QGC/CLI), wiring and pre-arm checklist
+- [Motor-output map & geometry](docs/referencia/PLATAFORMA_HARDWARE.md) — Quad-X geometry (`CA_ROTOR*`) vs output map (`PWM_MAIN_FUNC*`); the motor 2↔3 cross-wiring fix (2026-10-27)
+- [Companion for a MID-360S](docs/planes/2026-10-19_companion_mid360s_slam.md) — what would replace the Pi for 3D LiDAR SLAM: evidence found, alternatives, acceptance test before buying
 
 **Diagnostic reports** (companion / RPi) — see [`reports/`](reports/README.md)
 - [MTF-01 EKF2 tuning — indoor flow](reports/2026-07-23_mtf01-ekf2-tuning.md)
@@ -107,7 +107,7 @@ Plots are written to `scripts/output/<log>/*.png`. See [`scripts/README.md`](scr
 
 **Reference platform** — this build replicates the [SUPER](https://github.com/hku-mars/SUPER) MAV
 platform from HKU MaRS Lab ([hardware BOM](https://github.com/hku-mars/SUPER-Hardware)) as a base
-for further work. Differences are tracked in [docs/PLATAFORMA_HARDWARE.md](docs/PLATAFORMA_HARDWARE.md) §7.
+for further work. Differences are tracked in [docs/referencia/PLATAFORMA_HARDWARE.md](docs/referencia/PLATAFORMA_HARDWARE.md) §7.
 Each version ships the flashable `.px4` (QGC → Custom firmware) plus its
 `board_config.diff` to rebuild; `.bin`/`.elf` are skipped.
 

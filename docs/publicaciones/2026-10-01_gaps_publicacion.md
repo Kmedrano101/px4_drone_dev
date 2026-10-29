@@ -15,8 +15,8 @@ Activos de partida que condicionan toda la recomendación:
   (`xtract-paper/experimentos/M3C2_RESULTS.md`).
 - Borrador del caso de estudio en la **mina de Björkdal** y protocolo de campo.
 - Plataforma PX4 indoor (LiDAR 2D + flujo óptico) con **fallos de vuelo reales documentados**
-  ([reporte del log 158](../reports/2026-09-18_takeoff-ev-log158-caida-stabilized.md)).
-- **GPS RTK u-blox ZED-F9P-02B-01** disponible (ver [PLATAFORMA_HARDWARE.md](PLATAFORMA_HARDWARE.md) §3).
+  ([reporte del log 158](../../reports/2026-09-18_takeoff-ev-log158-caida-stabilized.md)).
+- **GPS RTK u-blox ZED-F9P-02B-01** disponible (ver [PLATAFORMA_HARDWARE.md](../referencia/PLATAFORMA_HARDWARE.md) §3).
 
 ---
 
@@ -117,7 +117,7 @@ dataset de anomalías de estimación de estado.
 
 El hueco que queda es el **interfaz**: qué incertidumbre debe declarar un SLAM al EKF de un
 autopiloto de producción, cómo se tratan la latencia y las poses repetidas, y qué taxonomía de fallos
-aparece en vuelo real. El [log 158](../reports/2026-09-18_takeoff-ev-log158-caida-stabilized.md) es
+aparece en vuelo real. El [log 158](../../reports/2026-09-18_takeoff-ev-log158-caida-stabilized.md) es
 un caso de libro: el EKF creyó una pose de hace 0.8 s con σ declarada de 0.1 m mientras el dron
 recorría ~3 m, porque el puente mandaba la varianza como NaN. La corrección (varianza del SLAM +
 antigüedad de la pose) y el arnés de reproducción están ya implementados y validados en

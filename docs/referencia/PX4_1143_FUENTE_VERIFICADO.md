@@ -97,7 +97,7 @@ vl53l0x · vl53l1x · mb12xx · srf02 · ulanding_radar
 El conector **GPS1 expone I2C** (SDA/SCL/5V/GND), así que **un telémetro I2C
 entra sin recompilar el firmware**, arrancándolo desde `extras.txt`. Importa
 porque el LiDAR 1D actual satura a 2.53 m sobre hormigón oscuro
-([reporte](../reports/2026-10-16_lidar1d-saturacion-reflectividad.md)). Al añadir
+([reporte](../../reports/2026-10-16_lidar1d-saturacion-reflectividad.md)). Al añadir
 un segundo telémetro habrá **dos fuentes de rango** y hay que comprobar cuál
 elige el EKF2.
 
@@ -105,4 +105,4 @@ elige el EKF2.
 
 **El `.px4` no se puede leer del board.** El bootloader rev 5 no implementa
 `READ_MULTI`. Si no se guardó el `.px4` al compilar, ese binario se ha perdido.
-Ver [`backups/firmware/INDEX.md`](../backups/firmware/INDEX.md).
+Ver [`backups/firmware/INDEX.md`](../../backups/firmware/INDEX.md).

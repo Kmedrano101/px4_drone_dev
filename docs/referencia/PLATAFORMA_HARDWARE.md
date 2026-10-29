@@ -2,7 +2,7 @@
 
 Ficha técnica completa del dron: qué hay montado, qué firmware corre y cómo se comunica todo.
 
-**Última verificación contra el FC:** 2026-09-07 · Volcado: [`backups/backup_fc_2026-09-07.params`](../backups/backup_fc_2026-09-07.params)
+**Última verificación contra el FC:** 2026-09-07 · Volcado: [`backups/backup_fc_2026-09-07.params`](../../backups/backup_fc_2026-09-07.params)
 
 > Esta plataforma **replica la del proyecto SUPER** (HKU MaRS Lab) como base para desarrollar
 > mejoras encima. La comparación con su BOM original y las diferencias deliberadas están
@@ -14,9 +14,9 @@ Ficha técnica completa del dron: qué hay montado, qué firmware corre y cómo 
 
 <table>
 <tr>
-<td width="33%"><img src="images/hardware/frame_rjx_f450.jpg" alt="Frame RJX F450"><br><sub><b>Frame</b> RJX F450 carbono</sub></td>
-<td width="33%"><img src="images/hardware/motor_tmotor_f90_2806.jpg" alt="T-Motor F90 2806.5"><br><sub><b>Motor</b> T-Motor F90 2806.5 1300KV</sub></td>
-<td width="33%"><img src="images/hardware/bateria_ovonic_6s_1300.jpg" alt="Batería Ovonic 6S"><br><sub><b>Batería</b> Ovonic 6S 1300 mAh 100C</sub></td>
+<td width="33%"><img src="../images/hardware/frame_rjx_f450.jpg" alt="Frame RJX F450"><br><sub><b>Frame</b> RJX F450 carbono</sub></td>
+<td width="33%"><img src="../images/hardware/motor_tmotor_f90_2806.jpg" alt="T-Motor F90 2806.5"><br><sub><b>Motor</b> T-Motor F90 2806.5 1300KV</sub></td>
+<td width="33%"><img src="../images/hardware/bateria_ovonic_6s_1300.jpg" alt="Batería Ovonic 6S"><br><sub><b>Batería</b> Ovonic 6S 1300 mAh 100C</sub></td>
 </tr>
 </table>
 
@@ -115,8 +115,8 @@ a pitar. No se puede desactivar desde PX4 — no hay passthrough BLHeli ni coman
 
 <table>
 <tr>
-<td width="50%"><img src="images/hardware/esc_am32_55a.webp" alt="MicoAir AM32 4in1 55A"><br><sub><b>AM32-4IN1-55A</b></sub></td>
-<td width="50%"><img src="images/hardware/esc_bluejay_60a.webp" alt="MicoAir Bluejay 4in1 60A"><br><sub><b>Bluejay-4IN1-60A</b></sub></td>
+<td width="50%"><img src="../images/hardware/esc_am32_55a.webp" alt="MicoAir AM32 4in1 55A"><br><sub><b>AM32-4IN1-55A</b></sub></td>
+<td width="50%"><img src="../images/hardware/esc_bluejay_60a.webp" alt="MicoAir Bluejay 4in1 60A"><br><sub><b>Bluejay-4IN1-60A</b></sub></td>
 </tr>
 </table>
 
@@ -154,7 +154,7 @@ Dos unidades del **mismo modelo**, con firmware distinto. No confundirlas.
 | Firmware | PX4 **1.17.0** (build custom) | PX4 **1.14.3** de fábrica |
 | Uso | primer dron | **segundo dron, plataforma actual** |
 
-<img src="images/hardware/fc_nxtpx4v2.webp" alt="NxtPX4v2" width="320">
+<img src="../images/hardware/fc_nxtpx4v2.webp" alt="NxtPX4v2" width="320">
 
 ### Especificaciones ([ficha del fabricante](https://micoair.com/flightcontroller_nxtpx4v2/))
 
@@ -191,11 +191,11 @@ y `READ_MULTI` (0x28), que son rev2-only. Guardar el `.px4` **antes** de flashea
 
 | Cara superior | Cara inferior |
 |---|---|
-| <img src="images/hardware/fc_nxtpx4v2_puertos_top.png" alt="Puertos cara superior"> | <img src="images/hardware/fc_nxtpx4v2_puertos_bottom.png" alt="Puertos cara inferior"> |
+| <img src="../images/hardware/fc_nxtpx4v2_puertos_top.png" alt="Puertos cara superior"> | <img src="../images/hardware/fc_nxtpx4v2_puertos_bottom.png" alt="Puertos cara inferior"> |
 
 **Diagrama de cableado completo** — qué va en cada conector:
 
-<img src="images/hardware/fc_nxtpx4v2_cableado.webp" alt="Diagrama de cableado NxtPX4v2" width="520">
+<img src="../images/hardware/fc_nxtpx4v2_cableado.webp" alt="Diagrama de cableado NxtPX4v2" width="520">
 
 Correspondencia entre la serigrafía de la placa y los nombres de PX4:
 
@@ -305,7 +305,7 @@ que alimentaría un receptor en `GPS2` desde su pin de 12V. En reserva hasta ent
 
 ### MTF-01P — límite real medido
 
-<img src="images/hardware/sensor_mtf01p.webp" alt="MicoAir MTF-01P" width="280">
+<img src="../images/hardware/sensor_mtf01p.webp" alt="MicoAir MTF-01P" width="280">
 
 
 Declara 12 m de alcance. **Medido el 2026-09-07 en interior:**
@@ -319,7 +319,7 @@ Declara 12 m de alcance. **Medido el 2026-09-07 en interior:**
 
 **Techo útil ≈ 1.5 m.** Por encima la lectura deja de ser invertible: 2.5 m puede significar 3 o 6
 metros. Y el sensor **nunca reporta baja confianza** (`signal_quality: -1`, varianza pequeña), así
-que el EKF no tiene forma de rechazarla. Datos: [`logs/2026-09-04/lidar_barrido_altura_2026-09-07.csv`](../logs/2026-09-04/lidar_barrido_altura_2026-09-07.csv).
+que el EKF no tiene forma de rechazarla. Datos: [`logs/2026-09-04/lidar_barrido_altura_2026-09-07.csv`](../../logs/2026-09-04/lidar_barrido_altura_2026-09-07.csv).
 
 Protocolo: `Mavlink_PX4` (configurable con MicoAssistant). Conector SH1.0-4P `GVRT`, **5 V**,
 señal 3.3 V. Emite `OPTICAL_FLOW_RAD` (106) a 100 Hz y `DISTANCE_SENSOR` (132).
@@ -372,7 +372,7 @@ Es `/fmu/out/vehicle_local_position`, no `..._v1`. Usar el nombre versionado no 
 3. **`SENS_FLOW_ROT` no existe** → la rotación del flujo está clavada en 0. El sensor debe ir
    montado con su eje X hacia adelante.
 
-Versiones guardadas y cómo reconstruirlas: [`backups/firmware/INDEX.md`](../backups/firmware/INDEX.md).
+Versiones guardadas y cómo reconstruirlas: [`backups/firmware/INDEX.md`](../../backups/firmware/INDEX.md).
 
 ---
 
@@ -596,4 +596,4 @@ velocidad objetivo, aligerar la resolución del mapa, o cambiar de ordenador a b
 - [`INTEGRACION_MTF-01P_FLOW_LIDAR.md`](INTEGRACION_MTF-01P_FLOW_LIDAR.md) — integración del sensor
 - [`CONFIGURACION_OFFBOARD_RPI4.md`](CONFIGURACION_OFFBOARD_RPI4.md) — enlace offboard (FC#1, 1.17)
 - [`SIMULACION_GAZEBO_INDOOR.md`](SIMULACION_GAZEBO_INDOOR.md) — recreación del dron y del local en Gazebo
-- [`backups/firmware/INDEX.md`](../backups/firmware/INDEX.md) — versiones de firmware
+- [`backups/firmware/INDEX.md`](../../backups/firmware/INDEX.md) — versiones de firmware

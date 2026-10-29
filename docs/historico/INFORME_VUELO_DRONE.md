@@ -28,7 +28,7 @@ El ruido intermitente al armar **NO era desincronización de ESC**. El análisis
 - **Causa:** la brújula se había desactivado para tuning → heading sin referencia → error de heading de 90–130° → el controlador ordenaba guiñar a tope. Amplificado por `MC_AIRMODE=2` (lleva motores al 100% incluso a throttle cero).
 - **Fix:** `CAL_MAG0_PRIO=50`, `SYS_HAS_MAG=1`, `EKF2_MAG_TYPE=Automatic`, `MC_AIRMODE=0`.
 
-![Saturación de yaw](images/05_yaw_saturation.png)
+![Saturación de yaw](../images/05_yaw_saturation.png)
 
 > Detalle completo en [DIAGNOSTICO_RUIDO_MOTORES_YAW.md](DIAGNOSTICO_RUIDO_MOTORES_YAW.md)
 
@@ -44,7 +44,7 @@ El dron no levantaba ni un cm pese a motores girando. Tras descartar batería, E
 
 La observación física del usuario ("el aire va hacia arriba") era **REAL** — no recirculación.
 
-![Hélices invertidas](images/02_helices_invertidas.png)
+![Hélices invertidas](../images/02_helices_invertidas.png)
 
 - **Causa:** las hélices estaban en los motores del sentido de giro equivocado (el borde de fuga lideraba en vez del borde de ataque).
 - **Nota clave:** el label "R" de HQProp **no está estandarizado** entre marcas — se verificó por **borde de ataque + flujo de aire físico**, no por etiqueta.
@@ -58,7 +58,7 @@ La observación física del usuario ("el aire va hacia arriba") era **REAL** —
 
 El pack viejo (1300mAh bajo C) se **hundía a 3.26V/celda a solo 55A**, dejando los motores sin voltaje → poco empuje. Fue un factor secundario (el principal eran las hélices), resuelto con una **batería de alto C**.
 
-![Sag de batería](images/03_bateria_sag.png)
+![Sag de batería](../images/03_bateria_sag.png)
 
 ---
 
@@ -73,7 +73,7 @@ El pack viejo (1300mAh bajo C) se **hundía a 3.26V/celda a solo 55A**, dejando 
 
 Vuelos del 2026-06-29 en outdoor: auto-takeoff → Hold → Position, 60–97s cada uno, soltando los sticks.
 
-![Vuelo Position](images/04_vuelo_position.png)
+![Vuelo Position](../images/04_vuelo_position.png)
 
 **Calidad del position hold (sticks centrados, 806 muestras):**
 
@@ -85,7 +85,7 @@ Vuelos del 2026-06-29 en outdoor: auto-takeoff → Hold → Position, 60–97s c
 | xy_valid | 100% |
 | GPS | fix 4, 12–13 sats, EPH 0.5m |
 
-![Position hold](images/01_position_hold.png)
+![Position hold](../images/01_position_hold.png)
 
 > **0.71m es excelente para GPS estándar.** Es la **línea base para comparar con GPS+RTK** (que debería dar ~0.02–0.10m, 10–30× mejor).
 

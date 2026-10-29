@@ -9,11 +9,11 @@ ciega es un círculo de **0.70 m de diámetro** centrado en el LiDAR
 obstáculo** de 0.15 m (`obstacle_min_width_m`), que es el filtro que de verdad
 separa polvo de obstáculo: con la zona ciega sola el PID habría vuelto a abortar. Los dos abortos del 16-oct eran **falsos positivos**
 del LiDAR 2D con las hélices girando, no obstáculos
-([análisis](../reports/2026-10-20_falsos-obstaculos-al-despegar.md)). Por indicación posterior del
+([análisis](../../reports/2026-10-20_falsos-obstaculos-al-despegar.md)). Por indicación posterior del
 usuario, la guarda de obstáculos actúa **desde TAKEOFF**, con chequeo de espacio
 libre y barrido utilizable antes de armar. Esta configuración sustituye las descripciones de esas guardas
 en las secciones históricas siguientes. Ver el
-[reporte de revisión](../reports/2026-10-20_zona-ciega-circular-ciclos.md).
+[reporte de revisión](../../reports/2026-10-20_zona-ciega-circular-ciclos.md).
 
 Plan de la primera prueba de vuelo con el MPC y de su línea base con el PID.
 Se escribe **antes** de volar para que las dos pruebas sean comparables y para
@@ -24,7 +24,7 @@ PID y MPC alcanzaron OFFBOARD y armaron a 0.8 m, pero PID aterrizó por salud de
 SLAM y MPC por la parada de obstáculo. **El aborto por obstáculo era falso** y está
 corregido y validado contra los bags; queda por explicar el `sigma_xy = 0.311 m` del SLAM. Los intentos a 1.2 m fueron rechazados antes
 de armar por el techo fiable del LiDAR 1D. No hubo hold de 30 s ni una pareja
-comparable; ver el [reporte](../reports/2026-10-19_pid-mpc-pruebas-guardas-rpi.md).
+comparable; ver el [reporte](../../reports/2026-10-19_pid-mpc-pruebas-guardas-rpi.md).
 
 ---
 
@@ -37,7 +37,7 @@ Raspberry Pi 4** en tiempo real.
 
 Es comparable porque `takeoff_hold_land_mpc` hereda de
 `takeoff_position_hold_ev`: lo único distinto es cómo se genera el setpoint.
-Ver [`MPC_CICLO_COMPLETO.md`](MPC_CICLO_COMPLETO.md) §4.
+Ver [`MPC_CICLO_COMPLETO.md`](../referencia/MPC_CICLO_COMPLETO.md) §4.
 
 ## 2. Por qué 0.8 m y no 1.5 m
 
@@ -45,7 +45,7 @@ Tres límites independientes coinciden en la misma respuesta:
 
 1. **El LiDAR 1D se satura sobre el hormigón oscuro.** A 0.8 m el error es de
    ~3 cm; a 1.5 m es del 17 %. Ver
-   [`reports/2026-10-16_lidar1d-saturacion-reflectividad.md`](../reports/2026-10-16_lidar1d-saturacion-reflectividad.md).
+   [`reports/2026-10-16_lidar1d-saturacion-reflectividad.md`](../../reports/2026-10-16_lidar1d-saturacion-reflectividad.md).
 2. **La ayuda de rango del EKF2 solo debe entrar donde el sensor es honesto.**
    Con `EKF2_RNG_A_HMAX = 1.0` engancha por debajo de 0.70 m (histéresis 0.7×) y
    se mantiene hasta 1.0 m: subiendo a 0.8 m se pasa por la zona de enganche, así
@@ -127,7 +127,7 @@ del piloto esté ahí, y desde `px4_drone@f5e1ab2` lo revisa **cada ciclo hasta 
 sale el ARM** (antes solo una vez, y en los hasta 13 s siguientes el dron armaba
 aunque el piloto hubiese movido el switch). Si el switch se mueve en vuelo, el
 nodo deja de publicar y no le pisa el control. Detalle en
-[`SOFTWARE_ROS2_PX4_DRONE.md`](SOFTWARE_ROS2_PX4_DRONE.md) §3.
+[`SOFTWARE_ROS2_PX4_DRONE.md`](../referencia/SOFTWARE_ROS2_PX4_DRONE.md) §3.
 
 ## 5. Protección anticolisión con el LiDAR 2D — verificado el 2026-10-16
 
@@ -216,7 +216,7 @@ para prerrequisitos, medidas y objetivos candidatos.
 **Actualización 2026-10-20:** la variante **C** tiene ahora tres formas, todas instaladas en la
 Pi: **C0** MPC cinemático (como estaba), **C1** MPC+ con estado de perturbación y compensación
 de retardo (mismo binario, `mpc_dist_gain=0.5`), y **C2** MPC moderno CTBR (tasas + empuje,
-engancha solo en el hold). Ver [MPC del ciclo completo §9](MPC_CICLO_COMPLETO.md#9-las-tres-variantes-de-mpc-2026-10-20).
+engancha solo en el hold). Ver [MPC del ciclo completo §9](../referencia/MPC_CICLO_COMPLETO.md#9-las-tres-variantes-de-mpc-2026-10-20).
 Orden de vuelo propuesto: A → C0 → C1 (son el mismo riesgo) → calibrar el empuje → C2.
 
 **Estado: pendiente de implementar/verificar las referencias y ejecutar las pruebas.**

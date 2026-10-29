@@ -26,7 +26,7 @@ MTF-01P (flujo + LiDAR 1D)  ──MAVLink TEL4──►  FC  ◄─────�
   suelo. Viene de barómetro + LiDAR 1D en su zona honesta (≤1 m).
 - **La altura tampoco puede venir de la IMU sola**: hace falta doble integración.
   La deriva de 3 mm/s medida con el barómetro plano *es* esa fusión derivando
-  ([reporte](../reports/2026-10-16_baro-temperatura-deriva-z.md)).
+  ([reporte](../../reports/2026-10-16_baro-temperatura-deriva-z.md)).
 
 ## 2. Los nodos de vuelo
 
@@ -41,7 +41,7 @@ misma máquina de estados, las mismas guardas y los mismos logs.
 
 `takeoff_hold_land_mpc` **hereda** de `takeoff_position_hold_ev` y solo
 sobreescribe cómo se genera el setpoint. Eso es lo que hace que comparar PID y
-MPC signifique algo ([protocolo](2026-10-16_protocolo_pid_vs_mpc.md)).
+MPC signifique algo ([protocolo](../planes/2026-10-16_protocolo_pid_vs_mpc.md)).
 
 Estados: `kWaitPosition → kWaitSwitch → kArm → kTakeoff → kHold [→ kPattern]
 → kControlledDescent → kLand → kDisarm`, con `kObstacleStop` como desvío desde
@@ -103,7 +103,7 @@ al lanzar una prueba en medio de una compilación.
   en marcha se marca en amarillo y se abre una vez, al empezar.
 - Las dos tarjetas de la comparación se llaman **"Ciclo completo con PID"** y
   **"Ciclo completo con MPC"**, con los mismos valores por defecto, para no
-  confundir corridas ([protocolo](2026-10-16_protocolo_pid_vs_mpc.md) §4).
+  confundir corridas ([protocolo](../planes/2026-10-16_protocolo_pid_vs_mpc.md) §4).
 
 - **HOLD y ATERRIZAR**: `SIGUSR1`/`SIGUSR2` **al ejecutable del nodo**, nunca al
   envoltorio `ros2 launch`. Mandarla a `timeout` dejó una vez **el nodo volando
@@ -175,7 +175,7 @@ su driver pone un `angle_increment` distinto en cada barrido; karto, dentro de `
 fija el número de rayos con el primero y **rechaza** los demás. Solo pasaba el 20–30 % y la
 pose del SLAM llegaba al EKF a ~1 Hz — el 1.2 Hz del accidente del 18-sep. Con el relay pasan
 todos: 6.3 Hz en banco con `minimum_time_interval=0.1`
-([reporte](../reports/2026-10-21_banco-cuatro-controladores-slam-1hz.md)).
+([reporte](../../reports/2026-10-21_banco-cuatro-controladores-slam-1hz.md)).
 
 El launch del SLAM es ahora `launch/slam_ld19.launch.py` de `px4_drone` (antes vivía sin
 versionar en `px4_drone_slam`, en la SD de la Pi). Argumentos: `slam_min_time_interval` (0.1) y
@@ -195,7 +195,7 @@ RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
 `UXRCE_DDS_DOM_ID` (hoy **0**). Un nodo de la Pi en otro dominio no ve `vehicle_status` ni la
 posición, y sus setpoints no llegan: el ciclo se queda esperando para siempre. El 2026-10-19
 se puso `10` en la webui para el RViz del escritorio sin tocar el FC, y el 20-oct en el campo
-ningún ciclo pudo arrancar ([reporte](../reports/2026-10-21_cinco-corridas-sin-dds-eth0.md)).
+ningún ciclo pudo arrancar ([reporte](../../reports/2026-10-21_cinco-corridas-sin-dds-eth0.md)).
 En `tools/webui/app.py` es una sola constante, `ROS_DOMAIN_ID`. El apartado canónico, con todos los sitios que deben coincidir, la prueba de banco y el procedimiento de cambio, es [CONFIGURACION_OFFBOARD_RPI4.md §2bis](CONFIGURACION_OFFBOARD_RPI4.md#2bis-ros_domain_id-lo-fija-el-fc-es-0-y-así-se-cambia-sin-romper-nada). Si algún día se quiere
 aislar del resto de la LAN con otro dominio, hay que cambiar **a la vez** el FC
 (`UXRCE_DDS_DOM_ID`), la webui y este script, y pasar la prueba de banco del reporte.
